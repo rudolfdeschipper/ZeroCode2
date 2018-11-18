@@ -1,0 +1,60 @@
+﻿#Parameters
+appName : "My test application in Zero Code"
+nameSpace : "ZeroCode"
+
+// This is the models section
+/*
+Models can direclty inherit from the other models, or define a completely new one, or inherit and add/delete elements
+by putting a - after the identifier to remove it, or a + to add it. Changing the definition is also possible.
+
+Example:
+	Person <- Models.Person : {
+	-ID : {} // remove ID from the view model
+	+SomeProperty : { // definition inside {} is needed
+	}
+	Name : { Title : "changed title"} // all other properties are kept from Person model
+	+SomeOtherProperty <- DataDictionary.Name : { Name : "Another name" } // add property, inherit it from DataDictionary.Name and change its name
+	}
+
+*/
+
+
+@Models
+
+Person : {
+ID : { Type:"int", Name:"ID of Person", Title:"ID"},
+Name : { Type:"string", Name:"Name", Title:"Name", Length:50, Nullable:false },
+Title : { Type:"string", Name:"Title", Title:"Title", Length:100, Nullable:false, +SomeOtherProperty <- DataDictionary.NameField : { Name : "Another name", +Something : true } }
+
+}
+
+Stakeholder : {
+ID : { Type:"int", Name:"ID", Title:"ID"},
+Name <- DataDictionary.NameField : { -Nullable : {} },
+Title : { Type:"string", Name:"Title", Title:"Title", Length:100, Nullable:false }
+
+}
+
+@ViewModels
+
+Person <- Models.Person : {
+	-ID : {},
+	Name : { Length:75 },
+	+Test : { Title : "hello"}
+}
+
+@Screen
+
+Person : {
+	Name : "Person"
+}
+
+@DataDictionary
+
+NameField : {
+	Type:"string", 
+	Name:"Name", 
+	Title:"Generic Title", 
+	Length:50, 
+	Nullable:false
+}

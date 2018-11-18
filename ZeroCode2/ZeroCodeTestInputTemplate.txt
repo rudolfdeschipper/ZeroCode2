@@ -1,0 +1,21 @@
+%Loop:Screen
+
+%Include:ZeroCodeTestInclude.txt
+
+%FileOverwrite:Controllers\Generated\=<Screen.Name>Controller.cs
+using System;
+using =<#Parameters.nameSpace>.Models;
+
+%Loop:Panel
+%If:Panel.Edit
+	@Some if(x==y) 
+	{ 
+		other = 2; 
+	}
+%Else
+	Some other code;
+%EndIf
+%/Loop:Panel
+
+%/File
+%/Loop:Screens

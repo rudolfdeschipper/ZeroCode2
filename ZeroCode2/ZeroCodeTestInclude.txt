@@ -1,0 +1,14 @@
+﻿%FileCreate:Controllers\Generated\Included=<Screen.Name>Controller.cs
+using System;
+using =<#Parameters.nameSpace>.Models;
+
+%Loop:Panel
+%If:Panel.Edit
+	@Some if(x==y) 
+	{ 
+		other = 2; 
+	}
+%EndIf
+%/Loop:Panel
+
+%/File
