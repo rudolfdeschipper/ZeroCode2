@@ -2,7 +2,7 @@
 using System;
 using =<#Parameters.nameSpace>.Models;
 
-%Loop:Panel
+%Loop:Screen.Panel
 %If:Panel.Edit
 	@Some if(x==y) 
 	{ 

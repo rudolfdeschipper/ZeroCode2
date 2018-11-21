@@ -144,7 +144,6 @@ namespace ZeroCode2
         public List<string> Errors { get; set; }
         public bool HasErrors { get; set; }
 
-
         public void ParstInputFile(string inFile)
         {
             var fIn = System.IO.File.OpenText(inFile);
@@ -154,12 +153,15 @@ namespace ZeroCode2
             fIn.Close();
         }
 
+
+
         public void ParseInputFile(System.IO.StreamReader fIn)
         {
             var input = new Antlr4.Runtime.AntlrInputStream(fIn);
             var lexer = new Grammars.ZeroCode2Lexer(input);
             var tokenStream = new Antlr4.Runtime.CommonTokenStream(lexer);
             var parser = new Grammars.ZeroCode2Parser(tokenStream);
+
 
             var walker = new Antlr4.Runtime.Tree.ParseTreeWalker();
 
@@ -169,7 +171,18 @@ namespace ZeroCode2
 
             modelCollector = Listener.collector;
 
-            HasErrors = ResolveInheritance();
+            if (ResolveInheritance() == false)
+            {
+                logger.Error("Not all Inheritances were resolved");
+                HasErrors = true;
+            }
+
+            if (parser.NumberOfSyntaxErrors > 0)
+            {
+                HasErrors = true;
+                logger.Error("Errors exist in the input file");
+            }
+
         }
 
         private bool ResolveInheritance()
@@ -179,14 +192,13 @@ namespace ZeroCode2
 
             modelCollector.SingleModels.ForEach(m => ok &= resolver.ResolveInheritance(m, modelCollector.SingleModels));
 
-            return !ok;
+            return ok;
         }
 
         public void DumpErrors()
         { 
             if (HasErrors)
             {
-                logger.Error("Not all Inheritances were resolved");
                 foreach (var item in Errors)
                 {
                     logger.Error(item);
@@ -201,7 +213,7 @@ namespace ZeroCode2
                 var it = new Models.Iterator();
                 do
                 {
-                    var c = it.Iterate(modelCollector.SingleModels, "Models");
+                    var c = it.IterateSection(modelCollector.SingleModels, "@Models");
                     logger.Info("Model: " + c.Name);
 
                     var it2 = new Models.Iterator();
@@ -236,7 +248,7 @@ namespace ZeroCode2
 
                 // locator from a specific point in the tree (iterator):
                 it = new Models.Iterator();
-                var c4 = it.Iterate(modelCollector.SingleModels, "ViewModels");
+                var c4 = it.IterateSection(modelCollector.SingleModels, "@ViewModels");
                 el = locator.Locate("Name.Length", c4);
                 logger.Info("Located: {0} = {1}", el.Name, el.Value.GetText());
                 el = locator.Locate("Test.Title", c4);
@@ -359,14 +371,14 @@ namespace ZeroCode2
         {
             CurrentSection = context.ID().GetText();
 
-            logger.Debug(" Enter Params={0}", CurrentSection);
+            logger.Trace(" Enter Params={0}", CurrentSection);
 
             base.EnterParameters(context);
         }
 
         public override void ExitParameters([NotNull] ZeroCode2Parser.ParametersContext context)
         {
-            logger.Debug(" Exit Params={0}", context._pairs.Aggregate("", (a, r) => a += r.ID().GetText() + " = " + r.value().GetText() + "\n"));
+            logger.Trace(" Exit Params={0}", context._pairs.Aggregate("", (a, r) => a += r.ID().GetText() + " = " + r.value().GetText() + "\n"));
 
             var parameter = new Models.ParameterModel(context.ID().GetText());
             parameter.Section = CurrentSection;
@@ -440,7 +452,11 @@ namespace ZeroCode2
         {
             base.ExitValueString(context);
             var newObj = new Models.StringObject();
-            newObj.Value = context.STRING().GetText();
+
+            string val = context.STRING().GetText();
+            val = val.Substring(1, val.Length - 2);
+
+            newObj.Value = val;
             ValueProps.Put(context, newObj);
         }
 

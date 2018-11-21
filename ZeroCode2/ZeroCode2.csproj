@@ -95,8 +95,6 @@
     <Compile Include="Interpreter\InterpreterContext.cs" />
     <Compile Include="Interpreter\InterpreterInstructionBase.cs" />
     <Compile Include="Interpreter\InterpreterInstructionBranch.cs" />
-    <Compile Include="Interpreter\InterpreterInstructionExitLoop.cs" />
-    <Compile Include="Interpreter\InterpreterInstructionEnterLoop.cs" />
     <Compile Include="Interpreter\InterpreterInstructionNoOp.cs" />
     <Compile Include="Interpreter\InterpreterInstructionValue.cs" />
     <Compile Include="Interpreter\InterpreterProgram.cs" />

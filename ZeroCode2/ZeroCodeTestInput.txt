@@ -45,8 +45,22 @@ Person <- Models.Person : {
 
 @Screen
 
-Person : {
-	Name : "Person"
+Person : 
+{
+	Name : "Person",
+	Panel :
+	{
+		EditPanel : 
+		{
+			Edit : true,
+			Title : "Edit a Person"
+		},
+		DisplayPanel : 
+		{
+			Edit : false,
+			Title : "Display a Person"
+		}
+	}
 }
 
 @DataDictionary

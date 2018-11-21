@@ -95,7 +95,8 @@ fragment SAFECODEPOINT
    : ~ ["\\\u0000-\u001F]
 
    ;
-   
+  
+
 WS
 
    : [ \t\n\r\f] + -> skip

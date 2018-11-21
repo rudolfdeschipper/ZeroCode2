@@ -1,13 +1,14 @@
-%Loop:Screen
+%Loop:@Screen
 
-%Include:ZeroCodeTestInclude.txt
+// Include:ZeroCodeTestInclude.txt
 
 %FileOverwrite:Controllers\Generated\=<Screen.Name>Controller.cs
 using System;
 using =<#Parameters.nameSpace>.Models;
 
-%Loop:Panel
+%Loop:Screen.Panel
 %If:Panel.Edit
+	var Title = =<Panel.Title>;
 	@Some if(x==y) 
 	{ 
 		other = 2; 
@@ -18,4 +19,4 @@ using =<#Parameters.nameSpace>.Models;
 %/Loop:Panel
 
 %/File
-%/Loop:Screens
+%/Loop:@Screen

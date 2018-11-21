@@ -1,8 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 
 namespace ZeroCode2.Interpreter
 {
@@ -11,11 +9,13 @@ namespace ZeroCode2.Interpreter
         public Emitter.IEmitter Emitter { get; set; }
         public ModelCollector Model { get; set; }
 
-        private Stack<IteratorManager> loopStack { get; set; }
+        private static readonly NLog.Logger logger = NLog.LogManager.GetCurrentClassLogger();
+
+        private Stack<IteratorManager> LoopStack { get; set; }
 
         public InterpreterContext()
         {
-            loopStack = new Stack<IteratorManager>();
+            LoopStack = new Stack<IteratorManager>();
         }
 
         public void SetResult(string result)
@@ -34,7 +34,7 @@ namespace ZeroCode2.Interpreter
                 // try the loops
                 // locate loop identifier
                 var parts = expression.Split('.');
-                var iterator = loopStack.FirstOrDefault(l => l.Path == parts[0]);
+                var iterator = LoopStack.FirstOrDefault(l => l.Path == parts[0]);
 
                 if (iterator != null)
                 {
@@ -60,9 +60,28 @@ namespace ZeroCode2.Interpreter
 
         public IteratorManager EvaluateLoop(string expression)
         {
-            var iterator = loopStack.FirstOrDefault(l => l.Path == expression);
+            if (expression.StartsWith("@"))
+            {
+                expression = expression.Substring(1);
+            }
 
-            iterator.CurrentModel = iterator.Iterator.Iterate(Model.SingleModels, expression);
+            var iterator = LoopStack.FirstOrDefault(l => l.Path == expression);
+
+            if (iterator == null)
+            {
+                var parentPath = expression.Split('.')[0];
+
+                if (expression.Length > parentPath.Length)
+                {
+                    expression = expression.Substring(parentPath.Length + 1);
+                    // recurse until you find something
+                    return EvaluateLoop(expression);
+                }
+            }
+            else
+            {
+                iterator.CurrentModel = iterator.Iterator.Iterate(iterator.Root);
+            }
 
             return iterator;
         }
@@ -71,24 +90,78 @@ namespace ZeroCode2.Interpreter
         {
             var iterator = new IteratorManager();
 
+            logger.Info("Enter loop: " + expression);
+
             iterator.Path = expression;
             iterator.Iterator = new Models.Iterator();
 
-            loopStack.Push(iterator);
+            // Need to figure this out here, preferably, to avoid lots of ifs when evaluating:
+            // - what sort of loop are we trying to run here?
+            var locator = new Models.PropertyLocator();
+
+            // -- top level (%Loop:@Screen) - @ to start and no dots in the path - Iterate over the SingleModels
+            if (expression[0] == '@')
+            {
+                iterator.Root = locator.Locate(expression, Model);
+                // throw away "@"
+                iterator.Path = iterator.Path.Substring(1);
+            }
+            else
+            {
+                // -- use of "Loopx" construct (%Loop:Loop1.Panel) - dots in the path, use of word "loop" in the path identifier
+                if (expression.StartsWith("Loop"))
+                {
+                    int level = int.Parse(expression.Split('.')[0].Substring(4));
+                    var parentIterator = LoopStack.Skip(level).FirstOrDefault();
+                    var root = parentIterator.Root;
+                    iterator.Root = locator.Locate(expression, root);
+                }
+                else
+                {
+                    // -- new loop with a path to a previous loop (%Loop:Screen.Panel) - dots in the path - locate that previous path and treat it as relative path
+                    if (expression.Contains("."))
+                    {
+                        var parentPath = expression.Split('.')[0];
+                        var parentIterator = LoopStack.FirstOrDefault(l => l.Path == parentPath);
+
+                        expression = expression.Substring(parentPath.Length + 1);
+                        // shorten the path
+                        iterator.Path = expression;
+                        iterator.Root = locator.Locate(expression, parentIterator.CurrentModel);
+                    }
+                    else
+                    {
+                        // -- relative to previous loop (%Loop:Panel) - no dots in the path - find that loop and the expression and iterate over its elements
+                        var parentIterator = LoopStack.Peek();
+                        iterator.Root = locator.Locate(expression, parentIterator.CurrentModel);
+                    }
+                }
+            }
+
+            LoopStack.Push(iterator);
         }
 
         public void ExitLoop(string expression)
         {
-            if (loopStack.Count == 0)
+            if (LoopStack.Count == 0)
             {
                 throw new Exception("Exit loop while not in a loop");
             }
 
-            var it = loopStack.Pop();
+            logger.Info("Exit loop: " + expression);
+
+            var it = LoopStack.Pop();
             //if (it.Path != expression)
             //{
             //    throw new Exception("Exit loop does not match the expression: " + it.Path);
             //}
+        }
+
+        public bool EvaluteCondition(string expression)
+        {
+            logger.Info("Evaluation condition: " + expression);
+
+            return true;
         }
     }
 
@@ -96,6 +169,7 @@ namespace ZeroCode2.Interpreter
     {
         public Models.Iterator Iterator { get; set; }
         public string Path { get; set; }
+        public Models.ModelPair Root { get; set; }
         public Models.ModelPair CurrentModel { get; set; }
     }
 }

@@ -27,6 +27,11 @@ namespace ZeroCode2UnitTests
             return expression;
         }
 
+        public bool EvaluteCondition(string expression)
+        {
+            throw new NotImplementedException();
+        }
+
         public void ExitLoop(string expression)
         {
             throw new NotImplementedException();

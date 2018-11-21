@@ -9,5 +9,6 @@
         IteratorManager EvaluateLoop(string expression);
         void EnterLoop(string expression);
         void ExitLoop(string expression);
+        bool EvaluteCondition(string expression);
     }
 }

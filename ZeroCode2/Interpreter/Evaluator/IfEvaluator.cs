@@ -10,11 +10,9 @@ namespace ZeroCode2.Interpreter.Evaluator
     {
         public bool Evaluate(IInterpreterContext context, string expression)
         {
-            string result = "";
-
-            // TODO: evaluate the expression
-
-            return result.ToLower() == "true";
+            bool result = context.EvaluteCondition(expression);
+            
+            return result;
         }
     }
 }

@@ -300,12 +300,12 @@ namespace ZeroCode2.Models
 
         public bool HasMore { get; private set; }
 
-        public SingleModel Iterate(List<Models.SingleModel> modelList, string section)
+        public SingleModel IterateSection(List<Models.SingleModel> modelList, string section)
         {
             // set up
             if (currentItem == -1)
             {
-                modelsforSection.AddRange(modelList.Where(m => m.Section == section));
+                modelsforSection.AddRange(modelList.Where(m => m.Section == section.Substring(1)));
             }
             HasMore = modelsforSection.Count > (currentItem+1);
 
@@ -321,27 +321,27 @@ namespace ZeroCode2.Models
             return modelsforSection[currentItem];
         }
 
-        public ModelPair Iterate(SingleModel model)
-        {
-            if (currentItem == -1)
-            {
-                PropertyResolver propResolver = new PropertyResolver();
-                propResolver.PopulateProperties(model);
-                model.AsObject().Value = propResolver.AllProperties;
-                model.IsResolved = true;
-            }
+        //public ModelPair Iterate(SingleModel model)
+        //{
+        //    if (currentItem == -1)
+        //    {
+        //        PropertyResolver propResolver = new PropertyResolver();
+        //        propResolver.PopulateProperties(model);
+        //        model.AsObject().Value = propResolver.AllProperties;
+        //        model.IsResolved = true;
+        //    }
 
-            HasMore = model.AsObject().Value.Count > (currentItem + 1);
-            if (!HasMore)
-            {
-                return null;
-            }
-            currentItem++;
+        //    HasMore = model.AsObject().Value.Count > (currentItem + 1);
+        //    if (!HasMore)
+        //    {
+        //        return null;
+        //    }
+        //    currentItem++;
 
-            HasMore = model.AsObject().Value.Count > (currentItem + 1);
+        //    HasMore = model.AsObject().Value.Count > (currentItem + 1);
 
-            return model.AsObject().Value[currentItem];
-        }
+        //    return model.AsObject().Value[currentItem];
+        //}
 
         public ModelPair Iterate(ModelPair mp)
         {
@@ -396,7 +396,13 @@ namespace ZeroCode2.Models
             if (path.StartsWith("@")) // model
             {
                 currentPosition++;
-                return Locate(modelList.SingleModels.Where(s => s.Section == pathElements[0].Substring(1)));
+
+                var mp = new ModelPair(pathElements[0].Substring(1));
+                mp.Value = new ObjectObject() {
+                    Value = (modelList.SingleModels.Where(s => s.Section == pathElements[0].Substring(1)).Select(s => new ModelPair(s.Name, s.Value))).ToList()
+                };
+
+                return mp;
             }
             return null;
         }
@@ -411,6 +417,11 @@ namespace ZeroCode2.Models
 
         private ModelPair Locate(IEnumerable<ModelPair> root)
         {
+            if (pathElements.Length <= currentPosition)
+            {
+                return root.FirstOrDefault();
+            }
+
             var newRoot = root.SingleOrDefault(s => s.Name == pathElements[currentPosition]);
             if (newRoot != null)
             {
