@@ -161,7 +161,19 @@ namespace ZeroCode2.Interpreter
         {
             logger.Info("Evaluation condition: " + expression);
 
-            return true;
+            var IsNegate = expression[0] == '!';
+            if (IsNegate == true)
+            {
+                expression = expression.Substring(1);
+            }
+
+            var leftSide =  expression.Contains("=") ? expression.Remove(expression.IndexOf("=")) : expression;
+            var rightSide = (expression.Contains("=") ? expression.Substring(expression.IndexOf("=")+1) : "true").ToLower();
+
+            var value = EvaluateProperty(leftSide).ToLower();
+            var retVal = IsNegate == false ? value == rightSide : value != rightSide;
+
+            return retVal;
         }
     }
 
