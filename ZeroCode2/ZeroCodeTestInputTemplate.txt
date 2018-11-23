@@ -8,7 +8,7 @@ using =<#Parameters.nameSpace>.Models;
 
 %Loop:Screen.Panel
 %If:!Panel.Edit=true
-	var Title = =<Panel.Title>;
+	var Title = "=<Panel.Title>" + %If:#Parameters.debug=on " Debug is On" %EndIf ;
 	@Some if(x==y) 
 	{ 
 		other = 2; 

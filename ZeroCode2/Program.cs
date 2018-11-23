@@ -345,7 +345,7 @@ namespace ZeroCode2
                 {
                     Errors.Add(string.Format("Error during execution: {0} Line {1}, Pos {2}: {3}", e.Message, PC.Line, PC.Position, PC.Instruction));
                     HasErrors = true;
-                    break;
+                    //break;
                 }
 
 
