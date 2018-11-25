@@ -3,6 +3,9 @@
 // Include:ZeroCodeTestInclude.txt
 
 %FileOverwrite:Controllers\Generated\=<Screen.Name>Controller.cs
+//
+// This file was generated on =<DateStamp>. Do not modify.
+//
 using System;
 using =<#Parameters.nameSpace>.Models;
 
@@ -14,6 +17,9 @@ using =<#Parameters.nameSpace>.Models;
 		other = 2; 
 	}
 %Else
+%If:HasMore
+// Wait, there is more!
+%EndIf
 	Some other code;
 %EndIf
 %/Loop:Panel

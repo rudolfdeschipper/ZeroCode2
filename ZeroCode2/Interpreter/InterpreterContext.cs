@@ -8,6 +8,7 @@ namespace ZeroCode2.Interpreter
     {
         public Emitter.IEmitter Emitter { get; set; }
         public ModelCollector Model { get; set; }
+        private string Result { get; set; }
 
         private static readonly NLog.Logger logger = NLog.LogManager.GetCurrentClassLogger();
 
@@ -20,7 +21,15 @@ namespace ZeroCode2.Interpreter
 
         public void SetResult(string result)
         {
-            Emitter.Emit(result);
+            Result = result;
+        }
+
+        public void EmitResult()
+        {
+            if (!string.IsNullOrEmpty(Result))
+            {
+                Emitter.Emit(Result);
+            }
         }
 
         public string EvaluateProperty(string expression)
@@ -76,6 +85,11 @@ namespace ZeroCode2.Interpreter
                     expression = expression.Substring(parentPath.Length + 1);
                     // recurse until you find something
                     return EvaluateLoop(expression);
+                }
+                else
+                {
+                    // assume it is this one
+                    return LoopStack.Peek();
                 }
             }
             else
@@ -170,7 +184,37 @@ namespace ZeroCode2.Interpreter
             var leftSide =  expression.Contains("=") ? expression.Remove(expression.IndexOf("=")) : expression;
             var rightSide = (expression.Contains("=") ? expression.Substring(expression.IndexOf("=")+1) : "true").ToLower();
 
-            var value = EvaluateProperty(leftSide).ToLower();
+            // check for %If:SomeProperty?
+            if (leftSide.EndsWith("?"))
+            {
+                // rightside must be interpreted as "not empty"
+                leftSide = leftSide.Substring(0, leftSide.Length - 1); // strip off the "?" at the end
+                rightSide = "";
+                IsNegate = true;
+                // so the actual test becomes leftSide != ""
+            }
+            var expr = Interpreter.ExpressionBuilder.BuildExpressionEvaluator(leftSide);
+
+            string value;
+            if (expr is Evaluator.ExpressionEvaluator)
+            {
+                value = EvaluateProperty(leftSide);
+            }
+            else
+            {
+                if (expr.Evaluate(this, leftSide))
+                {
+                    value = Result;
+                }
+                else
+                {
+                    value = "error";
+                }
+            }
+            // avoid it being emitted:
+            Result = string.Empty;
+
+            value = value.ToLower();
             var retVal = IsNegate == false ? value == rightSide : value != rightSide;
 
             return retVal;

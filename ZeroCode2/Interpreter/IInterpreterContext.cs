@@ -6,6 +6,7 @@
         ModelCollector Model { get; set; }
         string EvaluateProperty(string expression);
         void SetResult(string result);
+        void EmitResult();
         IteratorManager EvaluateLoop(string expression);
         void EnterLoop(string expression);
         void ExitLoop(string expression);

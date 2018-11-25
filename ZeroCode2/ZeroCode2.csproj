@@ -91,6 +91,7 @@
     <Compile Include="Interpreter\Evaluator\LiteralEvaluator.cs" />
     <Compile Include="Interpreter\Evaluator\LoopEvaluator.cs" />
     <Compile Include="Interpreter\Evaluator\NoOpEvaluator.cs" />
+    <Compile Include="Interpreter\ExpressionBuilder.cs" />
     <Compile Include="Interpreter\IInterpreterContext.cs" />
     <Compile Include="Interpreter\InterpreterContext.cs" />
     <Compile Include="Interpreter\InterpreterInstructionBase.cs" />

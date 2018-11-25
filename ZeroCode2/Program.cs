@@ -330,6 +330,7 @@ namespace ZeroCode2
             context.Emitter = emitter;
 
             var PC = instructions[0];
+            Interpreter.InterpreterInstructionBase next = null;
 
             while (PC != null )
             {
@@ -337,9 +338,10 @@ namespace ZeroCode2
                 {
                     logger.Debug("Executing {0} on Line {1} Pos {2}", PC.Instruction, PC.Line, PC.Position);
 
-                    var next = PC.Execute(context);
+                    next = PC.Execute(context);
 
-                    PC = next;
+                    context.EmitResult();
+
                 }
                 catch (Exception e)
                 {
@@ -348,7 +350,7 @@ namespace ZeroCode2
                     //break;
                 }
 
-
+                PC = next;
             }
 
         }

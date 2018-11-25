@@ -121,26 +121,7 @@ namespace ZeroCode2.Interpreter
 
         public void AddExpression(int line, int pos, string value)
         {
-            Evaluator.IEvaluator evalObject;
-
-            switch (value)
-            {
-                case "HasMore":
-                    evalObject = new Interpreter.Evaluator.HasMoreExpressionEvaluator();
-                    break;
-                case "Index":
-                    evalObject = new Interpreter.Evaluator.IndexExpressionEvaluator();
-                    break;
-                case "Ordinal":
-                    evalObject = new Interpreter.Evaluator.OrdinalExpressionEvaluator();
-                    break;
-                case "DateTime":
-                    evalObject = new Interpreter.Evaluator.TimestampExpressionEvaluator();
-                    break;
-                default:
-                    evalObject = new Interpreter.Evaluator.ExpressionEvaluator();
-                    break;
-            }
+            Evaluator.IEvaluator evalObject = ExpressionBuilder.BuildExpressionEvaluator(value);
 
             var instruction = new Interpreter.InterpreterInstructionValue(line, pos, value, evalObject);
 
