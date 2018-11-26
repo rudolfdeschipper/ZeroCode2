@@ -8,7 +8,7 @@ namespace ZeroCode2.Interpreter.Evaluator
 {
     class LoopEvaluator : IEvaluator
     {
-        public bool Evaluate(IInterpreterContext context, string expression)
+        public EvaluatorResult Evaluate(IInterpreterContext context, string expression)
         {
             bool result = false;
 
@@ -16,7 +16,7 @@ namespace ZeroCode2.Interpreter.Evaluator
 
             result = loop.Iterator.HasMore || loop.CurrentModel != null;
 
-            return result;
+            return new EvaluatorResult(result, string.Empty);
         }
     }
 }

@@ -8,11 +8,9 @@ namespace ZeroCode2.Interpreter.Evaluator
 {
     class OrdinalExpressionEvaluator : IEvaluator
     {
-        public bool Evaluate(IInterpreterContext context, string expression)
+        public EvaluatorResult Evaluate(IInterpreterContext context, string expression)
         {
-            context.SetResult((context.EvaluateLoop(expression).Iterator.Index + 1).ToString());
-
-            return true;
+            return new EvaluatorResult(true, (context.EvaluateLoop(expression).Iterator.Index + 1).ToString());
         }
     }
 }

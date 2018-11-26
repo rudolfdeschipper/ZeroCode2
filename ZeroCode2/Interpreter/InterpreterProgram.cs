@@ -132,7 +132,9 @@ namespace ZeroCode2.Interpreter
 
         public void AddIf(int line, int pos, string value)
         {
-            var instruction = new Interpreter.InterpreterInstructionBranch(line, pos, value, new Interpreter.Evaluator.IfEvaluator());
+            var evaluator = new Interpreter.Evaluator.IfEvaluator(value);
+
+            var instruction = new Interpreter.InterpreterInstructionBranch(line, pos, value, evaluator);
 
             AddInstruction(instruction);
 

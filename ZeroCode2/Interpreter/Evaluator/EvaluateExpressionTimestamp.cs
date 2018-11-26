@@ -8,11 +8,9 @@ namespace ZeroCode2.Interpreter.Evaluator
 {
     class TimestampExpressionEvaluator : IEvaluator
     {
-        public bool Evaluate(IInterpreterContext context, string expression)
+        public EvaluatorResult Evaluate(IInterpreterContext context, string expression)
         {
-            context.SetResult(DateTime.Now.ToString("dd/MMM/yyyy HH:mm:ss"));
-
-            return true;
+            return new EvaluatorResult(true, DateTime.Now.ToString("dd/MMM/yyyy HH:mm:ss"));
         }
     }
 }

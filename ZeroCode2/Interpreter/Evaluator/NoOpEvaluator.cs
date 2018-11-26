@@ -8,9 +8,9 @@ namespace ZeroCode2.Interpreter.Evaluator
 {
     class NoOpEvaluator : IEvaluator
     {
-        public bool Evaluate(IInterpreterContext context, string expression)
+        public EvaluatorResult Evaluate(IInterpreterContext context, string expression)
         {
-            return true;
+            return new EvaluatorResult(true, string.Empty);
         }
     }
 }

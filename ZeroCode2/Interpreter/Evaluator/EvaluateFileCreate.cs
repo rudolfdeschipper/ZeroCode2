@@ -8,7 +8,7 @@ namespace ZeroCode2.Interpreter.Evaluator
 {
     class EvaluateFileCreate : IEvaluator
     {
-        public bool Evaluate(IInterpreterContext context, string expression)
+        public EvaluatorResult Evaluate(IInterpreterContext context, string expression)
         {
             var resolver = new FilepathResolver();
             string expr = resolver.ResolvePath(context, expression);
@@ -16,12 +16,12 @@ namespace ZeroCode2.Interpreter.Evaluator
             var fileEmitter = context.Emitter as Emitter.FileEmitter;
             if (fileEmitter != null && fileEmitter.Exists(expr))
             {
-                return false;
+                return new EvaluatorResult(false, string.Empty);
             }
             else
             {
                 context.Emitter.Open(expr);
-                return true;
+                return new EvaluatorResult(true, string.Empty);
             }
         }
     }

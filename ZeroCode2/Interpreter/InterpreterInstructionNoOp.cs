@@ -13,8 +13,9 @@ namespace ZeroCode2.Interpreter
             //evaluator = new Evaluator.NoOpEvaluator();
         }
 
-        protected override InterpreterInstructionBase SetResult(bool result)
+        protected override InterpreterInstructionBase SetResult(Interpreter.Evaluator.EvaluatorResult result)
         {
+            Result = result;
             return Next;
         }
     }

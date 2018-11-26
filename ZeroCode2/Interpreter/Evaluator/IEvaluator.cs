@@ -8,6 +8,24 @@ namespace ZeroCode2.Interpreter.Evaluator
 {
     public interface IEvaluator
     {
-        bool Evaluate(IInterpreterContext context, string expression);
+        EvaluatorResult Evaluate(IInterpreterContext context, string expression);
     }
+
+    public class EvaluatorResult
+    {
+        public bool Result { get; set; }
+        public string Value { get; set; }
+
+        public EvaluatorResult(bool res, string val)
+        {
+            Result = res;
+            Value = val;
+        }
+
+        public EvaluatorResult()
+        {
+
+        }
+    }
+
 }

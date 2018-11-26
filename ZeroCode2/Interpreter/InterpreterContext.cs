@@ -8,7 +8,6 @@ namespace ZeroCode2.Interpreter
     {
         public Emitter.IEmitter Emitter { get; set; }
         public ModelCollector Model { get; set; }
-        private string Result { get; set; }
 
         private static readonly NLog.Logger logger = NLog.LogManager.GetCurrentClassLogger();
 
@@ -19,12 +18,7 @@ namespace ZeroCode2.Interpreter
             LoopStack = new Stack<IteratorManager>();
         }
 
-        public void SetResult(string result)
-        {
-            Result = result;
-        }
-
-        public void EmitResult()
+        public void EmitResult(string Result)
         {
             if (!string.IsNullOrEmpty(Result))
             {
@@ -171,54 +165,6 @@ namespace ZeroCode2.Interpreter
             //}
         }
 
-        public bool EvaluteCondition(string expression)
-        {
-            logger.Info("Evaluation condition: " + expression);
-
-            var IsNegate = expression[0] == '!';
-            if (IsNegate == true)
-            {
-                expression = expression.Substring(1);
-            }
-
-            var leftSide =  expression.Contains("=") ? expression.Remove(expression.IndexOf("=")) : expression;
-            var rightSide = (expression.Contains("=") ? expression.Substring(expression.IndexOf("=")+1) : "true").ToLower();
-
-            // check for %If:SomeProperty?
-            if (leftSide.EndsWith("?"))
-            {
-                // rightside must be interpreted as "not empty"
-                leftSide = leftSide.Substring(0, leftSide.Length - 1); // strip off the "?" at the end
-                rightSide = "";
-                IsNegate = true;
-                // so the actual test becomes leftSide != ""
-            }
-            var expr = Interpreter.ExpressionBuilder.BuildExpressionEvaluator(leftSide);
-
-            string value;
-            if (expr is Evaluator.ExpressionEvaluator)
-            {
-                value = EvaluateProperty(leftSide);
-            }
-            else
-            {
-                if (expr.Evaluate(this, leftSide))
-                {
-                    value = Result;
-                }
-                else
-                {
-                    value = "error";
-                }
-            }
-            // avoid it being emitted:
-            Result = string.Empty;
-
-            value = value.ToLower();
-            var retVal = IsNegate == false ? value == rightSide : value != rightSide;
-
-            return retVal;
-        }
     }
 
     public class IteratorManager

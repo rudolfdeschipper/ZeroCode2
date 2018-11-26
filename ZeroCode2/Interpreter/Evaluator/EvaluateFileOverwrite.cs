@@ -8,13 +8,13 @@ namespace ZeroCode2.Interpreter.Evaluator
 {
     class EvaluateFileOverwrite : IEvaluator
     {
-        public bool Evaluate(IInterpreterContext context, string expression)
+        public EvaluatorResult Evaluate(IInterpreterContext context, string expression)
         {
             var resolver = new FilepathResolver();
             string expr = resolver.ResolvePath(context, expression);
 
             context.Emitter.Open(expr);
-            return true;
+            return new EvaluatorResult(true, string.Empty);
         }
     }
 }

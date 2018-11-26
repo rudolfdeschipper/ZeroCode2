@@ -8,10 +8,10 @@ namespace ZeroCode2.Interpreter.Evaluator
 {
     class EvaluateEndFile : IEvaluator
     {
-        public bool Evaluate(IInterpreterContext context, string expression)
+        public EvaluatorResult Evaluate(IInterpreterContext context, string expression)
         {
             context.Emitter.Close();
-            return true;
+            return new EvaluatorResult(true, string.Empty);
         }
     }
 }

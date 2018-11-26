@@ -65,7 +65,7 @@ namespace ZeroCode2
 #if DEBUG
                         modelParser = r.RunModelParser(cmdOptions, true);
 #else
-                        modelParser = r.RunModelParser(false);
+                        modelParser = r.RunModelParser(cmdOptions, false);
 #endif
                         logger.Info("Parsing Template:");
                         templateParser = r.RunTemplateParser(cmdOptions);
@@ -208,6 +208,7 @@ namespace ZeroCode2
 
         public void RunTests()
         {
+            // TODO: move to unit tests
             if (!HasErrors)
             {
                 var it = new Models.Iterator();
@@ -290,7 +291,6 @@ namespace ZeroCode2
             var tokenStream = new Antlr4.Runtime.CommonTokenStream(lexer);
             var parser = new Grammars.ZeroCode2Template(tokenStream);
 
-            //var walker = new Antlr4.Runtime.Tree.ParseTreeWalker();
             var walker = new Antlr4.Runtime.Tree.ParseTreeWalker();
 
             var Listener = new ZeroCode2TemplateListener();
@@ -340,7 +340,7 @@ namespace ZeroCode2
 
                     next = PC.Execute(context);
 
-                    context.EmitResult();
+                    context.EmitResult(PC.Result.Value);
 
                 }
                 catch (Exception e)

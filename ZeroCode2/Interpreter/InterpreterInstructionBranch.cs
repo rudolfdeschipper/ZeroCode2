@@ -14,9 +14,10 @@ namespace ZeroCode2.Interpreter
         {
         }
 
-        protected override InterpreterInstructionBase SetResult(bool result)
+        protected override InterpreterInstructionBase SetResult(Interpreter.Evaluator.EvaluatorResult result)
         {
-            return result ? Next : Alternative;
+            Result = result;
+            return result.Result ? Next : Alternative;
         }
     }
 }

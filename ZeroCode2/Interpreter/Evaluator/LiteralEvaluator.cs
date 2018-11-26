@@ -8,10 +8,9 @@ namespace ZeroCode2.Interpreter.Evaluator
 {
     class LiteralEvaluator : IEvaluator
     {
-        public bool Evaluate(IInterpreterContext context, string expression)
+        public EvaluatorResult Evaluate(IInterpreterContext context, string expression)
         {
-            context.SetResult(expression);
-            return true;
+            return new EvaluatorResult(true, expression);
         }
     }
 }

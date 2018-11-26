@@ -12,6 +12,7 @@ namespace ZeroCode2.Interpreter
         public string Instruction { get; set; }
         public int Line { get; set; }
         public int Position { get; set; }
+        public Evaluator.EvaluatorResult Result { get; set; }
 
         public InterpreterInstructionBase(int line, int pos, string instruction, Evaluator.IEvaluator evaluator)
         {
@@ -26,7 +27,7 @@ namespace ZeroCode2.Interpreter
         /// <summary>
         /// Sets the pointer to the Next instruction based on the result passed in
         /// </summary>
-        protected abstract InterpreterInstructionBase SetResult(bool result);
+        protected abstract InterpreterInstructionBase SetResult(Evaluator.EvaluatorResult result);
 
         public InterpreterInstructionBase Execute(InterpreterContext context)
         {
