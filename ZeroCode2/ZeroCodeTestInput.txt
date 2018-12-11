@@ -1,7 +1,7 @@
 ﻿#Parameters
 appName : "My test application in Zero Code"
 nameSpace : "ZeroCode"
-debug : "off"
+debug : "on"
 
 // This is the models section
 /*

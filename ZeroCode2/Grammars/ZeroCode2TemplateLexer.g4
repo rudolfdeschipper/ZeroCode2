@@ -25,6 +25,12 @@ ENDLOOP : '%/Loop' ~[\r\n]*;
 
 ENDFILE : '%/File'  ~[\r\n]*;
 
+INFO	: '%Info:' -> pushMode(FC);
+DEBUG	: '%Debug:' -> pushMode(FC);
+ERROR	: '%Error:' -> pushMode(FC);
+LOG		: '%Log:' -> pushMode(FC);
+TRACE	: '%Trace:' -> pushMode(FC);
+
 DOT : '.';
 EXCL: '!';
 EQU: '=';

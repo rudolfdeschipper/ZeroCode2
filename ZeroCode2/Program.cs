@@ -63,7 +63,7 @@ namespace ZeroCode2
 
                         logger.Info("Parsing model:");
 #if DEBUG
-                        modelParser = r.RunModelParser(cmdOptions, true);
+                        modelParser = r.RunModelParser(cmdOptions, false);
 #else
                         modelParser = r.RunModelParser(cmdOptions, false);
 #endif
@@ -336,7 +336,7 @@ namespace ZeroCode2
             {
                 try
                 {
-                    logger.Debug("Executing {0} on Line {1} Pos {2}", PC.Instruction, PC.Line, PC.Position);
+                    logger.Trace("Executing {0} on Line {1} Pos {2}", PC.Instruction, PC.Line, PC.Position);
 
                     next = PC.Execute(context);
 
@@ -397,6 +397,7 @@ namespace ZeroCode2
         public override void EnterGenericModel([NotNull] ZeroCode2Parser.GenericModelContext context)
         {
             CurrentSection = context.ID().GetText();
+            logger.Trace("Enter Section = {0}", CurrentSection);
         }
 
         public override void ExitPair([NotNull] ZeroCode2Parser.PairContext context)
@@ -426,6 +427,8 @@ namespace ZeroCode2
                 model.Inherits = true;
                 model.InheritsFrom = context.inherits().ID().GetText();
             }
+
+            logger.Trace("Single model = {0}", model.Name);
 
             collector.SingleModels.Add(model);
             base.ExitSinglemodel(context);
@@ -554,13 +557,13 @@ namespace ZeroCode2
         {
             string instrVal = context.IGNORE().Aggregate("", (s, t) => s += t.GetText());
 
-            logger.Debug("Including {0}", instrVal);
+            logger.Info("Including {0}", instrVal);
 
             var newParser = new TemplateParser(Program);
 
             newParser.ParseTemplateFile(instrVal);
 
-            logger.Debug("End Including {0}", instrVal);
+            logger.Info("End Including {0}", instrVal);
 
             base.ExitIncludeCommand(context);
         }
@@ -591,6 +594,17 @@ namespace ZeroCode2
             Program.AddEndif(context.start.Line, context.start.StartIndex, context.GetText());
 
             base.ExitEndIfCommand(context);
+        }
+
+        public override void ExitLogCommand([NotNull] ZeroCode2Template.LogCommandContext context)
+        {
+            var id = context.GetChild(0);
+            var logType = id.GetChild(0).GetText();
+            var val = id.GetChild(1).GetText();
+
+            Program.AddLogInstruction(context.start.Line, context.start.StartIndex, logType, val);
+
+            base.ExitLogCommand(context);
         }
 
     }

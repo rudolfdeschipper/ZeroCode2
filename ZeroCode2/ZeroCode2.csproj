@@ -76,6 +76,7 @@
     <Compile Include="Interpreter\Emitter\IEmitter.cs" />
     <Compile Include="Interpreter\Emitter\NullEmitter.cs" />
     <Compile Include="Interpreter\Evaluator\EvaluateEndFile.cs" />
+    <Compile Include="Interpreter\Evaluator\EvaluateLogging.cs" />
     <Compile Include="Interpreter\Evaluator\HasMoreExpressionEvaluator.cs" />
     <Compile Include="Interpreter\Evaluator\IndexExpressionEvaluator.cs" />
     <Compile Include="Interpreter\Evaluator\OrdinalExpressionEvaluator.cs" />

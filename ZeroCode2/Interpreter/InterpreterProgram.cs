@@ -8,7 +8,6 @@ namespace ZeroCode2.Interpreter
 {
     public class InterpreterProgram
     {
-        private List<Interpreter.InterpreterInstructionBase> _instructions;
         //public string InputFile { get; set; }
 
         // Logging
@@ -26,7 +25,7 @@ namespace ZeroCode2.Interpreter
             //InputFile = inFile;
         }
 
-        public List<InterpreterInstructionBase> Instructions { get => _instructions; set => _instructions = value; }
+        public List<InterpreterInstructionBase> Instructions { get; set; }
 
         private void AddInstruction(Interpreter.InterpreterInstructionBase instruction)
         {
@@ -203,10 +202,20 @@ namespace ZeroCode2.Interpreter
 
         }
 
+        public void AddLogInstruction(int line, int pos, string logType, string value)
+        {
+            var evaluator = new Interpreter.Evaluator.EvaluateLogging(logType);
+
+            var instruction = new Interpreter.InterpreterInstructionNoOp(line, pos, value, evaluator);
+
+            AddInstruction(instruction);
+
+            DebugInstruction(logType, instruction);
+        }
 
         private void DebugInstruction(string type, Interpreter.InterpreterInstructionBase instruction)
         {
-            logger.Debug("{0} {1} - {2}: '{3}'", type, instruction.Line, instruction.Position, instruction.Instruction);
+            logger.Trace("{0} {1} - {2}: '{3}'", type, instruction.Line, instruction.Position, instruction.Instruction);
         }
 
     }

@@ -98,7 +98,7 @@ namespace ZeroCode2.Interpreter
         {
             var iterator = new IteratorManager();
 
-            logger.Info("Enter loop: " + expression);
+            logger.Trace("Enter loop: " + expression);
 
             iterator.Path = expression;
             iterator.Iterator = new Models.Iterator();
@@ -156,7 +156,7 @@ namespace ZeroCode2.Interpreter
                 throw new Exception("Exit loop while not in a loop");
             }
 
-            logger.Info("Exit loop: " + expression);
+            logger.Trace("Exit loop: " + expression);
 
             var it = LoopStack.Pop();
             //if (it.Path != expression)

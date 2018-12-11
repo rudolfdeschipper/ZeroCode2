@@ -30,6 +30,7 @@ command
 	| ENDIF			#EndIfCommand
 	| ELSE			#ElseCommand
 	| ENDLOOP		#EndLoopCommand
+	| log			#LogCommand
 	;
 
 filec
@@ -48,3 +49,10 @@ expr
 	: EXPRO EXIGNORE EXPRC #ExprCommand
 	;
 
+log
+	: INFO (IGNORE)+
+	| DEBUG (IGNORE)+
+	| LOG (IGNORE)+
+	| ERROR (IGNORE)+
+	| TRACE (IGNORE)+
+	;

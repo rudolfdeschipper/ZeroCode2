@@ -24,5 +24,6 @@ using =<#Parameters.nameSpace>.Models;
 %EndIf
 %/Loop:Panel
 
+%Log:Ending file Controllers\Generated\=<Screen.Name>Controller.cs here
 %/File
 %/Loop:@Screen
