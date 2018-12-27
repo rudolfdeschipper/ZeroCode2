@@ -1,0 +1,51 @@
+﻿
+@DataDictionary
+IDField : {
+	Type:"int", 
+	Name:"ID", 
+	Title:"Unique ID", 
+	Nullable:false
+}
+
+CodeField : {
+	Type:"string", 
+	Name:"Code", 
+	Title:"Code", 
+	Length:50, 
+	Nullable:false
+}
+
+DescriptionField : {
+	Type:"string", 
+	Name:"Description", 
+	Title:"Description", 
+	Length : -1, 
+	Nullable:true
+}
+
+DateField : {
+	Type:"date", 
+	Name:"Date", 
+	Title:"Date", 
+	Format : "MM/DD/YYYY"
+}
+
+DateTimeField : {
+	Type:"datetime", 
+	Name:"DateTime", 
+	Title:"Date/Time", 
+	Format : "MM/DD/YYYY hh:mm"
+}
+
+StatusField : {
+	Type:"string", 
+	Name:"Status", 
+	Title:"Status", 
+	Length:50
+}
+
+AmountField : {
+	Type:"double", 
+	Name:"Amount", 
+	Title:"Amount"
+}

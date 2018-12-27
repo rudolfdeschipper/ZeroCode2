@@ -28,7 +28,7 @@ namespace ZeroCode2.Interpreter
 
         public string EvaluateProperty(string expression)
         {
-            var locator = new Models.PropertyLocator();
+            var locator = new Models.PropertyLocator(expression, Model, this.LoopStack);
 
             var mp = locator.Locate(expression, Model);
 
@@ -53,7 +53,7 @@ namespace ZeroCode2.Interpreter
 
             if (mp != null)
             {
-                return mp.Value.GetText();
+                return mp.GetText();
             }
             else
             {
@@ -105,7 +105,7 @@ namespace ZeroCode2.Interpreter
 
             // Need to figure this out here, preferably, to avoid lots of ifs when evaluating:
             // - what sort of loop are we trying to run here?
-            var locator = new Models.PropertyLocator();
+            var locator = new Models.PropertyLocator(expression, Model, this.LoopStack);
 
             // -- top level (%Loop:@Screen) - @ to start and no dots in the path - Iterate over the SingleModels
             if (expression[0] == '@')
@@ -171,7 +171,7 @@ namespace ZeroCode2.Interpreter
     {
         public Models.Iterator Iterator { get; set; }
         public string Path { get; set; }
-        public Models.ModelPair Root { get; set; }
-        public Models.ModelPair CurrentModel { get; set; }
+        public Models.IModelObject Root { get; set; }
+        public Models.IModelObject CurrentModel { get; set; }
     }
 }

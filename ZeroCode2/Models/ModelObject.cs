@@ -1,148 +1,330 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 
 namespace ZeroCode2.Models
 {
 
-    public class ParameterModel
+    public interface IModelObject
     {
-        public ParameterModel(string name)
-        {
-            Name = name;
-            Properties = new List<ModelPair>();
-        }
+        string Name { get; set; }
 
-        public ParameterModel(string name, IEnumerable<ModelPair> properties)
-        {
-            Name = name;
-            Properties = new List<ModelPair>();
-            Properties.AddRange(properties);
-        }
+        bool Inherits { get; set; }
+        string InheritsFrom { get; set; }
+        IModelObject ParentObject { get; set; }
+        bool IsResolved { get; set; }
 
-        public string Section { get; set; }
-        public string Name { get; set; }
-        public List<ModelPair> Properties { get; set; }
+        bool Modified { get; set; }
+        string Modifier { get; set; }
+
+        bool Is<P>();
+        bool IsString();
+        bool IsNumber();
+        bool IsObject();
+        bool IsBool();
+
+        ModelObject<M> As<M>() where M : class;
+
+        ModelObject<string> AsString();
+
+        ModelObject<decimal> AsNumber();
+
+        ModelObject<bool> AsBool();
+
+        ModelObject<List<IModelObject>> AsComposite();
+
+        string GetText();
     }
 
-    public class SingleModel : ModelPair
-    {
-        public string Section { get; set; }
-
-        public SingleModel(string name, IEnumerable<ModelPair> properties) : base(name)
-        {
-            Value = new ObjectObject();
-
-            AsObject().Value.AddRange(properties);
-        }
-
-        public Type GetObjectType() => typeof(SingleModel);
-
-        public string GetText() => Name;
-
-    }
-
-    public class ModelPair
+    public abstract class ModelObject<T> : IModelObject
     {
         public string Name { get; set; }
-        public IObjectBase Value { get; set; }
+        public T Value { get; set; }
 
         public bool Inherits { get; set; }
         public string InheritsFrom { get; set; }
-        public SingleModel ParentObject { get; set; }
+        public IModelObject ParentObject { get; set; }
         public bool IsResolved { get; set; } = false;
 
         public bool Modified { get; set; }
         public string Modifier { get; set; }
 
-        public ModelPair(string name, IObjectBase value)
+        public bool Is<P>()
         {
-            Name = name;
-            Value = value;
+            return Value.GetType() == typeof(P);
         }
 
-        public ModelPair(string name)
+        public bool IsString()
         {
-            Name = name;
+            return Is<string>();
         }
 
-        public bool Is<T>() => Value.GetObjectType() == typeof(T);
-        public bool IsString() => Is<string>();
-        public bool IsNumber() => Is<double>();
-        public bool IsObject() => Is<ObjectObject>();
-        public bool IsBool() => Is<bool>();
-
-        public T As<T>() => (T)Value;
-
-        public string AsString() => As<string>();
-        public double AsNumber() => As<double>();
-        public bool AsBOol() => As<bool>();
-        public ObjectObject AsObject() => As<ObjectObject>();
-
-
-    }
-
-    public interface IObjectBase
-    {
-        string GetText();
-
-        Type GetObjectType();
-    }
-
-    public class ObjectBase<T>
-    {
-        public T Value { get; set; }
-    }
-
-    public class StringObject : ObjectBase<string>, IObjectBase
-    {
-        public Type GetObjectType() => typeof(string);
-
-        public string GetText() => Value;
-
-    }
-
-    public class ReferenceObject : ObjectBase<string>, IObjectBase
-    {
-        public string GetText() => Value;
-        public Type GetObjectType() => typeof(string);
-
-    }
-
-    public class NumberObject : ObjectBase<double>, IObjectBase
-    {
-        public string GetText() => Value.ToString();
-        public Type GetObjectType() => typeof(double);
-
-    }
-
-    public class ObjectObject : ObjectBase<List<ModelPair>>, IObjectBase
-    {
-        public ObjectObject()
+        public bool IsNumber()
         {
-            Value = new List<ModelPair>();
+            return Is<double>();
         }
 
-        public string GetText()
+        public bool IsObject()
         {
-            var r = Value.Select(m => m.Name + " = " + m.Value.GetText());
+            return Is<List<IModelObject>>();
+        }
+
+        public bool IsBool()
+        {
+            return Is<bool>();
+        }
+
+        public ModelObject<M> As<M>() where M : class
+        {
+            return this as ModelObject<M>;
+        }
+
+        public ModelObject<string> AsString()
+        {
+            return As<string>();
+        }
+
+        public ModelObject<decimal> AsNumber()
+        {
+            return this as ModelObject<decimal>;
+        }
+
+        public ModelObject<bool> AsBool()
+        {
+            return this as ModelObject<bool>;
+        }
+
+        public ModelObject<List<IModelObject>> AsComposite()
+        {
+            return As<List<IModelObject>>();
+        }
+
+        public abstract string GetText();
+    }
+
+    public class ModelStringObject : ModelObject<string>
+    {
+        public override string GetText()
+        {
+            return Value;
+        }
+    }
+
+    public class ModelBoolObject : ModelObject<bool>
+    {
+        public override string GetText()
+        {
+            return Value ? "true" : "false";
+        }
+
+    }
+
+    public class ModelNumberObject : ModelObject<decimal>
+    {
+
+        public override string GetText()
+        {
+            return Value.ToString();
+        }
+    }
+
+    public class ModelCompositeObject : ModelObject<List<IModelObject>>
+    {
+        public override string GetText()
+        {
+            var r = Value.Select(m => m.Name + " = " + m.GetText());
             string s = "{ ";
 
-            return r.Aggregate(s, (f, run) => s += run + " " ) + "}";
+            return r.Aggregate(s, (f, run) => s += run + " ") + "}";
         }
-        public Type GetObjectType() => typeof(ObjectObject);
-
     }
 
-    public class BoolObject : ObjectBase<bool>, IObjectBase
+    public class ParameterModel : ModelCompositeObject
     {
-        public string GetText() => Value.ToString();
+        public ParameterModel(string name)
+        {
+            Name = name;
+            Value = new List<IModelObject>();
+        }
 
-        public Type GetObjectType() => typeof(bool);
+        public ParameterModel(string name, IEnumerable<IModelObject> properties)
+        {
+            Name = name;
+            Value = new List<IModelObject>();
+            Value.AddRange(properties);
+        }
 
     }
+
+    public class SingleModel : ModelCompositeObject
+    {
+        public SingleModel(string name, IEnumerable<IModelObject> properties)
+        {
+            Name = name;
+            Value = new List<IModelObject>();
+
+            Value.AddRange(properties);
+        }
+    }
+
+    //public class ModelPair
+    //{
+    //    public string Name { get; set; }
+    //    public IObjectBase Value { get; set; }
+
+    //    public bool Inherits { get; set; }
+    //    public string InheritsFrom { get; set; }
+    //    public SingleModel ParentObject { get; set; }
+    //    public bool IsResolved { get; set; } = false;
+
+    //    public bool Modified { get; set; }
+    //    public string Modifier { get; set; }
+
+    //    public ModelPair(string name, IObjectBase value)
+    //    {
+    //        Name = name;
+    //        Value = value;
+    //    }
+
+    //    public ModelPair(string name)
+    //    {
+    //        Name = name;
+    //    }
+
+    //    public bool Is<T>()
+    //    {
+    //        return Value.GetObjectType() == typeof(T);
+    //    }
+
+    //    public bool IsString()
+    //    {
+    //        return Is<string>();
+    //    }
+
+    //    public bool IsNumber()
+    //    {
+    //        return Is<double>();
+    //    }
+
+    //    public bool IsObject()
+    //    {
+    //        return Is<ObjectObject>();
+    //    }
+
+    //    public bool IsBool()
+    //    {
+    //        return Is<bool>();
+    //    }
+
+    //    public T As<T>()
+    //    {
+    //        return (T)Value;
+    //    }
+
+    //    public string AsString()
+    //    {
+    //        return As<string>();
+    //    }
+
+    //    public double AsNumber()
+    //    {
+    //        return As<double>();
+    //    }
+
+    //    public bool AsBOol()
+    //    {
+    //        return As<bool>();
+    //    }
+
+    //    public ObjectObject AsObject()
+    //    {
+    //        return As<ObjectObject>();
+    //    }
+    //}
+
+    //public interface IObjectBase
+    //{
+    //    string GetText();
+
+    //    Type GetObjectType();
+    //}
+
+    //public class ObjectBase<T>
+    //{
+    //    public T Value { get; set; }
+    //}
+
+    //public class StringObject : ObjectBase<string>, IObjectBase
+    //{
+    //    public Type GetObjectType()
+    //    {
+    //        return typeof(string);
+    //    }
+
+    //    public string GetText()
+    //    {
+    //        return Value;
+    //    }
+    //}
+
+    //public class ReferenceObject : ObjectBase<string>, IObjectBase
+    //{
+    //    public string GetText()
+    //    {
+    //        return Value;
+    //    }
+
+    //    public Type GetObjectType()
+    //    {
+    //        return typeof(string);
+    //    }
+    //}
+
+    //public class NumberObject : ObjectBase<double>, IObjectBase
+    //{
+    //    public string GetText()
+    //    {
+    //        return Value.ToString();
+    //    }
+
+    //    public Type GetObjectType()
+    //    {
+    //        return typeof(double);
+    //    }
+    //}
+
+    //public class ObjectObject : ObjectBase<List<ModelPair>>, IObjectBase
+    //{
+    //    public ObjectObject()
+    //    {
+    //        Value = new List<ModelPair>();
+    //    }
+
+    //    public string GetText()
+    //    {
+    //        var r = Value.Select(m => m.Name + " = " + m.Value.GetText());
+    //        string s = "{ ";
+
+    //        return r.Aggregate(s, (f, run) => s += run + " ") + "}";
+    //    }
+    //    public Type GetObjectType()
+    //    {
+    //        return typeof(ObjectObject);
+    //    }
+    //}
+
+    //public class BoolObject : ObjectBase<bool>, IObjectBase
+    //{
+    //    public string GetText()
+    //    {
+    //        return Value.ToString();
+    //    }
+
+    //    public Type GetObjectType()
+    //    {
+    //        return typeof(bool);
+    //    }
+    //}
 
     /// <summary>
     /// Resolves the inheritance in the model. Errors are reported through the Errors collection
@@ -151,30 +333,19 @@ namespace ZeroCode2.Models
     {
         public List<string> Errors { get; set; } = new List<string>();
 
-        public bool ResolveInheritance(ModelPair pair, string section, List<Models.SingleModel> modelList)
+        public bool ResolveInheritance(IModelObject pair, ModelCollector modelList)
         {
             var ok = true;
-            if (pair.Inherits == true && pair.Value != null)
+            if (pair.Inherits == true)
             {
-                string inheritedObjectname;
-                // qualify name
-                if (!pair.InheritsFrom.Contains("."))
+                var locator = new Models.PropertyLocator("@" + pair.InheritsFrom, modelList, null);
+                var mp = locator.Locate();
+
+                if (mp != null)
                 {
-                    inheritedObjectname = section + "." + pair.InheritsFrom;
+                    pair.ParentObject = mp;
                 }
-                else
-                {
-                    inheritedObjectname = pair.InheritsFrom;
-                }
-                // check if can be resolved
-                foreach (var item in modelList)
-                {
-                    if (inheritedObjectname.Equals(item.Section + "." + item.Name))
-                    {
-                        pair.ParentObject = item;
-                        break;
-                    }
-                }
+
                 ok &= pair.ParentObject != null;
                 if (pair.ParentObject == null)
                 {
@@ -184,39 +355,27 @@ namespace ZeroCode2.Models
             if (pair.IsObject())
             {
                 // recurse:
-                foreach (var item in pair.AsObject().Value)
+                foreach (var item in pair.AsComposite().Value)
                 {
-                    ok &= ResolveInheritance(item, section, modelList);
+                    ok &= ResolveInheritance(item, modelList);
                 }
             }
             return ok;
         }
 
-        public bool ResolveInheritance(SingleModel model, List<Models.SingleModel> modelList)
+        public bool ResolveInheritance(SingleModel model, ModelCollector modelList)
         {
             var ok = true;
             if (model.Inherits == true)
             {
-                string inheritedObjectname;
+                var locator = new Models.PropertyLocator("@" + model.InheritsFrom, modelList, null);
+                var mp = locator.Locate();
 
-                // qualify name
-                if (!model.InheritsFrom.Contains("."))
+                if (mp != null)
                 {
-                    inheritedObjectname = model.Section + "." + model.InheritsFrom;
+                    model.ParentObject = mp;
                 }
-                else
-                {
-                    inheritedObjectname = model.InheritsFrom;
-                }
-                // check if can be resolved
-                foreach (var item in modelList)
-                {
-                    if (inheritedObjectname.Equals(item.Section + "." + item.Name) && model != item)
-                    {
-                        model.ParentObject = item;
-                        break;
-                    }
-                }
+
                 // return if resolved
                 ok = model.ParentObject != null;
                 if (model.ParentObject == null)
@@ -225,9 +384,9 @@ namespace ZeroCode2.Models
                 }
             }
             // dive into properties too
-            foreach (var item in model.AsObject().Value)
+            foreach (var item in model.Value)
             {
-                ok &= ResolveInheritance(item, model.Section, modelList);
+                ok &= ResolveInheritance(item, modelList);
             }
             // no issue
             return ok;
@@ -248,7 +407,7 @@ namespace ZeroCode2.Models
     /// </summary>
     public class PropertyResolver
     {
-        public List<ModelPair> AllProperties { get; private set; } = new List<ModelPair>();
+        public List<IModelObject> AllProperties { get; private set; } = new List<IModelObject>();
 
         //public void PopulateProperties(SingleModel model)
         //{
@@ -266,7 +425,7 @@ namespace ZeroCode2.Models
         //    AllProperties.AddRange(model.AsObject().Value.Where(p => model.ParentObject == null || (model.ParentObject != null && ( p.Modified && p.Modifier != "-"))));
         //}
 
-        public void PopulateProperties(ModelPair pair)
+        public void PopulateProperties(IModelObject pair)
         {
             if (pair.Inherits && pair.ParentObject == null)
             {
@@ -277,12 +436,12 @@ namespace ZeroCode2.Models
                 // recurse into parent
                 PopulateProperties(pair.ParentObject);
             }
-            foreach (var item in pair.AsObject().Value.Where(p => p.Modifier == "-"))
+            foreach (var item in pair.AsComposite().Value.Where(p => p.Modifier == "-"))
             {
                 AllProperties.RemoveAll(p => p.Name == item.Name);
             }
 
-            AllProperties.AddRange(pair.AsObject().Value.Where(p => pair.ParentObject == null || (pair.ParentObject != null && ( p.Modified && p.Modifier != "-"))));
+            AllProperties.AddRange(pair.AsComposite().Value.Where(p => pair.ParentObject == null || (pair.ParentObject != null && (p.Modified && p.Modifier != "-"))));
         }
 
     }
@@ -296,30 +455,30 @@ namespace ZeroCode2.Models
     {
         private int currentItem = -1;
 
-        private List<Models.SingleModel> modelsforSection = new List<SingleModel>();
+        //private List<Models.SingleModel> modelsforSection = new List<SingleModel>();
 
         public bool HasMore { get; private set; }
 
-        public SingleModel IterateSection(List<Models.SingleModel> modelList, string section)
-        {
-            // set up
-            if (currentItem == -1)
-            {
-                modelsforSection.AddRange(modelList.Where(m => m.Section == section.Substring(1)));
-            }
-            HasMore = modelsforSection.Count > (currentItem+1);
+        //public SingleModel IterateSection(List<Models.SingleModel> modelList, string section)
+        //{
+        //    // set up
+        //    if (currentItem == -1)
+        //    {
+        //        modelsforSection.AddRange(modelList.Where(m => m.Section == section.Substring(1)));
+        //    }
+        //    HasMore = modelsforSection.Count > (currentItem + 1);
 
-            if (!HasMore)
-            {
-                return null;
-            }
+        //    if (!HasMore)
+        //    {
+        //        return null;
+        //    }
 
-            currentItem++;
+        //    currentItem++;
 
-            HasMore = modelsforSection.Count > (currentItem + 1);
+        //    HasMore = modelsforSection.Count > (currentItem + 1);
 
-            return modelsforSection[currentItem];
-        }
+        //    return modelsforSection[currentItem];
+        //}
 
         //public ModelPair Iterate(SingleModel model)
         //{
@@ -343,16 +502,16 @@ namespace ZeroCode2.Models
         //    return model.AsObject().Value[currentItem];
         //}
 
-        public ModelPair Iterate(ModelPair mp)
+        public IModelObject Iterate(IModelObject mp)
         {
-            var obj = mp.Value as ObjectObject;
+            var obj = mp.AsComposite();
 
             if (obj == null)
             {
                 return null;
             }
 
-            if (currentItem == -1)
+            if (currentItem == -1 && !mp.IsResolved)
             {
                 PropertyResolver propResolver = new PropertyResolver();
                 propResolver.PopulateProperties(mp);
@@ -374,16 +533,164 @@ namespace ZeroCode2.Models
             return obj.Value[currentItem];
         }
 
-        public int Index { get => currentItem; }
+        public int Index => currentItem;
 
     }
 
     public class PropertyLocator
     {
         public string[] pathElements { get; set; }
-        int currentPosition = 0;
 
-        public ModelPair Locate(string path, ModelCollector modelList)
+        private int currentPosition = 0;
+
+        // new implementation
+        private ModelCollector Collector { get; set; }
+        public IModelObject CurrentRoot { get; set; }
+        private Stack<Interpreter.IteratorManager> LoopStack { get; set; }
+
+        public PropertyLocator(string path, ModelCollector collector, Stack<Interpreter.IteratorManager> loopStack)
+        {
+            pathElements = path.Split('.');
+            CurrentRoot = null;
+            Collector = collector;
+            LoopStack = loopStack;
+        }
+
+        public IModelObject Locate()
+        {
+            // 1. Check of CurrentRoot is set
+            if (!DetermineRoot())
+            {
+                return null;
+            }
+            // 2. Now we have a root, check if there is still a path to run
+            if (currentPosition < pathElements.Length - 1)
+            {
+                // yes, so recurse
+                currentPosition++;
+                return Locate();
+            }
+            else
+            {
+                // we're at the end of the path
+                //TODO: handle @ & #
+                // if it is an object, find an element with the name we are looking for, or null
+                if (CurrentRoot.Name != pathElements[currentPosition] && CurrentRoot.IsObject())
+                {
+                    var mp = CurrentRoot.AsComposite().Value.FirstOrDefault(m => m.Name == pathElements[currentPosition] && !(m.Modified && m.Modifier == "-"));
+                    return mp;
+                }
+                else
+                {
+                    // return the root itself if it is the one we need, otherwise null
+                    return CurrentRoot.Name == pathElements[currentPosition] ? CurrentRoot : null;
+                }
+            }
+        }
+
+        private bool DetermineRoot()
+        {
+            var oldRoot = CurrentRoot; // we will need it
+            // set to Null to ensure we will fail in case we could not set a root.
+            CurrentRoot = null;
+            // Strategy:
+            // work with the currentPos to work through the path. each iteration will change the current root
+            // 1. Check if path starts with a section, in that case it is a full path
+            // so look for the section and locate the second element in the path and set this as root
+            if (currentPosition == 0)
+            {
+                if (pathElements[currentPosition].StartsWith("@"))
+                {
+                    var models = Collector.SingleModels.SingleOrDefault(s => s.Name == pathElements[currentPosition]);
+                    if (models != null)
+                    {
+                        CurrentRoot = models;
+                    }
+                }
+                if (pathElements[currentPosition].StartsWith("#"))
+                {
+                    var models = Collector.ParameterModels.SingleOrDefault(s => s.Name == pathElements[currentPosition]);
+                    if (models != null)
+                    {
+                        CurrentRoot = models;
+                    }
+                }
+                // 2. the Path has length of one: take top iterator as root
+                if (LoopStack != null)
+                {
+                    if (pathElements.Length == 1 && LoopStack.Count > 0)
+                    {
+                        // get top loop stack element and set as root
+                        CurrentRoot = LoopStack.Peek().CurrentModel;
+                    }
+                    // 5. Check for "Loopx" as path identifier, if so select the correct iterator as root
+                    if (pathElements[currentPosition].StartsWith("Loop"))
+                    {
+                        var loopIndex = int.Parse(pathElements[currentPosition].Substring(4));
+                        if (LoopStack.Count > loopIndex)
+                        {
+                            var mp = LoopStack.ElementAt(loopIndex);
+                            CurrentRoot = mp.CurrentModel;
+                        }
+                    }
+                }
+            }
+
+            // not set yet, go on looking
+            if (CurrentRoot == null)
+            {
+                // The Path has length > one, the path may contain a reference to an iterator
+                // 6. Check if the first path identifier exists as an iterator - if so, get the root from there
+                if (LoopStack != null && currentPosition == 0)
+                {
+                    var it = LoopStack.SingleOrDefault(m => m.Root?.Name == pathElements[currentPosition]);
+
+                    // 7. No iterator was found, assume it is the top one, select that as root
+                    if (it == null)
+                    {
+                        it = LoopStack.Peek();
+                    }
+                    if (it != null)
+                    {
+                        if (it.CurrentModel == null )
+                        {
+                            it.CurrentModel = it.Iterator.Iterate(it.Root);
+
+                            // step one deeper in the model, as the iterated element is not part of the path
+                            CurrentRoot = it.CurrentModel?.AsComposite()?.Value.SingleOrDefault(mp => mp.Name == pathElements[currentPosition] && !(mp.Modified && mp.Modifier == "-"));
+                        }
+                        else
+                        {
+                            CurrentRoot = it.CurrentModel;
+                        }
+                    }
+                }
+
+                if (CurrentRoot == null || currentPosition > 1) // once we are past the first one or two, we need to walk the object graph
+                {
+                    // 8. dive into the oldRoot
+                    if (oldRoot != null && oldRoot.IsObject())
+                    {
+                        if (!oldRoot.IsResolved)
+                        {
+                            PropertyResolver propResolver = new PropertyResolver();
+                            propResolver.PopulateProperties(oldRoot);
+                            oldRoot.AsComposite().Value = propResolver.AllProperties;
+                            oldRoot.IsResolved = true;
+                        }
+                        CurrentRoot = oldRoot.AsComposite().Value.SingleOrDefault(mp => mp.Name == pathElements[currentPosition] && !(mp.Modified && mp.Modifier == "-"));
+                    }
+                    else
+                    {
+                        CurrentRoot = oldRoot;
+                    }
+                }
+            }
+            // return true if the root was set. in case anything fails, return false
+            return CurrentRoot != null;
+        }
+
+        public IModelObject Locate(string path, ModelCollector modelList)
         {
             pathElements = path.Split('.');
             currentPosition = 0;
@@ -391,23 +698,17 @@ namespace ZeroCode2.Models
             if (path.StartsWith("#")) // parameter
             {
                 currentPosition++;
-                return Locate(modelList.ParameterModels.Single(s => s.Name == pathElements[0].Substring(1)).Properties);
+                return Locate(modelList.ParameterModels.Single(s => s.Name == pathElements[0].Substring(1)).AsComposite());
             }
             if (path.StartsWith("@")) // model
             {
                 currentPosition++;
-
-                var mp = new ModelPair(pathElements[0].Substring(1));
-                mp.Value = new ObjectObject() {
-                    Value = (modelList.SingleModels.Where(s => s.Section == pathElements[0].Substring(1)).Select(s => new ModelPair(s.Name, s.Value))).ToList()
-                };
-
-                return mp;
+                return Locate(modelList.SingleModels.Single(s => s.Name == pathElements[0].Substring(1)).AsComposite());
             }
             return null;
         }
 
-        public ModelPair Locate(string path, ModelPair root)
+        public IModelObject Locate(string path, IModelObject root)
         {
             pathElements = path.Split('.');
             currentPosition = 0;
@@ -415,7 +716,7 @@ namespace ZeroCode2.Models
             return Locate(root);
         }
 
-        private ModelPair Locate(IEnumerable<ModelPair> root)
+        private IModelObject Locate(IEnumerable<IModelObject> root)
         {
             if (pathElements.Length <= currentPosition)
             {
@@ -431,9 +732,10 @@ namespace ZeroCode2.Models
             return null;
         }
 
-        private ModelPair Locate(ModelPair root)
+        private IModelObject Locate(IModelObject root)
         {
-            if (currentPosition == pathElements.Length && root.Name == pathElements[currentPosition-1])
+            if ((currentPosition == pathElements.Length && root.Name == pathElements[currentPosition - 1])
+                || (pathElements.Length == 1 && root.Name == pathElements[0]))
             {
                 if (root.Modified && root.Modifier == "-")
                 {
@@ -448,11 +750,11 @@ namespace ZeroCode2.Models
                 {
                     PropertyResolver propResolver = new PropertyResolver();
                     propResolver.PopulateProperties(root);
-                    root.AsObject().Value = propResolver.AllProperties;
+                    root.AsComposite().Value = propResolver.AllProperties;
                     root.IsResolved = true;
                 }
                 //currentPosition++;
-                return Locate(root.AsObject().Value);
+                return Locate(root.AsComposite());
             }
             return null;
         }

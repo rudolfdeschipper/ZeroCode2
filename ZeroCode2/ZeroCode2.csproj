@@ -117,10 +117,17 @@
     <Content Include="ZeroCodeTestInclude.txt">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </Content>
+    <Content Include="ZeroCodeIncludedFile.txt">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Content>
     <Content Include="ZeroCodeTestInputTemplate.txt">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </Content>
     <Antlr4 Include="Grammars\ZeroCode2TemplateLexer.g4">
+      <Generator>MSBuild:Compile</Generator>
+      <CustomToolNamespace>ZeroCode2.Grammars</CustomToolNamespace>
+    </Antlr4>
+    <Antlr4 Include="Grammars\ZeroCode2Lexer.g4">
       <Generator>MSBuild:Compile</Generator>
       <CustomToolNamespace>ZeroCode2.Grammars</CustomToolNamespace>
     </Antlr4>

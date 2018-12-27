@@ -7,6 +7,7 @@ using Antlr4.Runtime;
 using Antlr4.Runtime.Misc;
 using ZeroCode2.Grammars;
 using CommandLine;
+using static ZeroCode2.Grammars.ZeroCode2;
 
 namespace ZeroCode2
 {
@@ -63,7 +64,7 @@ namespace ZeroCode2
 
                         logger.Info("Parsing model:");
 #if DEBUG
-                        modelParser = r.RunModelParser(cmdOptions, false);
+                        modelParser = r.RunModelParser(cmdOptions, true);
 #else
                         modelParser = r.RunModelParser(cmdOptions, false);
 #endif
@@ -141,10 +142,10 @@ namespace ZeroCode2
 
         public ModelCollector modelCollector { get; set; }
 
-        public List<string> Errors { get; set; }
+        public List<string> Errors { get; set; } = new List<string>();
         public bool HasErrors { get; set; }
 
-        public void ParstInputFile(string inFile)
+        public void ParseInputFile(string inFile)
         {
             var fIn = System.IO.File.OpenText(inFile);
 
@@ -160,7 +161,7 @@ namespace ZeroCode2
             var input = new Antlr4.Runtime.AntlrInputStream(fIn);
             var lexer = new Grammars.ZeroCode2Lexer(input);
             var tokenStream = new Antlr4.Runtime.CommonTokenStream(lexer);
-            var parser = new Grammars.ZeroCode2Parser(tokenStream);
+            var parser = new Grammars.ZeroCode2(tokenStream);
 
 
             var walker = new Antlr4.Runtime.Tree.ParseTreeWalker();
@@ -190,7 +191,8 @@ namespace ZeroCode2
             var resolver = new Models.InheritanceResolver();
             var ok = true;
 
-            modelCollector.SingleModels.ForEach(m => ok &= resolver.ResolveInheritance(m, modelCollector.SingleModels));
+            modelCollector.SingleModels.ForEach(m => ok &= resolver.ResolveInheritance(m, modelCollector));
+            this.Errors.AddRange(resolver.Errors);
 
             return ok;
         }
@@ -214,7 +216,9 @@ namespace ZeroCode2
                 var it = new Models.Iterator();
                 do
                 {
-                    var c = it.IterateSection(modelCollector.SingleModels, "@Models");
+                    var itlocator = new Models.PropertyLocator("@Models", modelCollector, null);
+
+                    var c = it.Iterate(itlocator.Locate());
                     logger.Info("Model: " + c.Name);
 
                     var it2 = new Models.Iterator();
@@ -227,7 +231,7 @@ namespace ZeroCode2
                         do
                         {
                             var c3 = it3.Iterate(c2);
-                            logger.Info("\t\t" + c3.Name + " " + c3.Value.GetText());
+                            logger.Info("\t\t" + c3.Name + " " + c3.GetText());
 
                         } while (it3.HasMore);
                     } while (it2.HasMore);
@@ -235,29 +239,35 @@ namespace ZeroCode2
                 } while (it.HasMore);
 
                 // test absolute locator:
-                var locator = new Models.PropertyLocator();
+                var locator = new Models.PropertyLocator("#Parameters.appName", modelCollector, null);
                 var el = locator.Locate("#Parameters.appName", modelCollector);
-                logger.Info("Located: {0} = {1}", el.Name, el.Value.GetText());
-                el = locator.Locate("@Models.Person.ID.Name", modelCollector);
-                logger.Info("Located: {0} = {1}", el.Name, el.Value.GetText());
+                //logger.Info("Located: {0} = {1}", el.Name, el.Value.GetText());
+                //el = locator.Locate("@Models.Person.ID.Name", modelCollector);
+                //logger.Info("Located: {0} = {1}", el.Name, el.Value.GetText());
 
-                el = locator.Locate("@Models.Stakeholder.Name.Title", modelCollector);
-                logger.Info("Located: {0} = {1}", el.Name, el.Value.GetText());
+                //el = locator.Locate("@Models.Stakeholder.Name.Title", modelCollector);
+                //logger.Info("Located: {0} = {1}", el.Name, el.Value.GetText());
 
-                el = locator.Locate("@Models.Stakeholder.Name.Nullable", modelCollector);
-                logger.Info("Not found: {0}", el?.Name ?? "Nullable");
+                //el = locator.Locate("@DataDictionary.IDField.Name", modelCollector);
+                //logger.Info("Located: {0} = {1}", el.Name, el.Value.GetText());
+
+                //el = locator.Locate("@Models.Stakeholder.Name.Nullable", modelCollector);
+                //logger.Info("Not found: {0}", el?.Name ?? "Nullable");
 
                 // locator from a specific point in the tree (iterator):
+
+                locator = new Models.PropertyLocator("@ViewModels", modelCollector, null);
                 it = new Models.Iterator();
-                var c4 = it.IterateSection(modelCollector.SingleModels, "@ViewModels");
+
+                var c4 = it.Iterate(locator.Locate());
                 el = locator.Locate("Name.Length", c4);
-                logger.Info("Located: {0} = {1}", el.Name, el.Value.GetText());
+                logger.Info("Located: {0} = {1}", el.Name, el.GetText());
                 el = locator.Locate("Test.Title", c4);
-                logger.Info("Located: {0} = {1}", el.Name, el.Value.GetText());
+                logger.Info("Located: {0} = {1}", el.Name, el.GetText());
                 el = locator.Locate("Title.SomeOtherProperty.Title", c4);
-                logger.Info("Located: {0} = {1}", el.Name, el.Value.GetText());
+                logger.Info("Located: {0} = {1}", el.Name, el.GetText());
                 el = locator.Locate("Title.SomeOtherProperty.Name", c4);
-                logger.Info("Located: {0} = {1}", el.Name, el.Value.GetText());
+                logger.Info("Located: {0} = {1}", el.Name, el.GetText());
             }
             else
             {
@@ -363,46 +373,82 @@ namespace ZeroCode2
 
         public ModelCollector collector { get; set; } = new ModelCollector();
 
-        private string CurrentSection = "";
+        public Antlr4.Runtime.Tree.ParseTreeProperty<Models.IModelObject> ValueProps { get; set; } = new Antlr4.Runtime.Tree.ParseTreeProperty<Models.IModelObject>();
+        public Antlr4.Runtime.Tree.ParseTreeProperty<Models.IModelObject> PairProps { get; set; } = new Antlr4.Runtime.Tree.ParseTreeProperty<Models.IModelObject>();
+        public Antlr4.Runtime.Tree.ParseTreeProperty<List<Models.IModelObject>> ObjProps { get; set; } = new Antlr4.Runtime.Tree.ParseTreeProperty<List<Models.IModelObject>>();
+        public Antlr4.Runtime.Tree.ParseTreeProperty<Models.SingleModel> SingleModels { get; set; } = new Antlr4.Runtime.Tree.ParseTreeProperty<Models.SingleModel>();
 
-        public Antlr4.Runtime.Tree.ParseTreeProperty<Models.IObjectBase> ValueProps { get; set; } = new Antlr4.Runtime.Tree.ParseTreeProperty<Models.IObjectBase>();
-        public Antlr4.Runtime.Tree.ParseTreeProperty<Models.ModelPair> PairProps { get; set; } = new Antlr4.Runtime.Tree.ParseTreeProperty<Models.ModelPair>();
-        public Antlr4.Runtime.Tree.ParseTreeProperty<List<Models.ModelPair>> ObjProps { get; set; } = new Antlr4.Runtime.Tree.ParseTreeProperty<List<Models.ModelPair>>();
-
-        public override void EnterParameters([NotNull] ZeroCode2Parser.ParametersContext context)
+        public override void EnterParameters([NotNull] ParametersContext context)
         {
-            CurrentSection = context.ID().GetText();
+            var CurrentSection = context.ID().GetText();
 
             logger.Trace(" Enter Params={0}", CurrentSection);
 
             base.EnterParameters(context);
         }
 
-        public override void ExitParameters([NotNull] ZeroCode2Parser.ParametersContext context)
+        public override void ExitParameters([NotNull] ParametersContext context)
         {
             logger.Trace(" Exit Params={0}", context._pairs.Aggregate("", (a, r) => a += r.ID().GetText() + " = " + r.value().GetText() + "\n"));
 
-            var parameter = new Models.ParameterModel(context.ID().GetText());
-            parameter.Section = CurrentSection;
+            var parameter = new Models.ParameterModel("#" + context.ID().GetText());
+            //parameter.Section = CurrentSection;
             foreach (var item in context._pairs)
             {
                 var p = PairProps.Get(item);
-                parameter.Properties.Add(p);
+                parameter.Value.Add(p);
             }
-            collector.ParameterModels.Add(parameter);
+            // check for doubles
+            var existing = collector.ParameterModels.FirstOrDefault(p => p.Name == parameter.Name);
+            if (existing != null)
+            {
+                existing.Value.AddRange(parameter.Value);
+            }
+            else
+            {
+                collector.ParameterModels.Add(parameter);
+            }
 
             base.ExitParameters(context);
         }
 
-        public override void EnterGenericModel([NotNull] ZeroCode2Parser.GenericModelContext context)
+        public override void EnterGenericModel([NotNull] GenericModelContext context)
         {
-            CurrentSection = context.ID().GetText();
+            var CurrentSection = "@" + context.ID().GetText();
             logger.Trace("Enter Section = {0}", CurrentSection);
         }
 
-        public override void ExitPair([NotNull] ZeroCode2Parser.PairContext context)
+        public override void ExitGenericModel([NotNull] GenericModelContext context)
         {
-            Models.ModelPair pair = new Models.ModelPair(context.ID().GetText(), ValueProps.Get(context.value()));
+            var list = new List<Models.IModelObject>();
+
+            foreach (var item in context._smodels)
+            {
+                var sm = SingleModels.Get(item);
+                list.Add(sm);
+            }
+
+            var TopLevelModel = new Models.SingleModel("@" + context.ID().GetText(), list);
+
+            // check for doubles
+            var existing = collector.SingleModels.FirstOrDefault(p => p.Name == TopLevelModel.Name);
+            if (existing != null)
+            {
+                existing.Value.AddRange(TopLevelModel.Value);
+            }
+            else
+            {
+                collector.SingleModels.Add(TopLevelModel);
+            }
+
+            base.ExitGenericModel(context);
+        }
+
+        public override void ExitPair([NotNull] PairContext context)
+        {
+            Models.IModelObject pair = ValueProps.Get(context.value());
+            pair.Name = context.ID().GetText();
+
             PairProps.Put(context, pair);
             if (context.inherits() != null)
             {
@@ -414,14 +460,15 @@ namespace ZeroCode2
                 pair.Modified = true;
                 pair.Modifier = context.modifier.Text;
             }
+
             base.ExitPair(context);
         }
 
-        public override void ExitSinglemodel([NotNull] ZeroCode2Parser.SinglemodelContext context)
+        public override void ExitSinglemodel([NotNull] SinglemodelContext context)
         {
             var obj = ObjProps.Get(context.obj());
             var model = new Models.SingleModel(context.ID().GetText(), obj);
-            model.Section = CurrentSection;
+            //model.Section = CurrentSection;
             if (context.inherits() != null)
             {
                 model.Inherits = true;
@@ -430,13 +477,13 @@ namespace ZeroCode2
 
             logger.Trace("Single model = {0}", model.Name);
 
-            collector.SingleModels.Add(model);
+            SingleModels.Put(context, model);
             base.ExitSinglemodel(context);
         }
 
-        public override void ExitObjFull([NotNull] ZeroCode2Parser.ObjFullContext context)
+        public override void ExitObjFull([NotNull] ObjFullContext context)
         {
-            var obj = new List<Models.ModelPair>();
+            var obj = new List<Models.IModelObject>();
             foreach (var item in context._pairs)
             {
                 var p = PairProps.Get(item);
@@ -446,17 +493,17 @@ namespace ZeroCode2
             base.ExitObjFull(context);
         }
 
-        public override void ExitObjEmpty([NotNull] ZeroCode2Parser.ObjEmptyContext context)
+        public override void ExitObjEmpty([NotNull] ObjEmptyContext context)
         {
-            var obj = new List<Models.ModelPair>();
+            var obj = new List<Models.IModelObject>();
             ObjProps.Put(context, obj);
             base.ExitObjEmpty(context);
         }
 
-        public override void ExitValueString([NotNull] ZeroCode2Parser.ValueStringContext context)
+        public override void ExitValueString([NotNull] ValueStringContext context)
         {
             base.ExitValueString(context);
-            var newObj = new Models.StringObject();
+            var newObj = new Models.ModelStringObject();
 
             string val = context.STRING().GetText();
             val = val.Substring(1, val.Length - 2);
@@ -465,36 +512,71 @@ namespace ZeroCode2
             ValueProps.Put(context, newObj);
         }
 
-        public override void ExitValueNumber([NotNull] ZeroCode2Parser.ValueNumberContext context)
+        public override void ExitValueNumber([NotNull] ValueNumberContext context)
         {
             base.ExitValueNumber(context);
-            var newObj = new Models.NumberObject();
-            newObj.Value = double.Parse(context.NUMBER().GetText());
+            var newObj = new Models.ModelNumberObject();
+            newObj.Value = decimal.Parse(context.NUMBER().GetText());
             ValueProps.Put(context, newObj);
         }
 
-        public override void ExitValueObject([NotNull] ZeroCode2Parser.ValueObjectContext context)
+        public override void ExitValueObject([NotNull] ValueObjectContext context)
         {
             base.ExitValueObject(context);
-            var newObj = new Models.ObjectObject();
+            var newObj = new Models.ModelCompositeObject();
             newObj.Value = ObjProps.Get(context.obj());
             ValueProps.Put(context, newObj);
         }
 
-        public override void ExitValueFalse([NotNull] ZeroCode2Parser.ValueFalseContext context)
+        public override void ExitValueFalse([NotNull] ValueFalseContext context)
         {
             base.ExitValueFalse(context);
-            var newObj = new Models.BoolObject();
+            var newObj = new Models.ModelBoolObject();
             newObj.Value = false;
             ValueProps.Put(context, newObj);
         }
 
-        public override void ExitValueTrue([NotNull] ZeroCode2Parser.ValueTrueContext context)
+        public override void ExitValueTrue([NotNull] ValueTrueContext context)
         {
             base.ExitValueTrue(context);
-            var newObj = new Models.BoolObject();
+            var newObj = new Models.ModelBoolObject();
             newObj.Value = true;
             ValueProps.Put(context, newObj);
+        }
+
+        public override void ExitIncludeStatement([NotNull] IncludeStatementContext context)
+        {
+            base.ExitIncludeStatement(context);
+
+            var mp = new ModelParser();
+
+            mp.ParseInputFile(context.GetText().Substring(1));
+
+            foreach (var item in mp.modelCollector.ParameterModels)
+            {
+                var exists = collector.ParameterModels.FirstOrDefault(m => m.Name == item.Name);
+                if (exists != null)
+                {
+                    exists.Value.AddRange(item.Value);
+                }
+                else
+                {
+                    collector.ParameterModels.Add(item);
+                }
+            }
+            foreach (var item in mp.modelCollector.SingleModels)
+            {
+                var exists = collector.SingleModels.FirstOrDefault(m => m.Name == item.Name);
+                if (exists != null)
+                {
+                    exists.Value.AddRange(item.Value);
+                }
+                else
+                {
+                    collector.SingleModels.Add(item);
+                }
+            }
+
         }
 
     }

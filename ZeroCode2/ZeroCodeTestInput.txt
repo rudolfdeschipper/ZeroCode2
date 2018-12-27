@@ -1,24 +1,47 @@
-﻿#Parameters
+﻿/*
+The ZeroCode2 definition syntax is based on objects that define key-value pairs (KVP).
+A value is either atomic (string, number of boolean), or it is structured (so it is an object itself).
+An object's KVP are separated by commas.
+KVPs are contained in matched braces ("{" "}" ).
+Objects are structured in Sections, which as identified by "@".
+The definition also supports "parameters", KVPs structured in "#" identifier sections. These are KVPs that only hold atomic values.
+*/
+
+
+// EXAMPLES
+
+// A "#" section contains name-value pairs that can serve as definitions in your application
+// multiple sections like these may exist
+// your refer to them in the template by their name: =<#Paramaters.appName>
+#Parameters
 appName : "My test application in Zero Code"
 nameSpace : "ZeroCode"
 debug : "on"
 
-// This is the models section
 /*
-Models can direclty inherit from the other models, or define a completely new one, or inherit and add/delete elements
-by putting a - after the identifier to remove it, or a + to add it. Changing the definition is also possible.
+This is the models section
+The number of sections and their names can be as many as you need and an item in a section can reference an item from another section
+so you can define fields in a datadictionary and build objects by importing their definition from the DD
+You refer to a section by its name: %Loop:@Models - this will run through all the items in the Models section
 
-Example:
-	Person <- Models.Person : {
-	-ID : {} // remove ID from the view model
-	+SomeProperty : { // definition inside {} is needed
-	}
-	Name : { Title : "changed title"} // all other properties are kept from Person model
-	+SomeOtherProperty <- DataDictionary.Name : { Name : "Another name" } // add property, inherit it from DataDictionary.Name and change its name
-	}
+Note: Sections names have no semantic value - ZeroCode2 has no knowledge of what a section means. Your templates (so the way you use the sections) define their meaning.
 
 */
 
+/*
+Models can directly inherit from the other models, or define a completely new one, or inherit and add/delete elements
+by putting a - after the identifier to remove it, or a + to add it. Changing the definition is also possible.
+
+Example:
+	Person <- Models.Person : { // this Person item inherits from the Person item in the @Models section.
+	-ID : {}, // remove the ID from this item
+	+SomeProperty : { // Add a new property; definition inside {} is needed
+	},
+	Name : { Title : "changed title"}, // all other properties are kept from Person model. A property without a qualifier (+/-) means it is an existing one that is changed
+	+SomeOtherProperty <- DataDictionary.Name : { Name : "Another name" } // add a new property, inherit it from DataDictionary.Name and change its name
+	}
+
+*/
 
 @Models
 
@@ -73,3 +96,97 @@ NameField : {
 	Length:50, 
 	Nullable:false
 }
+
+// -------------------
+// A more reasonable example of a full application might look like this
+// -------------------
+
+#Params
+appName : "My test application in Zero Code"
+nameSpace : "ZeroCode"
+
+@Deployment // defines the deployment model
+
+DataService : {
+	DLL : "DataLayer",
+	Namespace : "Data"
+}
+
+ProjectService : {
+	DLL : "Project",
+	Namespace : "Project",
+	Depends : {
+		DataLayer : true
+	}
+}
+
+ContractService : {
+	DLL : "Contract",
+	Namespace : "Contract",
+	Depends : {
+		DataLayer : true
+	}
+}
+
+API : {
+	DLL : "API",
+	Namespace : "API",
+	Depends : {
+		ProjectService : true,
+		ContractService : true
+	}
+}
+
+MVC : {
+	DLL : "UIService",
+	Namespace : "MVC",
+	Depends : {
+		ProjectService : true,
+		ContractService : true
+	}
+}
+
+Mobile : {
+	DLL : "MobileService",
+	Namespace : "Mobile",
+	Depends : {
+		ProjectService : true,
+		ContractService : true
+	}
+}
+
+
+@Datamodel
+
+Project <- @Datamodel.DefaultObject : {
+	Generate : true,
+	+Budget <- DataDictionary.AmountField : { Name : "Budget", Title : "Budget" },
+	+Status <- DataDictionary.StatusField : {
+		Values : {
+			Planned : "1 - Planned",
+			Open : "2 - Open",
+			Closed : "3 - Closed",
+			Cancelled : "9 - Cancelled"
+		}
+	}
+}
+
+DefaultObject : {
+	Generate : false,
+	ID <- DataDictionary.IDField : {},
+	Code <- DataDictionary.CodeField : {},
+	Description <- DataDictionary.DescriptionField : {},
+	Startdate <- DataDictionary.DateField :  { Name : "Startdate", Title : "Startdate" }, 
+	Enddate <- DataDictionary.DateField : { Name : "Enddate", Title : "Enddate" }
+}
+
+@ViewModel
+Project <- Datamodel.Project : {}
+
+@DTO // data transfer objects
+Project <- Datamodel.Project : {}
+
+// Include some basic definitions
+
+&ZeroCodeIncludedFile.txt
+
