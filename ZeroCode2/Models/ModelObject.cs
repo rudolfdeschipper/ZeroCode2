@@ -436,12 +436,43 @@ namespace ZeroCode2.Models
                 // recurse into parent
                 PopulateProperties(pair.ParentObject);
             }
+            AllProperties.AddRange(pair.AsComposite().Value.Where(p => pair.ParentObject == null || (pair.ParentObject != null && (p.Modified && p.Modifier != "-"))));
+
             foreach (var item in pair.AsComposite().Value.Where(p => p.Modifier == "-"))
             {
                 AllProperties.RemoveAll(p => p.Name == item.Name);
             }
 
-            AllProperties.AddRange(pair.AsComposite().Value.Where(p => pair.ParentObject == null || (pair.ParentObject != null && (p.Modified && p.Modifier != "-"))));
+            foreach (var item in pair.AsComposite().Value.Where(p => p.Modifier == "+"))
+            {
+                AllProperties.Add(item);
+            }
+            foreach (var item in pair.AsComposite().Value.Where(p => p.Modifier != "+" && p.Modifier != "-"))
+            {
+                AllProperties.ForEach(p =>
+                {
+                    if (p.Name == item.Name)
+                    {
+                        if (p.IsBool())
+                        {
+                            p.AsBool().Value = item.AsBool().Value;
+                        }
+                        if (p.IsNumber())
+                        {
+                            p.AsNumber().Value = item.AsNumber().Value;
+                        }
+                        if (p.IsString())
+                        {
+                            p.AsString().Value = item.AsString().Value;
+                        }
+                        if (p.IsObject())
+                        {
+                            p.AsComposite().Value = item.AsComposite().Value;
+                        }
+                    }
+                });
+            }
+
         }
 
     }
@@ -573,7 +604,6 @@ namespace ZeroCode2.Models
             else
             {
                 // we're at the end of the path
-                //TODO: handle @ & #
                 // if it is an object, find an element with the name we are looking for, or null
                 if (CurrentRoot.Name != pathElements[currentPosition] && CurrentRoot.IsObject())
                 {
@@ -606,6 +636,7 @@ namespace ZeroCode2.Models
                     {
                         CurrentRoot = models;
                     }
+                    return CurrentRoot != null;
                 }
                 if (pathElements[currentPosition].StartsWith("#"))
                 {
@@ -614,58 +645,63 @@ namespace ZeroCode2.Models
                     {
                         CurrentRoot = models;
                     }
+                    return CurrentRoot != null;
                 }
                 // 2. the Path has length of one: take top iterator as root
+                // 3. Not a direct path, it is a relative one, so determine the iterator from the loopstack
+                // 4. First look for a LoopX
+                // 5. Then for an iterator identifier
+                // 6. Last, take the top element
                 if (LoopStack != null)
                 {
-                    if (pathElements.Length == 1 && LoopStack.Count > 0)
-                    {
-                        // get top loop stack element and set as root
-                        CurrentRoot = LoopStack.Peek().CurrentModel;
-                    }
-                    // 5. Check for "Loopx" as path identifier, if so select the correct iterator as root
+                    // 4. Check for "Loopx" as path identifier, if so select the correct iterator as root
                     if (pathElements[currentPosition].StartsWith("Loop"))
                     {
                         var loopIndex = int.Parse(pathElements[currentPosition].Substring(4));
                         if (LoopStack.Count > loopIndex)
                         {
                             var mp = LoopStack.ElementAt(loopIndex);
+                            if (mp.CurrentModel == null)
+                            {
+                                mp.CurrentModel = mp.Iterator.Iterate(mp.Root);
+                            }
                             CurrentRoot = mp.CurrentModel;
                         }
+                        return CurrentRoot != null;
                     }
+                    // The Path has length > one, the path may contain a reference to an iterator
+                    // 5. Check if the first path identifier exists as an iterator - if so, get the root from there
+                    if (LoopStack.Count > 0)
+                    {
+                        var it = LoopStack.SingleOrDefault(m => m.Root?.Name == pathElements[currentPosition]);
+
+                        // 6. No iterator was found, assume it is the top one, select that as root
+                        if (it == null)
+                        {
+                            it = LoopStack.Peek();
+                        }
+                        if (it != null)
+                        {
+                            if (it.CurrentModel == null)
+                            {
+                                it.CurrentModel = it.Iterator.Iterate(it.Root);
+
+                                // step one deeper in the model, as the iterated element is not part of the path
+                                CurrentRoot = it.CurrentModel?.AsComposite()?.Value.SingleOrDefault(mp => mp.Name == pathElements[currentPosition] && !(mp.Modified && mp.Modifier == "-"));
+                            }
+                            else
+                            {
+                                CurrentRoot = it.CurrentModel;
+                            }
+                        }
+                    }
+                    return CurrentRoot != null;
                 }
             }
-
-            // not set yet, go on looking
-            if (CurrentRoot == null)
+            else
             {
-                // The Path has length > one, the path may contain a reference to an iterator
-                // 6. Check if the first path identifier exists as an iterator - if so, get the root from there
-                if (LoopStack != null && currentPosition == 0)
-                {
-                    var it = LoopStack.SingleOrDefault(m => m.Root?.Name == pathElements[currentPosition]);
-
-                    // 7. No iterator was found, assume it is the top one, select that as root
-                    if (it == null)
-                    {
-                        it = LoopStack.Peek();
-                    }
-                    if (it != null)
-                    {
-                        if (it.CurrentModel == null )
-                        {
-                            it.CurrentModel = it.Iterator.Iterate(it.Root);
-
-                            // step one deeper in the model, as the iterated element is not part of the path
-                            CurrentRoot = it.CurrentModel?.AsComposite()?.Value.SingleOrDefault(mp => mp.Name == pathElements[currentPosition] && !(mp.Modified && mp.Modifier == "-"));
-                        }
-                        else
-                        {
-                            CurrentRoot = it.CurrentModel;
-                        }
-                    }
-                }
-
+                // we are at second or higher element, go on looking
+                // this does not look right --->
                 if (CurrentRoot == null || currentPosition > 1) // once we are past the first one or two, we need to walk the object graph
                 {
                     // 8. dive into the oldRoot

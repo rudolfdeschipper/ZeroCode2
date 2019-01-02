@@ -88,7 +88,7 @@ namespace ZeroCode2UnitTests
         }
 
         [TestMethod]
-        public void TestLocateWithLoopStackSection()
+        public void TestLocateWithLoopStackPeekTop()
         {
             var im = new ZeroCode2.Interpreter.IteratorManager();
             var it = new ZeroCode2.Models.Iterator();
@@ -99,6 +99,48 @@ namespace ZeroCode2UnitTests
             LoopStack = new Stack<ZeroCode2.Interpreter.IteratorManager>();
             LoopStack.Push(im);
             var locator = new ZeroCode2.Models.PropertyLocator("Name.Length", ModelCollector, LoopStack);
+
+            var outp = locator.Locate();
+
+            LoopStack = null;
+
+            Assert.IsNotNull(outp);
+            Assert.AreEqual(outp.GetText(), "75");
+        }
+
+        [TestMethod]
+        public void TestLocateWithLoopX()
+        {
+            var im = new ZeroCode2.Interpreter.IteratorManager();
+            var it = new ZeroCode2.Models.Iterator();
+            im.Iterator = it;
+            im.Path = "@ViewModels";
+            im.Root = (new ZeroCode2.Models.PropertyLocator(im.Path, ModelCollector, null)).Locate();
+
+            LoopStack = new Stack<ZeroCode2.Interpreter.IteratorManager>();
+            LoopStack.Push(im);
+            var locator = new ZeroCode2.Models.PropertyLocator("Loop0.Name.Length", ModelCollector, LoopStack);
+
+            var outp = locator.Locate();
+
+            LoopStack = null;
+
+            Assert.IsNotNull(outp);
+            Assert.AreEqual(outp.GetText(), "75");
+        }
+
+        [TestMethod]
+        public void TestLocateWithLoopExplicit()
+        {
+            var im = new ZeroCode2.Interpreter.IteratorManager();
+            var it = new ZeroCode2.Models.Iterator();
+            im.Iterator = it;
+            im.Path = "@ViewModels";
+            im.Root = (new ZeroCode2.Models.PropertyLocator(im.Path, ModelCollector, null)).Locate();
+
+            LoopStack = new Stack<ZeroCode2.Interpreter.IteratorManager>();
+            LoopStack.Push(im);
+            var locator = new ZeroCode2.Models.PropertyLocator("ViewModels.Name.Length", ModelCollector, LoopStack);
 
             var outp = locator.Locate();
 
