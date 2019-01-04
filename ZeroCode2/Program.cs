@@ -240,7 +240,7 @@ namespace ZeroCode2
 
                 // test absolute locator:
                 var locator = new Models.PropertyLocator("#Parameters.appName", modelCollector, null);
-                var el = locator.Locate("#Parameters.appName", modelCollector);
+                var el = locator.Locate();
                 //logger.Info("Located: {0} = {1}", el.Name, el.Value.GetText());
                 //el = locator.Locate("@Models.Person.ID.Name", modelCollector);
                 //logger.Info("Located: {0} = {1}", el.Name, el.Value.GetText());
@@ -260,13 +260,23 @@ namespace ZeroCode2
                 it = new Models.Iterator();
 
                 var c4 = it.Iterate(locator.Locate());
-                el = locator.Locate("Name.Length", c4);
+
+                var loopStack = new Stack<Interpreter.IteratorManager>();
+                loopStack.Push(new Interpreter.IteratorManager() { Iterator = it, CurrentModel = c4, Path = "@ViewModels" });
+                locator = new Models.PropertyLocator("Name.Length", modelCollector, loopStack);
+                el = locator.Locate();
                 logger.Info("Located: {0} = {1}", el.Name, el.GetText());
-                el = locator.Locate("Test.Title", c4);
+
+                locator = new Models.PropertyLocator("Test.Title", modelCollector, loopStack);
+                el = locator.Locate();
                 logger.Info("Located: {0} = {1}", el.Name, el.GetText());
-                el = locator.Locate("Title.SomeOtherProperty.Title", c4);
+
+                locator = new Models.PropertyLocator("Title.SomeOtherProperty.Title", modelCollector, loopStack);
+                el = locator.Locate();
                 logger.Info("Located: {0} = {1}", el.Name, el.GetText());
-                el = locator.Locate("Title.SomeOtherProperty.Name", c4);
+
+                locator = new Models.PropertyLocator("Title.SomeOtherProperty.Name", modelCollector, loopStack);
+                el = locator.Locate();
                 logger.Info("Located: {0} = {1}", el.Name, el.GetText());
             }
             else

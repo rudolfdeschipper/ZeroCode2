@@ -30,7 +30,7 @@ namespace ZeroCode2.Interpreter
         {
             var locator = new Models.PropertyLocator(expression, Model, this.LoopStack);
 
-            var mp = locator.Locate(expression, Model);
+            var mp = locator.Locate();
 
             if (mp == null)
             {
@@ -43,7 +43,7 @@ namespace ZeroCode2.Interpreter
                 {
                     // use the rest of the expression as path into the loop element
                     expression = expression.Remove(0, parts[0].Length + 1);
-                    mp = locator.Locate(expression, iterator.CurrentModel);
+                    mp = locator.Locate();
                 }
                 else
                 {
@@ -110,7 +110,7 @@ namespace ZeroCode2.Interpreter
             // -- top level (%Loop:@Screen) - @ to start and no dots in the path - Iterate over the SingleModels
             if (expression[0] == '@')
             {
-                iterator.Root = locator.Locate(expression, Model);
+                iterator.Root = locator.Locate();
                 // throw away "@"
                 iterator.Path = iterator.Path.Substring(1);
             }
@@ -122,7 +122,7 @@ namespace ZeroCode2.Interpreter
                     int level = int.Parse(expression.Split('.')[0].Substring(4));
                     var parentIterator = LoopStack.Skip(level).FirstOrDefault();
                     var root = parentIterator.Root;
-                    iterator.Root = locator.Locate(expression, root);
+                    iterator.Root = locator.Locate();
                 }
                 else
                 {
@@ -135,13 +135,13 @@ namespace ZeroCode2.Interpreter
                         expression = expression.Substring(parentPath.Length + 1);
                         // shorten the path
                         iterator.Path = expression;
-                        iterator.Root = locator.Locate(expression, parentIterator.CurrentModel);
+                        iterator.Root = locator.Locate();
                     }
                     else
                     {
                         // -- relative to previous loop (%Loop:Panel) - no dots in the path - find that loop and the expression and iterate over its elements
                         var parentIterator = LoopStack.Peek();
-                        iterator.Root = locator.Locate(expression, parentIterator.CurrentModel);
+                        iterator.Root = locator.Locate();
                     }
                 }
             }

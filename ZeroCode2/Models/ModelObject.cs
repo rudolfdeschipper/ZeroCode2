@@ -407,74 +407,69 @@ namespace ZeroCode2.Models
     /// </summary>
     public class PropertyResolver
     {
-        public List<IModelObject> AllProperties { get; private set; } = new List<IModelObject>();
-
-        //public void PopulateProperties(SingleModel model)
-        //{
-        //    if (model.ParentObject != null)
-        //    {
-        //        // recurse into parent
-        //        PopulateProperties(model.ParentObject);
-        //    }
-
-        //    foreach (var item in model.AsObject().Value.Where(p => p.Modifier == "-"))
-        //    {
-        //        AllProperties.RemoveAll(p => p.Name == item.Name);
-        //    }
-
-        //    AllProperties.AddRange(model.AsObject().Value.Where(p => model.ParentObject == null || (model.ParentObject != null && ( p.Modified && p.Modifier != "-"))));
-        //}
-
         public void PopulateProperties(IModelObject pair)
         {
+            List<IModelObject> newProps = new List<IModelObject>();
+
+            // no inheritance
             if (pair.Inherits && pair.ParentObject == null)
             {
-                // toDO
+                return;
             }
-            if (pair.ParentObject != null)
+            // already resolved
+            if (pair.IsResolved)
             {
-                // recurse into parent
-                PopulateProperties(pair.ParentObject);
+                return;
             }
-            AllProperties.AddRange(pair.AsComposite().Value.Where(p => pair.ParentObject == null || (pair.ParentObject != null && (p.Modified && p.Modifier != "-"))));
+            // not an object
+            if (!pair.IsObject())
+            {
+                return;
+            }
+            // no inheritance
+            if (!pair.Inherits)
+            {
+                return;
+            }
 
-            foreach (var item in pair.AsComposite().Value.Where(p => p.Modifier == "-"))
+            if (pair.ParentObject.IsObject())
             {
-                AllProperties.RemoveAll(p => p.Name == item.Name);
-            }
-
-            foreach (var item in pair.AsComposite().Value.Where(p => p.Modifier == "+"))
-            {
-                AllProperties.Add(item);
-            }
-            foreach (var item in pair.AsComposite().Value.Where(p => p.Modifier != "+" && p.Modifier != "-"))
-            {
-                AllProperties.ForEach(p =>
+                // only copy the "+" from the current list:
+                newProps.AddRange(pair.AsComposite().Value.Where( mp => mp.Modifier == "+"));
+ 
+                // we need to resolve these too, so we do that here:
+                foreach (var item in newProps)
                 {
-                    if (p.Name == item.Name)
+                    PopulateProperties(item);
+                }
+
+                // then, recurse into the children of the ParentObject, to ensure all is resolved before we copy from it
+                foreach (var item in pair.ParentObject.AsComposite().Value)
+                {
+                    PopulateProperties(item);
+                }
+
+                // Now we can add all properties from the inheritance object
+                newProps.AddRange(pair.ParentObject.AsComposite().Value.Where(mp => mp.Modifier != "-"));
+
+                // and we add any changed properties back in too:
+                foreach (var item in pair.AsComposite().Value.Where(p => !p.Modified || p.Modifier == "-"))
+                {
+                    // remove it if it is already there
+                    newProps.RemoveAll(mp => mp.Name == item.Name);
+
+                    // and add its replacement if it is a replacement (deletions we don't add back):
+                    if (!item.Modified)
                     {
-                        if (p.IsBool())
-                        {
-                            p.AsBool().Value = item.AsBool().Value;
-                        }
-                        if (p.IsNumber())
-                        {
-                            p.AsNumber().Value = item.AsNumber().Value;
-                        }
-                        if (p.IsString())
-                        {
-                            p.AsString().Value = item.AsString().Value;
-                        }
-                        if (p.IsObject())
-                        {
-                            p.AsComposite().Value = item.AsComposite().Value;
-                        }
+                        newProps.Add(item);
                     }
-                });
+                }
+
+                // set the new set as the value:
+                pair.AsComposite().Value = newProps;
+                pair.IsResolved = true;
             }
-
         }
-
     }
 
     /// <summary>
@@ -546,8 +541,6 @@ namespace ZeroCode2.Models
             {
                 PropertyResolver propResolver = new PropertyResolver();
                 propResolver.PopulateProperties(mp);
-                obj.Value = propResolver.AllProperties;
-                mp.IsResolved = true;
             }
             // TODO: count should exclude the properties that are hidden
             // TODO: include inherited properties too
@@ -594,6 +587,13 @@ namespace ZeroCode2.Models
             {
                 return null;
             }
+
+            if (!CurrentRoot.IsResolved)
+            {
+                PropertyResolver propResolver = new PropertyResolver();
+                propResolver.PopulateProperties(CurrentRoot);
+            }
+
             // 2. Now we have a root, check if there is still a path to run
             if (currentPosition < pathElements.Length - 1)
             {
@@ -673,7 +673,7 @@ namespace ZeroCode2.Models
                     // 5. Check if the first path identifier exists as an iterator - if so, get the root from there
                     if (LoopStack.Count > 0)
                     {
-                        var it = LoopStack.SingleOrDefault(m => m.Root?.Name == pathElements[currentPosition]);
+                        var it = LoopStack.SingleOrDefault(m => m.Root?.Name.Substring(1) == pathElements[currentPosition]);
 
                         // 6. No iterator was found, assume it is the top one, select that as root
                         if (it == null)
@@ -685,11 +685,18 @@ namespace ZeroCode2.Models
                             if (it.CurrentModel == null)
                             {
                                 it.CurrentModel = it.Iterator.Iterate(it.Root);
-
-                                // step one deeper in the model, as the iterated element is not part of the path
-                                CurrentRoot = it.CurrentModel?.AsComposite()?.Value.SingleOrDefault(mp => mp.Name == pathElements[currentPosition] && !(mp.Modified && mp.Modifier == "-"));
                             }
-                            else
+                            if (it.CurrentModel != null && !it.CurrentModel.IsResolved)
+                            {
+                                PropertyResolver propResolver = new PropertyResolver();
+                                propResolver.PopulateProperties(it.CurrentModel);
+                            }
+
+                            // step one deeper in the model, as the iterated element is not part of the path
+
+                            CurrentRoot = it.CurrentModel?.AsComposite()?.Value.SingleOrDefault(mp => mp.Name == pathElements[currentPosition] && !(mp.Modified && mp.Modifier == "-"));
+
+                            if (CurrentRoot == null)
                             {
                                 CurrentRoot = it.CurrentModel;
                             }
@@ -711,8 +718,6 @@ namespace ZeroCode2.Models
                         {
                             PropertyResolver propResolver = new PropertyResolver();
                             propResolver.PopulateProperties(oldRoot);
-                            oldRoot.AsComposite().Value = propResolver.AllProperties;
-                            oldRoot.IsResolved = true;
                         }
                         CurrentRoot = oldRoot.AsComposite().Value.SingleOrDefault(mp => mp.Name == pathElements[currentPosition] && !(mp.Modified && mp.Modifier == "-"));
                     }
@@ -726,74 +731,6 @@ namespace ZeroCode2.Models
             return CurrentRoot != null;
         }
 
-        public IModelObject Locate(string path, ModelCollector modelList)
-        {
-            pathElements = path.Split('.');
-            currentPosition = 0;
-
-            if (path.StartsWith("#")) // parameter
-            {
-                currentPosition++;
-                return Locate(modelList.ParameterModels.Single(s => s.Name == pathElements[0].Substring(1)).AsComposite());
-            }
-            if (path.StartsWith("@")) // model
-            {
-                currentPosition++;
-                return Locate(modelList.SingleModels.Single(s => s.Name == pathElements[0].Substring(1)).AsComposite());
-            }
-            return null;
-        }
-
-        public IModelObject Locate(string path, IModelObject root)
-        {
-            pathElements = path.Split('.');
-            currentPosition = 0;
-
-            return Locate(root);
-        }
-
-        private IModelObject Locate(IEnumerable<IModelObject> root)
-        {
-            if (pathElements.Length <= currentPosition)
-            {
-                return root.FirstOrDefault();
-            }
-
-            var newRoot = root.SingleOrDefault(s => s.Name == pathElements[currentPosition]);
-            if (newRoot != null)
-            {
-                currentPosition++;
-                return Locate(newRoot);
-            }
-            return null;
-        }
-
-        private IModelObject Locate(IModelObject root)
-        {
-            if ((currentPosition == pathElements.Length && root.Name == pathElements[currentPosition - 1])
-                || (pathElements.Length == 1 && root.Name == pathElements[0]))
-            {
-                if (root.Modified && root.Modifier == "-")
-                {
-                    // does not exist
-                    return null;
-                }
-                return root;
-            }
-            if (root.IsObject())
-            {
-                if (!root.IsResolved)
-                {
-                    PropertyResolver propResolver = new PropertyResolver();
-                    propResolver.PopulateProperties(root);
-                    root.AsComposite().Value = propResolver.AllProperties;
-                    root.IsResolved = true;
-                }
-                //currentPosition++;
-                return Locate(root.AsComposite());
-            }
-            return null;
-        }
     }
 
 }
