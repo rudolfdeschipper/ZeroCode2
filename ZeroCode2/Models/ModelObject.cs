@@ -167,164 +167,6 @@ namespace ZeroCode2.Models
         }
     }
 
-    //public class ModelPair
-    //{
-    //    public string Name { get; set; }
-    //    public IObjectBase Value { get; set; }
-
-    //    public bool Inherits { get; set; }
-    //    public string InheritsFrom { get; set; }
-    //    public SingleModel ParentObject { get; set; }
-    //    public bool IsResolved { get; set; } = false;
-
-    //    public bool Modified { get; set; }
-    //    public string Modifier { get; set; }
-
-    //    public ModelPair(string name, IObjectBase value)
-    //    {
-    //        Name = name;
-    //        Value = value;
-    //    }
-
-    //    public ModelPair(string name)
-    //    {
-    //        Name = name;
-    //    }
-
-    //    public bool Is<T>()
-    //    {
-    //        return Value.GetObjectType() == typeof(T);
-    //    }
-
-    //    public bool IsString()
-    //    {
-    //        return Is<string>();
-    //    }
-
-    //    public bool IsNumber()
-    //    {
-    //        return Is<double>();
-    //    }
-
-    //    public bool IsObject()
-    //    {
-    //        return Is<ObjectObject>();
-    //    }
-
-    //    public bool IsBool()
-    //    {
-    //        return Is<bool>();
-    //    }
-
-    //    public T As<T>()
-    //    {
-    //        return (T)Value;
-    //    }
-
-    //    public string AsString()
-    //    {
-    //        return As<string>();
-    //    }
-
-    //    public double AsNumber()
-    //    {
-    //        return As<double>();
-    //    }
-
-    //    public bool AsBOol()
-    //    {
-    //        return As<bool>();
-    //    }
-
-    //    public ObjectObject AsObject()
-    //    {
-    //        return As<ObjectObject>();
-    //    }
-    //}
-
-    //public interface IObjectBase
-    //{
-    //    string GetText();
-
-    //    Type GetObjectType();
-    //}
-
-    //public class ObjectBase<T>
-    //{
-    //    public T Value { get; set; }
-    //}
-
-    //public class StringObject : ObjectBase<string>, IObjectBase
-    //{
-    //    public Type GetObjectType()
-    //    {
-    //        return typeof(string);
-    //    }
-
-    //    public string GetText()
-    //    {
-    //        return Value;
-    //    }
-    //}
-
-    //public class ReferenceObject : ObjectBase<string>, IObjectBase
-    //{
-    //    public string GetText()
-    //    {
-    //        return Value;
-    //    }
-
-    //    public Type GetObjectType()
-    //    {
-    //        return typeof(string);
-    //    }
-    //}
-
-    //public class NumberObject : ObjectBase<double>, IObjectBase
-    //{
-    //    public string GetText()
-    //    {
-    //        return Value.ToString();
-    //    }
-
-    //    public Type GetObjectType()
-    //    {
-    //        return typeof(double);
-    //    }
-    //}
-
-    //public class ObjectObject : ObjectBase<List<ModelPair>>, IObjectBase
-    //{
-    //    public ObjectObject()
-    //    {
-    //        Value = new List<ModelPair>();
-    //    }
-
-    //    public string GetText()
-    //    {
-    //        var r = Value.Select(m => m.Name + " = " + m.Value.GetText());
-    //        string s = "{ ";
-
-    //        return r.Aggregate(s, (f, run) => s += run + " ") + "}";
-    //    }
-    //    public Type GetObjectType()
-    //    {
-    //        return typeof(ObjectObject);
-    //    }
-    //}
-
-    //public class BoolObject : ObjectBase<bool>, IObjectBase
-    //{
-    //    public string GetText()
-    //    {
-    //        return Value.ToString();
-    //    }
-
-    //    public Type GetObjectType()
-    //    {
-    //        return typeof(bool);
-    //    }
-    //}
 
     /// <summary>
     /// Resolves the inheritance in the model. Errors are reported through the Errors collection
@@ -412,12 +254,18 @@ namespace ZeroCode2.Models
             List<IModelObject> newProps = new List<IModelObject>();
 
             // no inheritance
-            if (pair.Inherits && pair.ParentObject == null)
+            if (!pair.Inherits)
             {
                 return;
             }
-            // already resolved
+
+             // already resolved
             if (pair.IsResolved)
+            {
+                return;
+            }
+           // no inheritance
+            if (pair.Inherits && pair.ParentObject == null)
             {
                 return;
             }
@@ -426,12 +274,6 @@ namespace ZeroCode2.Models
             {
                 return;
             }
-            // no inheritance
-            if (!pair.Inherits)
-            {
-                return;
-            }
-
             if (pair.ParentObject.IsObject())
             {
                 // only copy the "+" from the current list:
@@ -481,52 +323,7 @@ namespace ZeroCode2.Models
     {
         private int currentItem = -1;
 
-        //private List<Models.SingleModel> modelsforSection = new List<SingleModel>();
-
         public bool HasMore { get; private set; }
-
-        //public SingleModel IterateSection(List<Models.SingleModel> modelList, string section)
-        //{
-        //    // set up
-        //    if (currentItem == -1)
-        //    {
-        //        modelsforSection.AddRange(modelList.Where(m => m.Section == section.Substring(1)));
-        //    }
-        //    HasMore = modelsforSection.Count > (currentItem + 1);
-
-        //    if (!HasMore)
-        //    {
-        //        return null;
-        //    }
-
-        //    currentItem++;
-
-        //    HasMore = modelsforSection.Count > (currentItem + 1);
-
-        //    return modelsforSection[currentItem];
-        //}
-
-        //public ModelPair Iterate(SingleModel model)
-        //{
-        //    if (currentItem == -1)
-        //    {
-        //        PropertyResolver propResolver = new PropertyResolver();
-        //        propResolver.PopulateProperties(model);
-        //        model.AsObject().Value = propResolver.AllProperties;
-        //        model.IsResolved = true;
-        //    }
-
-        //    HasMore = model.AsObject().Value.Count > (currentItem + 1);
-        //    if (!HasMore)
-        //    {
-        //        return null;
-        //    }
-        //    currentItem++;
-
-        //    HasMore = model.AsObject().Value.Count > (currentItem + 1);
-
-        //    return model.AsObject().Value[currentItem];
-        //}
 
         public IModelObject Iterate(IModelObject mp)
         {
@@ -542,8 +339,6 @@ namespace ZeroCode2.Models
                 PropertyResolver propResolver = new PropertyResolver();
                 propResolver.PopulateProperties(mp);
             }
-            // TODO: count should exclude the properties that are hidden
-            // TODO: include inherited properties too
             HasMore = obj.Value.Count > (currentItem + 1);
 
             if (!HasMore)
@@ -567,7 +362,6 @@ namespace ZeroCode2.Models
 
         private int currentPosition = 0;
 
-        // new implementation
         private ModelCollector Collector { get; set; }
         public IModelObject CurrentRoot { get; set; }
         private Stack<Interpreter.IteratorManager> LoopStack { get; set; }
@@ -732,5 +526,4 @@ namespace ZeroCode2.Models
         }
 
     }
-
 }
