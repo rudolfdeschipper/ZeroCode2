@@ -262,7 +262,7 @@ namespace ZeroCode2
                 var c4 = it.Iterate(locator.Locate());
 
                 var loopStack = new Stack<Interpreter.IteratorManager>();
-                loopStack.Push(new Interpreter.IteratorManager() { Iterator = it, CurrentModel = c4, Path = "@ViewModels" });
+                loopStack.Push(new Interpreter.IteratorManager(it, c4) { Path = "@ViewModels" });
                 locator = new Models.PropertyLocator("Name.Length", modelCollector, loopStack);
                 el = locator.Locate();
                 logger.Info("Located: {0} = {1}", el.Name, el.GetText());

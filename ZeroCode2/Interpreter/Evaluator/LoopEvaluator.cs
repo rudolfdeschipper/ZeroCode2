@@ -14,7 +14,7 @@ namespace ZeroCode2.Interpreter.Evaluator
 
             var loop = context.EvaluateLoop(expression);
 
-            result = loop.Iterator.HasMore || loop.CurrentModel != null;
+            result = loop.HasMore || loop.CurrentModel != null;
 
             return new EvaluatorResult(result, string.Empty);
         }

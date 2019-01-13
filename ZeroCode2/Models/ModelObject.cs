@@ -457,7 +457,7 @@ namespace ZeroCode2.Models
                             var mp = LoopStack.ElementAt(loopIndex);
                             if (mp.CurrentModel == null)
                             {
-                                mp.CurrentModel = mp.Iterator.Iterate(mp.Root);
+                                mp.Iterate();
                             }
                             CurrentRoot = mp.CurrentModel;
                         }
@@ -478,7 +478,7 @@ namespace ZeroCode2.Models
                         {
                             if (it.CurrentModel == null)
                             {
-                                it.CurrentModel = it.Iterator.Iterate(it.Root);
+                                it.Iterate();
                             }
                             if (it.CurrentModel != null && !it.CurrentModel.IsResolved)
                             {

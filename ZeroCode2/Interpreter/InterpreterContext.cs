@@ -28,7 +28,7 @@ namespace ZeroCode2.Interpreter
 
         public string EvaluateProperty(string expression)
         {
-            var locator = new Models.PropertyLocator(expression, Model, this.LoopStack);
+            var locator = new Models.PropertyLocator(expression, Model, LoopStack);
 
             var mp = locator.Locate();
 
@@ -88,7 +88,7 @@ namespace ZeroCode2.Interpreter
             }
             else
             {
-                iterator.CurrentModel = iterator.Iterator.Iterate(iterator.Root);
+                iterator.Iterate();
             }
 
             return iterator;
@@ -96,16 +96,15 @@ namespace ZeroCode2.Interpreter
 
         public void EnterLoop(string expression)
         {
-            var iterator = new IteratorManager();
+            var iterator = new IteratorManager(new Models.Iterator());
 
             logger.Trace("Enter loop: " + expression);
 
             iterator.Path = expression;
-            iterator.Iterator = new Models.Iterator();
 
             // Need to figure this out here, preferably, to avoid lots of ifs when evaluating:
             // - what sort of loop are we trying to run here?
-            var locator = new Models.PropertyLocator(expression, Model, this.LoopStack);
+            var locator = new Models.PropertyLocator(expression, Model, LoopStack);
 
             // -- top level (%Loop:@Screen) - @ to start and no dots in the path - Iterate over the SingleModels
             if (expression[0] == '@')
@@ -169,9 +168,31 @@ namespace ZeroCode2.Interpreter
 
     public class IteratorManager
     {
-        public Models.Iterator Iterator { get; set; }
+        private Models.Iterator Iterator { get; set; }
         public string Path { get; set; }
         public Models.IModelObject Root { get; set; }
-        public Models.IModelObject CurrentModel { get; set; }
+        public Models.IModelObject CurrentModel { get; private set; }
+
+        public IteratorManager(Models.Iterator _iterator)
+        {
+            Iterator = _iterator;
+        }
+
+        public IteratorManager(Models.Iterator _iterator, Models.IModelObject _currentModel)
+        {
+            Iterator = _iterator;
+            CurrentModel = _currentModel;
+        }
+
+        public bool Iterate()
+        {
+            CurrentModel = Iterator.Iterate(Root);
+            return Iterator.HasMore;
+        }
+
+        public bool HasMore => Iterator.HasMore;
+
+        public int Index => Iterator.Index;
     }
+
 }

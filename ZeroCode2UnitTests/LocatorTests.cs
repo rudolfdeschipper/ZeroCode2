@@ -90,9 +90,8 @@ namespace ZeroCode2UnitTests
         [TestMethod]
         public void TestLocateWithLoopStackPeekTop()
         {
-            var im = new ZeroCode2.Interpreter.IteratorManager();
-            var it = new ZeroCode2.Models.Iterator();
-            im.Iterator = it;
+            var im = new ZeroCode2.Interpreter.IteratorManager(new ZeroCode2.Models.Iterator());
+
             im.Path = "@ViewModels";
             im.Root = (new ZeroCode2.Models.PropertyLocator(im.Path, ModelCollector, null)).Locate();
 
@@ -111,9 +110,7 @@ namespace ZeroCode2UnitTests
         [TestMethod]
         public void TestLocateWithLoopX()
         {
-            var im = new ZeroCode2.Interpreter.IteratorManager();
-            var it = new ZeroCode2.Models.Iterator();
-            im.Iterator = it;
+            var im = new ZeroCode2.Interpreter.IteratorManager(new ZeroCode2.Models.Iterator());
             im.Path = "@ViewModels";
             im.Root = (new ZeroCode2.Models.PropertyLocator(im.Path, ModelCollector, null)).Locate();
 
@@ -132,9 +129,7 @@ namespace ZeroCode2UnitTests
         [TestMethod]
         public void TestLocateWithLoopExplicit()
         {
-            var im = new ZeroCode2.Interpreter.IteratorManager();
-            var it = new ZeroCode2.Models.Iterator();
-            im.Iterator = it;
+            var im = new ZeroCode2.Interpreter.IteratorManager(new ZeroCode2.Models.Iterator());
             im.Path = "@ViewModels";
             im.Root = (new ZeroCode2.Models.PropertyLocator(im.Path, ModelCollector, null)).Locate();
 
@@ -148,6 +143,45 @@ namespace ZeroCode2UnitTests
 
             Assert.IsNotNull(outp);
             Assert.AreEqual(outp.GetText(), "75");
+        }
+
+        [TestMethod]
+        public void TestIterationWithLoopExplicit()
+        {
+            var im = new ZeroCode2.Interpreter.IteratorManager(new ZeroCode2.Models.Iterator());
+
+            im.Path = "@Models";
+            im.Root = (new ZeroCode2.Models.PropertyLocator(im.Path, ModelCollector, null)).Locate();
+
+            LoopStack = new Stack<ZeroCode2.Interpreter.IteratorManager>();
+            LoopStack.Push(im);
+
+            var locator = new ZeroCode2.Models.PropertyLocator("Models.Name.Title", ModelCollector, LoopStack);
+
+            var outp = locator.Locate();
+
+            Assert.IsNotNull(outp);
+            Assert.AreEqual(outp.GetText(), "Name");
+
+            im.Iterate();
+
+            locator = new ZeroCode2.Models.PropertyLocator("Models.Name.Title", ModelCollector, LoopStack);
+
+            outp = locator.Locate();
+
+            Assert.IsNotNull(outp);
+            Assert.AreEqual(outp.GetText(), "Generic Title");
+
+            var hasMore = im.Iterate();
+
+            locator = new ZeroCode2.Models.PropertyLocator("Models.Name.Title", ModelCollector, LoopStack);
+
+            outp = locator.Locate();
+
+            Assert.IsNull(outp);
+            Assert.IsFalse(hasMore);
+
+            LoopStack = null;
         }
     }
 }
