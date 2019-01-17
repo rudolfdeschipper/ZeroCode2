@@ -398,6 +398,11 @@ namespace ZeroCode2.Models
             else
             {
                 // we're at the end of the path
+                // we're looking for the Name element, so return the current root
+                if (pathElements[currentPosition] == "$")
+                {
+                    return CurrentRoot;
+                }
                 // if it is an object, find an element with the name we are looking for, or null
                 if (CurrentRoot.Name != pathElements[currentPosition] && CurrentRoot.IsObject())
                 {
@@ -486,6 +491,11 @@ namespace ZeroCode2.Models
                                 propResolver.PopulateProperties(it.CurrentModel);
                             }
 
+                            // we're looking for the Name element, so return the current root
+                            if (currentPosition == pathElements.Length- 1 && pathElements.Last().EndsWith("$"))
+                            {
+                                return CurrentRoot != null;
+                            }
                             // step one deeper in the model, as the iterated element is not part of the path
 
                             CurrentRoot = it.CurrentModel?.AsComposite()?.Value.SingleOrDefault(mp => mp.Name == pathElements[currentPosition] && !(mp.Modified && mp.Modifier == "-"));
@@ -502,7 +512,6 @@ namespace ZeroCode2.Models
             else
             {
                 // we are at second or higher element, go on looking
-                // this does not look right --->
                 if (CurrentRoot == null || currentPosition > 1) // once we are past the first one or two, we need to walk the object graph
                 {
                     // 8. dive into the oldRoot
@@ -513,6 +522,14 @@ namespace ZeroCode2.Models
                             PropertyResolver propResolver = new PropertyResolver();
                             propResolver.PopulateProperties(oldRoot);
                         }
+
+                        // we're looking for the Name element, so return the current root
+                        if (currentPosition == pathElements.Length - 1 && pathElements.Last().EndsWith("$"))
+                        {
+                            CurrentRoot = oldRoot;
+                            return CurrentRoot != null;
+                        }
+
                         CurrentRoot = oldRoot.AsComposite().Value.SingleOrDefault(mp => mp.Name == pathElements[currentPosition] && !(mp.Modified && mp.Modifier == "-"));
                     }
                     else

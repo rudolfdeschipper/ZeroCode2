@@ -51,7 +51,7 @@ IGNORE: ~('\n'|'\r')+;
 
 mode EX;
 EXPRC : '>' -> popMode;
-EXIGNORE: ('#'|'@')? ID (DOT ID)*;
+EXIGNORE: ('#'|'@')? (ID DOT)* (ID | '$');
 
 mode IF_MODE;
 IF_WS     : [ \r\t\n]+ -> more, popMode;

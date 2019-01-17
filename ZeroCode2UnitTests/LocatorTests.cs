@@ -146,6 +146,25 @@ namespace ZeroCode2UnitTests
         }
 
         [TestMethod]
+        public void TestLocateWithLoopExplicitIteratorName()
+        {
+            var im = new ZeroCode2.Interpreter.IteratorManager(new ZeroCode2.Models.Iterator());
+            im.Path = "@ViewModels";
+            im.Root = (new ZeroCode2.Models.PropertyLocator(im.Path, ModelCollector, null)).Locate();
+
+            LoopStack = new Stack<ZeroCode2.Interpreter.IteratorManager>();
+            LoopStack.Push(im);
+            var locator = new ZeroCode2.Models.PropertyLocator("ViewModels.$", ModelCollector, LoopStack);
+
+            var outp = locator.Locate();
+
+            LoopStack = null;
+
+            Assert.IsNotNull(outp);
+            Assert.AreEqual(outp.Name, "Person");
+        }
+
+        [TestMethod]
         public void TestIterationWithLoopExplicit()
         {
             var im = new ZeroCode2.Interpreter.IteratorManager(new ZeroCode2.Models.Iterator());

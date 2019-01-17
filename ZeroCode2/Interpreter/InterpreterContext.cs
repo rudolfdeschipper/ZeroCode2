@@ -32,27 +32,12 @@ namespace ZeroCode2.Interpreter
 
             var mp = locator.Locate();
 
-            if (mp == null)
-            {
-                // try the loops
-                // locate loop identifier
-                var parts = expression.Split('.');
-                var iterator = LoopStack.FirstOrDefault(l => l.Path == parts[0]);
-
-                if (iterator != null)
-                {
-                    // use the rest of the expression as path into the loop element
-                    expression = expression.Remove(0, parts[0].Length + 1);
-                    mp = locator.Locate();
-                }
-                else
-                {
-                    throw new ApplicationException(string.Format("Could not find loop identifier {0}", parts[0]));
-                }
-            }
-
             if (mp != null)
             {
+                if (expression.EndsWith("$"))
+                {
+                    return mp.Name;
+                }
                 return mp.GetText();
             }
             else
@@ -102,47 +87,19 @@ namespace ZeroCode2.Interpreter
 
             iterator.Path = expression;
 
-            // Need to figure this out here, preferably, to avoid lots of ifs when evaluating:
-            // - what sort of loop are we trying to run here?
             var locator = new Models.PropertyLocator(expression, Model, LoopStack);
 
-            // -- top level (%Loop:@Screen) - @ to start and no dots in the path - Iterate over the SingleModels
-            if (expression[0] == '@')
+            if (expression.StartsWith("@"))
             {
-                iterator.Root = locator.Locate();
                 // throw away "@"
                 iterator.Path = iterator.Path.Substring(1);
             }
-            else
-            {
-                // -- use of "Loopx" construct (%Loop:Loop1.Panel) - dots in the path, use of word "loop" in the path identifier
-                if (expression.StartsWith("Loop"))
-                {
-                    int level = int.Parse(expression.Split('.')[0].Substring(4));
-                    var parentIterator = LoopStack.Skip(level).FirstOrDefault();
-                    var root = parentIterator.Root;
-                    iterator.Root = locator.Locate();
-                }
-                else
-                {
-                    // -- new loop with a path to a previous loop (%Loop:Screen.Panel) - dots in the path - locate that previous path and treat it as relative path
-                    if (expression.Contains("."))
-                    {
-                        var parentPath = expression.Split('.')[0];
-                        var parentIterator = LoopStack.FirstOrDefault(l => l.Path == parentPath);
 
-                        expression = expression.Substring(parentPath.Length + 1);
-                        // shorten the path
-                        iterator.Path = expression;
-                        iterator.Root = locator.Locate();
-                    }
-                    else
-                    {
-                        // -- relative to previous loop (%Loop:Panel) - no dots in the path - find that loop and the expression and iterate over its elements
-                        var parentIterator = LoopStack.Peek();
-                        iterator.Root = locator.Locate();
-                    }
-                }
+            iterator.Root = locator.Locate();
+
+            if (iterator.Root == null)
+            {
+                throw new ApplicationException(string.Format("Could not understand this loop expression {0}", expression));
             }
 
             LoopStack.Push(iterator);

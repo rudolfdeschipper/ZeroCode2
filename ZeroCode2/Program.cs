@@ -278,6 +278,9 @@ namespace ZeroCode2
                 locator = new Models.PropertyLocator("Title.SomeOtherProperty.Name", modelCollector, loopStack);
                 el = locator.Locate();
                 logger.Info("Located: {0} = {1}", el.Name, el.GetText());
+                locator = new Models.PropertyLocator("$", modelCollector, loopStack);
+                el = locator.Locate();
+                logger.Info("Located: $ = {0}", el.Name);
             }
             else
             {
