@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
+using ZeroCode2.Models;
 
 namespace ZeroCode2.Interpreter
 {
@@ -144,6 +145,13 @@ namespace ZeroCode2.Interpreter
         public bool Iterate()
         {
             CurrentModel = Iterator.Iterate(Root);
+
+            if (CurrentModel != null && !CurrentModel.IsResolved)
+            {
+                PropertyResolver propResolver = new PropertyResolver();
+                propResolver.PopulateProperties(CurrentModel);
+            }
+
             return Iterator.HasMore;
         }
 

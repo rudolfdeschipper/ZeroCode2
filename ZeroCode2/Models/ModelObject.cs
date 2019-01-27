@@ -484,11 +484,8 @@ namespace ZeroCode2.Models
                             if (it.CurrentModel == null)
                             {
                                 it.Iterate();
-                            }
-                            if (it.CurrentModel != null && !it.CurrentModel.IsResolved)
-                            {
-                                PropertyResolver propResolver = new PropertyResolver();
-                                propResolver.PopulateProperties(it.CurrentModel);
+
+                                CurrentRoot = it.CurrentModel;
                             }
 
                             // we're looking for the Name element, so return the current root
