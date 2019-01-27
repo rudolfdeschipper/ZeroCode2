@@ -495,9 +495,8 @@ namespace ZeroCode2.Models
                             if (it.CurrentModel == null)
                             {
                                 it.Iterate();
-
-                                CurrentRoot = it.CurrentModel;
                             }
+                            CurrentRoot = it.CurrentModel;
 
                             // we're looking for the Name element, so return the current root
                             if (currentPosition == PathElements.Length- 1 && PathElements.Last().EndsWith("$"))
