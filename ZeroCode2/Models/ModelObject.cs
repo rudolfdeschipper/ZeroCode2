@@ -503,14 +503,10 @@ namespace ZeroCode2.Models
                             {
                                 return CurrentRoot != null;
                             }
+
                             // step one deeper in the model, as the iterated element is not part of the path
-
-                            CurrentRoot = it.CurrentModel?.AsComposite()?.Value.SingleOrDefault(mp => mp.Name == PathElements[currentPosition] && !(mp.Modified && mp.Modifier == "-"));
-
-                            if (CurrentRoot == null)
-                            {
-                                CurrentRoot = it.CurrentModel;
-                            }
+                            // if this fails, fall back to the iteration current model
+                            CurrentRoot = it.CurrentModel?.AsComposite()?.Value.SingleOrDefault(mp => mp.Name == PathElements[currentPosition] && !(mp.Modified && mp.Modifier == "-")) ?? it.CurrentModel;
                         }
                     }
                     return CurrentRoot != null;
