@@ -146,12 +146,6 @@ namespace ZeroCode2.Interpreter
         {
             CurrentModel = Iterator.Iterate(Root);
 
-            if (CurrentModel != null && !CurrentModel.IsResolved)
-            {
-                PropertyResolver propResolver = new PropertyResolver();
-                propResolver.PopulateProperties(CurrentModel);
-            }
-
             return Iterator.HasMore;
         }
 

@@ -34,6 +34,7 @@ namespace ZeroCode2.Models
         ModelObject<List<IModelObject>> AsComposite();
 
         string GetText();
+        void Resolve();
     }
 
     public abstract class ModelObject<T> : IModelObject
@@ -97,6 +98,18 @@ namespace ZeroCode2.Models
         public ModelObject<List<IModelObject>> AsComposite()
         {
             return As<List<IModelObject>>();
+        }
+
+        /// <summary>
+        /// If the properties of this object are not yet resolved, resolve them, otherwise return
+        /// </summary>
+        public void Resolve()
+        {
+            if (!IsResolved) // not strictly needed as this check is also done in the PropertyResolved
+            {
+                PropertyResolver propResolver = new PropertyResolver();
+                propResolver.PopulateProperties(this);
+            }
         }
 
         public abstract string GetText();
@@ -334,11 +347,6 @@ namespace ZeroCode2.Models
                 return null;
             }
 
-            if (currentItem == -1 && !mp.IsResolved)
-            {
-                PropertyResolver propResolver = new PropertyResolver();
-                propResolver.PopulateProperties(mp);
-            }
             HasMore = obj.Value.Count > (currentItem + 1);
 
             if (!HasMore)
@@ -349,6 +357,11 @@ namespace ZeroCode2.Models
 
             HasMore = obj.Value.Count > (currentItem + 1);
 
+            if (obj.Value[currentItem] != null)
+            {
+                obj.Value[currentItem].Resolve();
+            }
+
             return obj.Value[currentItem];
         }
 
@@ -358,7 +371,7 @@ namespace ZeroCode2.Models
 
     public class PropertyLocator
     {
-        public string[] pathElements { get; set; }
+        public string[] PathElements { get; set; }
 
         private int currentPosition = 0;
 
@@ -368,7 +381,7 @@ namespace ZeroCode2.Models
 
         public PropertyLocator(string path, ModelCollector collector, Stack<Interpreter.IteratorManager> loopStack)
         {
-            pathElements = path.Split('.');
+            PathElements = path.Split('.');
             CurrentRoot = null;
             Collector = collector;
             LoopStack = loopStack;
@@ -381,15 +394,13 @@ namespace ZeroCode2.Models
             {
                 return null;
             }
-
-            if (!CurrentRoot.IsResolved)
+            if (CurrentRoot != null)
             {
-                PropertyResolver propResolver = new PropertyResolver();
-                propResolver.PopulateProperties(CurrentRoot);
+                CurrentRoot.Resolve();
             }
 
             // 2. Now we have a root, check if there is still a path to run
-            if (currentPosition < pathElements.Length - 1)
+            if (currentPosition < PathElements.Length - 1)
             {
                 // yes, so recurse
                 currentPosition++;
@@ -399,20 +410,20 @@ namespace ZeroCode2.Models
             {
                 // we're at the end of the path
                 // we're looking for the Name element, so return the current root
-                if (pathElements[currentPosition] == "$")
+                if (PathElements[currentPosition] == "$")
                 {
                     return CurrentRoot;
                 }
                 // if it is an object, find an element with the name we are looking for, or null
-                if (CurrentRoot.Name != pathElements[currentPosition] && CurrentRoot.IsObject())
+                if (CurrentRoot.Name != PathElements[currentPosition] && CurrentRoot.IsObject())
                 {
-                    var mp = CurrentRoot.AsComposite().Value.FirstOrDefault(m => m.Name == pathElements[currentPosition] && !(m.Modified && m.Modifier == "-"));
+                    var mp = CurrentRoot.AsComposite().Value.FirstOrDefault(m => m.Name == PathElements[currentPosition] && !(m.Modified && m.Modifier == "-"));
                     return mp;
                 }
                 else
                 {
                     // return the root itself if it is the one we need, otherwise null
-                    return CurrentRoot.Name == pathElements[currentPosition] ? CurrentRoot : null;
+                    return CurrentRoot.Name == PathElements[currentPosition] ? CurrentRoot : null;
                 }
             }
         }
@@ -428,18 +439,18 @@ namespace ZeroCode2.Models
             // so look for the section and locate the second element in the path and set this as root
             if (currentPosition == 0)
             {
-                if (pathElements[currentPosition].StartsWith("@"))
+                if (PathElements[currentPosition].StartsWith("@"))
                 {
-                    var models = Collector.SingleModels.SingleOrDefault(s => s.Name == pathElements[currentPosition]);
+                    var models = Collector.SingleModels.SingleOrDefault(s => s.Name == PathElements[currentPosition]);
                     if (models != null)
                     {
                         CurrentRoot = models;
                     }
                     return CurrentRoot != null;
                 }
-                if (pathElements[currentPosition].StartsWith("#"))
+                if (PathElements[currentPosition].StartsWith("#"))
                 {
-                    var models = Collector.ParameterModels.SingleOrDefault(s => s.Name == pathElements[currentPosition]);
+                    var models = Collector.ParameterModels.SingleOrDefault(s => s.Name == PathElements[currentPosition]);
                     if (models != null)
                     {
                         CurrentRoot = models;
@@ -454,9 +465,9 @@ namespace ZeroCode2.Models
                 if (LoopStack != null)
                 {
                     // 4. Check for "Loopx" as path identifier, if so select the correct iterator as root
-                    if (pathElements[currentPosition].StartsWith("Loop"))
+                    if (PathElements[currentPosition].StartsWith("Loop"))
                     {
-                        var loopIndex = int.Parse(pathElements[currentPosition].Substring(4));
+                        var loopIndex = int.Parse(PathElements[currentPosition].Substring(4));
                         if (LoopStack.Count > loopIndex)
                         {
                             var mp = LoopStack.ElementAt(loopIndex);
@@ -472,7 +483,7 @@ namespace ZeroCode2.Models
                     // 5. Check if the first path identifier exists as an iterator - if so, get the root from there
                     if (LoopStack.Count > 0)
                     {
-                        var it = LoopStack.SingleOrDefault(m => m.Root?.Name.Substring(1) == pathElements[currentPosition]);
+                        var it = LoopStack.SingleOrDefault(m => m.Root?.Name.Substring(1) == PathElements[currentPosition]);
 
                         // 6. No iterator was found, assume it is the top one, select that as root
                         if (it == null)
@@ -489,13 +500,13 @@ namespace ZeroCode2.Models
                             }
 
                             // we're looking for the Name element, so return the current root
-                            if (currentPosition == pathElements.Length- 1 && pathElements.Last().EndsWith("$"))
+                            if (currentPosition == PathElements.Length- 1 && PathElements.Last().EndsWith("$"))
                             {
                                 return CurrentRoot != null;
                             }
                             // step one deeper in the model, as the iterated element is not part of the path
 
-                            CurrentRoot = it.CurrentModel?.AsComposite()?.Value.SingleOrDefault(mp => mp.Name == pathElements[currentPosition] && !(mp.Modified && mp.Modifier == "-"));
+                            CurrentRoot = it.CurrentModel?.AsComposite()?.Value.SingleOrDefault(mp => mp.Name == PathElements[currentPosition] && !(mp.Modified && mp.Modifier == "-"));
 
                             if (CurrentRoot == null)
                             {
@@ -514,20 +525,16 @@ namespace ZeroCode2.Models
                     // 8. dive into the oldRoot
                     if (oldRoot != null && oldRoot.IsObject())
                     {
-                        if (!oldRoot.IsResolved)
-                        {
-                            PropertyResolver propResolver = new PropertyResolver();
-                            propResolver.PopulateProperties(oldRoot);
-                        }
+                        oldRoot.Resolve();
 
                         // we're looking for the Name element, so return the current root
-                        if (currentPosition == pathElements.Length - 1 && pathElements.Last().EndsWith("$"))
+                        if (currentPosition == PathElements.Length - 1 && PathElements.Last().EndsWith("$"))
                         {
                             CurrentRoot = oldRoot;
                             return CurrentRoot != null;
                         }
 
-                        CurrentRoot = oldRoot.AsComposite().Value.SingleOrDefault(mp => mp.Name == pathElements[currentPosition] && !(mp.Modified && mp.Modifier == "-"));
+                        CurrentRoot = oldRoot.AsComposite().Value.SingleOrDefault(mp => mp.Name == PathElements[currentPosition] && !(mp.Modified && mp.Modifier == "-"));
                     }
                     else
                     {
