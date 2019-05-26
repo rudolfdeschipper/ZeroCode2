@@ -31,9 +31,18 @@ namespace ZeroCode2.Interpreter
 
         public InterpreterInstructionBase Execute(InterpreterContext context)
         {
-            var result = _evaluator.Evaluate(context, Instruction);
 
-            return SetResult(result);
+            try
+            {
+                var result = _evaluator.Evaluate(context, Instruction);
+
+                return SetResult(result);
+            }
+            catch( Exception ex)
+            {
+                var res = new Evaluator.EvaluatorResult(ex);
+                return SetResult(res);
+            }
         }
     }
 }

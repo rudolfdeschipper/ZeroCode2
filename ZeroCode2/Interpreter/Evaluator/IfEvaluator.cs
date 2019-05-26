@@ -48,7 +48,7 @@ namespace ZeroCode2.Interpreter.Evaluator
             else
             {
                 var evalRes = evaluator.Evaluate(context, leftSide);
-                if (evalRes.Result)
+                if (evalRes.Result == EvaluationResultValues.True)
                 {
                     value = evalRes.Value;
                 }

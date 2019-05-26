@@ -11,21 +11,34 @@ namespace ZeroCode2.Interpreter.Evaluator
         EvaluatorResult Evaluate(IInterpreterContext context, string expression);
     }
 
+    public enum EvaluationResultValues
+    {
+        True,
+        False,
+        Failed
+    }
+
     public class EvaluatorResult
     {
-        public bool Result { get; set; }
+        public EvaluationResultValues Result { get; set; }
         public string Value { get; set; }
 
         public EvaluatorResult(bool res, string val)
         {
-            Result = res;
+            Result = res ? EvaluationResultValues.True : EvaluationResultValues.False;
             Value = val;
         }
 
-        public EvaluatorResult()
+        public EvaluatorResult(Exception ex)
         {
-
+            Result = EvaluationResultValues.Failed;
+            Value = ex.Message;
         }
+
+        //public EvaluatorResult()
+        //{
+
+        //}
     }
 
 }

@@ -362,8 +362,18 @@ namespace ZeroCode2
                     logger.Trace("Executing {0} on Line {1} Pos {2}", PC.Instruction, PC.Line, PC.Position);
 
                     next = PC.Execute(context);
+                    if (PC.Result.Result == Interpreter.Evaluator.EvaluationResultValues.Failed)
+                    {
+                        string error = string.Format("Error during execution: {0} Line {1}, Pos {2}: {3}", PC.Result.Value, PC.Line, PC.Position, PC.Instruction);
 
-                    context.EmitResult(PC.Result.Value);
+                        HasErrors = true;
+                        Errors.Add(error);
+                        logger.Error(error);
+                    }
+                    else
+                    {
+                        context.EmitResult(PC.Result.Value);
+                    }
 
                 }
                 catch (Exception e)

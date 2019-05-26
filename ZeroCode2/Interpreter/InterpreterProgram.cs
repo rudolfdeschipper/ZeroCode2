@@ -107,6 +107,7 @@ namespace ZeroCode2.Interpreter
             {
                 instruction1.Next = closestLoop;
                 closestLoop.Alternative = instruction2;
+                closestLoop.EndBranch = instruction2;
             }
             else
             {
@@ -190,6 +191,7 @@ namespace ZeroCode2.Interpreter
                     // this was an else
                     closestIfOrElse.Next = instruction;
                 }
+                (closestIfOrElse as Interpreter.InterpreterInstructionBranch).EndBranch = instruction;
             }
             else
             {
