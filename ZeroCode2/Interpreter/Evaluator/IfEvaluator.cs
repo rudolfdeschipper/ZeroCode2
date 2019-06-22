@@ -6,7 +6,7 @@ using System.Threading.Tasks;
 
 namespace ZeroCode2.Interpreter.Evaluator
 {
-    class IfEvaluator : IEvaluator
+    public class IfEvaluator : IEvaluator
     {
         private bool IsNegate;
         private IEvaluator evaluator;
@@ -39,23 +39,30 @@ namespace ZeroCode2.Interpreter.Evaluator
 
         public EvaluatorResult Evaluate(IInterpreterContext context, string expression)
         {
-            string value;
+            string value = "";
 
-            if (evaluator is Evaluator.ExpressionEvaluator)
+            try
             {
-                value = context.EvaluateProperty(leftSide);
-            }
-            else
-            {
-                var evalRes = evaluator.Evaluate(context, leftSide);
-                if (evalRes.Result == EvaluationResultValues.True)
+                if (evaluator is Evaluator.ExpressionEvaluator)
                 {
-                    value = evalRes.Value;
+                    value = context.EvaluateProperty(leftSide);
                 }
                 else
                 {
-                    value = "error";
+                    var evalRes = evaluator.Evaluate(context, leftSide);
+                    if (evalRes.Result == EvaluationResultValues.True)
+                    {
+                        value = evalRes.Value;
+                    }
+                    else
+                    {
+                        value = "error";
+                    }
                 }
+            }
+            catch (Exception ex)
+            {
+                return new EvaluatorResult(ex);
             }
 
             value = value.ToLower();

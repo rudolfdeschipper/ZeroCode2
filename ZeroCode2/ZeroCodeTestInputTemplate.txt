@@ -11,7 +11,7 @@ using =<#Parameters.nameSpace>.Models;
 
 %Loop:Screen.Panel
 %If:!Panel.Edit=true
-	var Title = "=<Panel.Title>" + %If:#Parameters.debug=on " Debug is On" %EndIf ;
+	var Title = "=<Panel.Title>" + %If:#Parameters.debug=on =<Panel.Title>.=<Panel.Title> %EndIf ;
 	@Some if(x==y) 
 	{ 
 		other = 2; 

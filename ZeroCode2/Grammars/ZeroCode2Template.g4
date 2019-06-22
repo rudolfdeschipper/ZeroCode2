@@ -24,7 +24,7 @@ command
 	: filec			#filecCommandIgnore
 	| fileo			#fileoCommandIgnore
 	| include		#includeCommandIgnore
-	| IF IFTEXT		#IfCommand
+	| IF IFTEXT IF_WS		#IfCommand
 	| LOOP IGNORE	#LoopCommand
 	| ENDFILE		#EndFileCommand
 	| ENDIF			#EndIfCommand

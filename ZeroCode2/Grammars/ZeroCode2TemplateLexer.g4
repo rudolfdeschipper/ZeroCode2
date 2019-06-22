@@ -31,10 +31,6 @@ ERROR	: '%Error:' -> pushMode(FC);
 LOG		: '%Log:' -> pushMode(FC);
 TRACE	: '%Trace:' -> pushMode(FC);
 
-DOT : '.';
-EXCL: '!';
-EQU: '=';
-
 EXPRO : '=<' -> pushMode(EX);
 
 ID : [a-zA-Z][a-zA-Z_0-9]*;
@@ -45,6 +41,11 @@ WS     : [ \r\t\n]+;
 
 TEXT : ~('%'|'=')+;
 
+DOT : '.';
+EXCL: '!';
+EQU: '=';
+QUEST: '?';
+
 mode FC;
 NL: '\r'? '\n' -> more, popMode;
 IGNORE: ~('\n'|'\r')+;
@@ -54,5 +55,5 @@ EXPRC : '>' -> popMode;
 EXIGNORE: ('#'|'@')? (ID DOT)* (ID | '$');
 
 mode IF_MODE;
-IF_WS     : [ \r\t\n]+ -> more, popMode;
-IFTEXT : EXCL? ('#'|'@')? ID (DOT ID)* (EQU ID)?;
+IFTEXT : EXCL? ('#'|'@')? (ID DOT)* (ID | '$') ((EQU ID) | QUEST)?;
+IF_WS     : [ \r\t\n]+ -> popMode;

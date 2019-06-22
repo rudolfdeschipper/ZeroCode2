@@ -185,13 +185,13 @@ namespace ZeroCode2.Interpreter
                 {
                     // this was an if without else
                     (closestIfOrElse as Interpreter.InterpreterInstructionBranch).Alternative = instruction;
+                    (closestIfOrElse as Interpreter.InterpreterInstructionBranch).EndBranch = instruction;
                 }
                 else
                 {
                     // this was an else
                     closestIfOrElse.Next = instruction;
                 }
-                (closestIfOrElse as Interpreter.InterpreterInstructionBranch).EndBranch = instruction;
             }
             else
             {
