@@ -194,11 +194,10 @@ namespace ZeroCode2.Models
             if (pair.Inherits == true)
             {
                 var locator = new Models.PropertyLocator("@" + pair.InheritsFrom, modelList, null);
-                var mp = locator.Locate();
 
-                if (mp != null)
+                if (locator.Locate())
                 {
-                    pair.ParentObject = mp;
+                    pair.ParentObject = locator.LocatedProperty();
                 }
 
                 ok &= pair.ParentObject != null;
@@ -224,11 +223,10 @@ namespace ZeroCode2.Models
             if (model.Inherits == true)
             {
                 var locator = new Models.PropertyLocator("@" + model.InheritsFrom, modelList, null);
-                var mp = locator.Locate();
 
-                if (mp != null)
+                if (locator.Locate())
                 {
-                    model.ParentObject = mp;
+                    model.ParentObject = locator.LocatedProperty();
                 }
 
                 // return if resolved
@@ -387,12 +385,17 @@ namespace ZeroCode2.Models
             LoopStack = loopStack;
         }
 
-        public IModelObject Locate()
+        public IModelObject LocatedProperty()
+        {
+            return CurrentRoot;
+        }
+
+        public bool Locate()
         {
             // 1. Check of CurrentRoot is set
             if (!DetermineRoot())
             {
-                return null;
+                return false;
             }
             if (CurrentRoot != null)
             {
@@ -412,18 +415,19 @@ namespace ZeroCode2.Models
                 // we're looking for the Name element, so return the current root
                 if (PathElements[currentPosition] == "$")
                 {
-                    return CurrentRoot;
+                    return true;
                 }
                 // if it is an object, find an element with the name we are looking for, or null
                 if (CurrentRoot.Name != PathElements[currentPosition] && CurrentRoot.IsObject())
                 {
                     var mp = CurrentRoot.AsComposite().Value.FirstOrDefault(m => m.Name == PathElements[currentPosition] && !(m.Modified && m.Modifier == "-"));
-                    return mp;
+                    CurrentRoot = mp;
+                    return mp != null;
                 }
                 else
                 {
                     // return the root itself if it is the one we need, otherwise null
-                    return CurrentRoot.Name == PathElements[currentPosition] ? CurrentRoot : null;
+                    return CurrentRoot.Name == PathElements[currentPosition];
                 }
             }
         }

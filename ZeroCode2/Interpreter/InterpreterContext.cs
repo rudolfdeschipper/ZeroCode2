@@ -27,14 +27,21 @@ namespace ZeroCode2.Interpreter
             }
         }
 
+        public bool PropertyExists(string expression)
+        {
+            var locator = new Models.PropertyLocator(expression, Model, LoopStack);
+
+            return locator.Locate();
+        }
+
         public string EvaluateProperty(string expression)
         {
             var locator = new Models.PropertyLocator(expression, Model, LoopStack);
 
-            var mp = locator.Locate();
-
-            if (mp != null)
+            if (locator.Locate() == true)
             {
+                var mp = locator.LocatedProperty();
+
                 if (expression.EndsWith("$"))
                 {
                     return mp.Name;
@@ -96,12 +103,12 @@ namespace ZeroCode2.Interpreter
                 iterator.Path = iterator.Path.Substring(1);
             }
 
-            iterator.Root = locator.Locate();
-
-            if (iterator.Root == null)
+            if (locator.Locate() == false)
             {
                 throw new ApplicationException(string.Format("Could not understand this loop expression {0}", expression));
             }
+
+            iterator.Root = locator.LocatedProperty();
 
             LoopStack.Push(iterator);
         }

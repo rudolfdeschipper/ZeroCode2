@@ -36,6 +36,11 @@ namespace ZeroCode2UnitTests
         {
             throw new NotImplementedException();
         }
+
+        public bool PropertyExists(string expression)
+        {
+            throw new NotImplementedException();
+        }
     }
 
     [TestClass]

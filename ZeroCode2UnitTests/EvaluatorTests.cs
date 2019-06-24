@@ -48,8 +48,7 @@ namespace ZeroCode2UnitTests
 
             var res = IfEval.Evaluate(context, "");
 
-            Assert.IsFalse(res.Value == string.Empty);
-            Assert.IsFalse(res.Result == ZeroCode2.Interpreter.Evaluator.EvaluationResultValues.True);
+            Assert.IsTrue(res.Result == ZeroCode2.Interpreter.Evaluator.EvaluationResultValues.False);
         }
 
         [TestMethod]

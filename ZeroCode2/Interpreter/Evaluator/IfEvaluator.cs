@@ -11,6 +11,7 @@ namespace ZeroCode2.Interpreter.Evaluator
         private bool IsNegate;
         private IEvaluator evaluator;
         private string leftSide, rightSide;
+        private readonly bool checkForExistence = false;
 
         public IfEvaluator(string expression)
         {
@@ -27,11 +28,9 @@ namespace ZeroCode2.Interpreter.Evaluator
             // check for %If:SomeProperty?
             if (leftSide.EndsWith("?"))
             {
-                // rightside must be interpreted as "not empty"
+                // rightside must be interpreted as "exists"
                 leftSide = leftSide.Substring(0, leftSide.Length - 1); // strip off the "?" at the end
-                rightSide = "";
-                IsNegate = true;
-                // so the actual test becomes leftSide != ""
+                checkForExistence = true;
             }
             evaluator = Interpreter.ExpressionBuilder.BuildExpressionEvaluator(leftSide);
 
@@ -43,6 +42,16 @@ namespace ZeroCode2.Interpreter.Evaluator
 
             try
             {
+                if (checkForExistence)
+                {
+                    var res = context.PropertyExists(leftSide);
+                    if (IsNegate)
+                    {
+                        res = !res;
+                    }
+                    return new EvaluatorResult(res, string.Empty);
+                }
+
                 if (evaluator is Evaluator.ExpressionEvaluator)
                 {
                     value = context.EvaluateProperty(leftSide);

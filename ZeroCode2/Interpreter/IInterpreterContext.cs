@@ -4,6 +4,7 @@
     {
         Emitter.IEmitter Emitter { get; set; }
         ModelCollector Model { get; set; }
+        bool PropertyExists(string expression);
         string EvaluateProperty(string expression);
         void EmitResult(string Result);
         IteratorManager EvaluateLoop(string expression);

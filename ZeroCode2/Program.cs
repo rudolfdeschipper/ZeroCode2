@@ -217,8 +217,8 @@ namespace ZeroCode2
                 do
                 {
                     var itlocator = new Models.PropertyLocator("@Models", modelCollector, null);
-
-                    var c = it.Iterate(itlocator.Locate());
+                    itlocator.Locate();
+                    var c = it.Iterate(itlocator.LocatedProperty());
                     logger.Info("Model: " + c.Name);
 
                     var it2 = new Models.Iterator();
@@ -240,7 +240,8 @@ namespace ZeroCode2
 
                 // test absolute locator:
                 var locator = new Models.PropertyLocator("#Parameters.appName", modelCollector, null);
-                var el = locator.Locate();
+                locator.Locate();
+                var el = locator.LocatedProperty();
                 //logger.Info("Located: {0} = {1}", el.Name, el.Value.GetText());
                 //el = locator.Locate("@Models.Person.ID.Name", modelCollector);
                 //logger.Info("Located: {0} = {1}", el.Name, el.Value.GetText());
@@ -258,28 +259,33 @@ namespace ZeroCode2
 
                 locator = new Models.PropertyLocator("@ViewModels", modelCollector, null);
                 it = new Models.Iterator();
-
-                var c4 = it.Iterate(locator.Locate());
+                locator.Locate();
+                var c4 = it.Iterate(locator.LocatedProperty());
 
                 var loopStack = new Stack<Interpreter.IteratorManager>();
                 loopStack.Push(new Interpreter.IteratorManager(it, c4) { Path = "@ViewModels" });
                 locator = new Models.PropertyLocator("Name.Length", modelCollector, loopStack);
-                el = locator.Locate();
+                locator.Locate();
+                el = locator.LocatedProperty();
                 logger.Info("Located: {0} = {1}", el.Name, el.GetText());
 
                 locator = new Models.PropertyLocator("Test.Title", modelCollector, loopStack);
-                el = locator.Locate();
+                locator.Locate();
+                el = locator.LocatedProperty();
                 logger.Info("Located: {0} = {1}", el.Name, el.GetText());
 
                 locator = new Models.PropertyLocator("Title.SomeOtherProperty.Title", modelCollector, loopStack);
-                el = locator.Locate();
+                locator.Locate();
+                el = locator.LocatedProperty();
                 logger.Info("Located: {0} = {1}", el.Name, el.GetText());
 
                 locator = new Models.PropertyLocator("Title.SomeOtherProperty.Name", modelCollector, loopStack);
-                el = locator.Locate();
+                locator.Locate();
+                el = locator.LocatedProperty();
                 logger.Info("Located: {0} = {1}", el.Name, el.GetText());
                 locator = new Models.PropertyLocator("$", modelCollector, loopStack);
-                el = locator.Locate();
+                locator.Locate();
+                el = locator.LocatedProperty();
                 logger.Info("Located: $ = {0}", el.Name);
             }
             else
