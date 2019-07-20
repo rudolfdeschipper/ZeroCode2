@@ -215,21 +215,7 @@ namespace ZeroCode2.Models
             if (ok)
             {
                 // check next parents for cycles:
-                var parent = pair.ParentObject;
-                Stack<IModelObject> stack = new Stack<IModelObject>();
-                while (parent != null)
-                {
-                    var cycle = stack.FirstOrDefault(s => s == parent);
-                    if (cycle != null)
-                    {
-                        Errors.Add(string.Format("{0} inheritance defines a cyclic relation.", cycle.Name));
-                        ok = false;
-                        break;
-                    }
-                    stack.Push(parent);
-
-                    parent = parent.ParentObject;
-                }
+                ok &= CheckForCycle(pair);
             }
             if (pair.IsObject())
             {
@@ -265,21 +251,7 @@ namespace ZeroCode2.Models
             if (ok)
             {
                 // check next parents for cycle:
-                var parent = model.ParentObject;
-                Stack<IModelObject> stack = new Stack<IModelObject>();
-                while (parent != null)
-                {
-                    var cycle = stack.FirstOrDefault(s => s == parent);
-                    if (cycle != null)
-                    {
-                        Errors.Add(string.Format("{0} inheritance defines a cyclic relation.", cycle.Name));
-                        ok = false;
-                        break;
-                    }
-                    stack.Push(parent);
-
-                    parent = parent.ParentObject;
-                }
+                ok &= CheckForCycle(model);
             }
             // dive into properties too
             foreach (var item in model.Value)
@@ -290,7 +262,26 @@ namespace ZeroCode2.Models
             return ok;
         }
 
+        private bool CheckForCycle(IModelObject model)
+        {
+            var parent = model.ParentObject;
+            Stack<IModelObject> stack = new Stack<IModelObject>();
+            while (parent != null)
+            {
+                var cycle = stack.FirstOrDefault(s => s == parent);
+                if (cycle != null)
+                {
+                    Errors.Add(string.Format("{0} inheritance defines a cyclic relation.", cycle.Name));
+                    return false;
+                }
+                stack.Push(parent);
+
+                parent = parent.ParentObject;
+            }
+            return true;
+        }
     }
+
 
     /// <summary>
     /// Resolves the properties that are inherited.
