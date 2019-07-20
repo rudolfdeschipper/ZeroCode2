@@ -5,7 +5,7 @@ using System.Linq;
 namespace ZeroCode2.Models
 {
 
-    public interface IModelObject
+    public interface IModelObject : IComparable<IModelObject>
     {
         string Name { get; set; }
 
@@ -113,6 +113,11 @@ namespace ZeroCode2.Models
         }
 
         public abstract string GetText();
+
+        public int CompareTo(IModelObject other)
+        {
+            return this.ToString().CompareTo(other.ToString());
+        }
     }
 
     public class ModelStringObject : ModelObject<string>
@@ -191,7 +196,8 @@ namespace ZeroCode2.Models
         public bool ResolveInheritance(IModelObject pair, ModelCollector modelList)
         {
             var ok = true;
-            if (pair.Inherits == true)
+            // only try to populate it if the ParentObject is still set to null
+            if (pair.Inherits == true && pair.ParentObject == null)
             {
                 var locator = new Models.PropertyLocator("@" + pair.InheritsFrom, modelList, null);
 
@@ -200,10 +206,29 @@ namespace ZeroCode2.Models
                     pair.ParentObject = locator.LocatedProperty();
                 }
 
-                ok &= pair.ParentObject != null;
-                if (pair.ParentObject == null)
+                ok = pair.ParentObject != null;
+                if (!ok)
                 {
-                    Errors.Add(string.Format("{0} inheritance {1} could not be resolved", pair.Name, pair.InheritsFrom));
+                    Errors.Add(string.Format("{0} inheritance to {1} could not be resolved", pair.Name, pair.InheritsFrom));
+                }
+            }
+            if (ok)
+            {
+                // check next parents for cycles:
+                var parent = pair.ParentObject;
+                Stack<IModelObject> stack = new Stack<IModelObject>();
+                while (parent != null)
+                {
+                    var cycle = stack.FirstOrDefault(s => s == parent);
+                    if (cycle != null)
+                    {
+                        Errors.Add(string.Format("{0} inheritance defines a cyclic relation.", cycle.Name));
+                        ok = false;
+                        break;
+                    }
+                    stack.Push(parent);
+
+                    parent = parent.ParentObject;
                 }
             }
             if (pair.IsObject())
@@ -220,7 +245,8 @@ namespace ZeroCode2.Models
         public bool ResolveInheritance(SingleModel model, ModelCollector modelList)
         {
             var ok = true;
-            if (model.Inherits == true)
+            // only try to populate it if the ParentObject is still set to null
+            if (model.Inherits == true && model.ParentObject == null)
             {
                 var locator = new Models.PropertyLocator("@" + model.InheritsFrom, modelList, null);
 
@@ -231,9 +257,28 @@ namespace ZeroCode2.Models
 
                 // return if resolved
                 ok = model.ParentObject != null;
-                if (model.ParentObject == null)
+                if (!ok)
                 {
-                    Errors.Add(string.Format("{0} inheritance {1} could not be resolved", model.Name, model.InheritsFrom));
+                    Errors.Add(string.Format("{0} inheritance to {1} could not be resolved", model.Name, model.InheritsFrom));
+                }
+            }
+            if (ok)
+            {
+                // check next parents for cycle:
+                var parent = model.ParentObject;
+                Stack<IModelObject> stack = new Stack<IModelObject>();
+                while (parent != null)
+                {
+                    var cycle = stack.FirstOrDefault(s => s == parent);
+                    if (cycle != null)
+                    {
+                        Errors.Add(string.Format("{0} inheritance defines a cyclic relation.", cycle.Name));
+                        ok = false;
+                        break;
+                    }
+                    stack.Push(parent);
+
+                    parent = parent.ParentObject;
                 }
             }
             // dive into properties too

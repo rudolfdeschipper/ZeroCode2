@@ -61,6 +61,7 @@
   <ItemGroup>
     <Compile Include="EvaluatorTests.cs" />
     <Compile Include="FilePathTests.cs" />
+    <Compile Include="InheritanceTests.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="LocatorTests.cs" />
   </ItemGroup>

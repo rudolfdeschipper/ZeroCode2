@@ -140,7 +140,7 @@
   </ItemGroup>
   <ItemGroup>
     <Content Include="ZeroCodeTestInput.txt">
-      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </Content>
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
