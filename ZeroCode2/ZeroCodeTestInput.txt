@@ -158,8 +158,7 @@ Mobile : {
 
 @Datamodel
 
-Project <- Datamodel.DefaultObject : {
-	Generate : true,
+Project <- Definitions.DefaultObject : {
 	+Budget <- DataDictionary.AmountField : { Name : "Budget", Title : "Budget" },
 	+Status <- DataDictionary.StatusField : {
 		Values : {
@@ -171,8 +170,9 @@ Project <- Datamodel.DefaultObject : {
 	}
 }
 
+@Definitions
+
 DefaultObject : {
-	Generate : false,
 	ID <- DataDictionary.IDField : {},
 	Code <- DataDictionary.CodeField : {},
 	Description <- DataDictionary.DescriptionField : {},

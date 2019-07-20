@@ -183,7 +183,8 @@ namespace ZeroCode2
                 HasErrors = true;
                 logger.Error("Errors exist in the input file");
             }
-
+            // dump all errors:
+            Errors.ForEach(e => logger.Error(e));
         }
 
         private bool ResolveInheritance()

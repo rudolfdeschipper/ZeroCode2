@@ -15,8 +15,7 @@ CodeField : {
 	Nullable:false
 }
 
-DescriptionField : {
-	Type:"string", 
+DescriptionField <- DataDictionary.CodeField : {
 	Name:"Description", 
 	Title:"Description", 
 	Length : -1, 
@@ -37,11 +36,10 @@ DateTimeField : {
 	Format : "MM/DD/YYYY hh:mm"
 }
 
-StatusField : {
-	Type:"string", 
+StatusField <- DataDictionary.CodeField : {
 	Name:"Status", 
 	Title:"Status", 
-	Length:50
+	Nullable : true
 }
 
 AmountField : {
