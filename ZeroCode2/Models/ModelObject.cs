@@ -342,6 +342,8 @@ namespace ZeroCode2.Models
                 }
 
                 // then, recurse into the children of the ParentObject, to ensure all is resolved before we copy from it
+                PopulateProperties(pair.ParentObject);
+
                 foreach (var item in pair.ParentObject.AsComposite().Value)
                 {
                     PopulateProperties(item);

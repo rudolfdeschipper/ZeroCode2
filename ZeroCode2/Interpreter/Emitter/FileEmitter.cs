@@ -23,8 +23,18 @@ namespace ZeroCode2.Interpreter.Emitter
         public void Emit(string output)
         {
             logger.Info("Emitting: " + output);
-
-            _sb.Append(output);
+            if (_sb != null)
+            {
+                if (!string.IsNullOrWhiteSpace(output))
+                {
+                    logger.Info("Emitting: " + output);
+                    _sb.Append(output);
+                }
+            }
+            else
+            {
+                logger.Warn("Output: '" + output + "' was not emitted, no file open");
+            }
         }
 
         public bool Exists(string fileName)
