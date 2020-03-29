@@ -24,6 +24,16 @@ using =<#Parameters.nameSpace>.Models;
 %EndIf
 %/Loop:Panel
 
+%Loop:@Datamodel
+public class =<$>
+{
+	%Loop:Properties
+	public =<Type> =<$> {get; set;}
+	%/Loop:Properties
+}
+
+%/Loop:@Datamodel
+
 %Log:Ending file Controllers\Generated\=<Screen.Name>Controller.cs here
 %/File
 %/Loop:@Screen

@@ -75,7 +75,9 @@
   </ItemGroup>
   <ItemGroup>
     <Compile Include="Interpreter\Emitter\FileEmitter.cs" />
+    <Compile Include="Interpreter\Emitter\FilePath.cs" />
     <Compile Include="Interpreter\Emitter\IEmitter.cs" />
+    <Compile Include="Interpreter\Emitter\IFilePath.cs" />
     <Compile Include="Interpreter\Emitter\NullEmitter.cs" />
     <Compile Include="Interpreter\Evaluator\EvaluateEndFile.cs" />
     <Compile Include="Interpreter\Evaluator\EvaluateLogging.cs" />

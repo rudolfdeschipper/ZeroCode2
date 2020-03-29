@@ -19,7 +19,7 @@ namespace ZeroCode2UnitTests
 
             parser.ParseInputFile("ZeroCodeTestInput.txt");
 
-            ModelCollector = parser.modelCollector;
+            ModelCollector = parser.ModelCollector;
 
             LoopStack = null;
         }

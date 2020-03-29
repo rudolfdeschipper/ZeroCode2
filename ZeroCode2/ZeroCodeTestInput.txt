@@ -159,6 +159,9 @@ Mobile : {
 @Datamodel
 
 Project <- Definitions.DefaultObject : {
+	Properties : {
+	ID <- Definitions.DefaultObject.ID : {},
+	Code <- Definitions.DefaultObject.Code : {},
 	+Budget <- DataDictionary.AmountField : { Name : "Budget", Title : "Budget" },
 	+Status <- DataDictionary.StatusField : {
 		Values : {
@@ -166,6 +169,7 @@ Project <- Definitions.DefaultObject : {
 			Open : "2 - Open",
 			Closed : "3 - Closed",
 			Cancelled : "9 - Cancelled"
+			}
 		}
 	}
 }

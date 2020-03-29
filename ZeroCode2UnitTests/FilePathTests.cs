@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Text;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 using ZeroCode2;
 using ZeroCode2.Interpreter;
@@ -6,6 +7,37 @@ using ZeroCode2.Interpreter.Emitter;
 
 namespace ZeroCode2UnitTests
 {
+    class TestFilePath : IFilePath
+    {
+        public bool AssumeDirectoryExists { get; set; } = true;
+        public bool AssumeFileExists { get; set; } = true;
+
+        public System.Collections.Generic.Stack<string> CreatedDirectories { get; set; } = new System.Collections.Generic.Stack<string>();
+        public string Uri { get; set; }
+        public string Contents { get; set; }
+
+        public void CreateDirectory(string dir)
+        {
+            CreatedDirectories.Push(dir);
+        }
+
+        public bool DirectoryExists(string path)
+        {
+            return AssumeDirectoryExists;
+        }
+
+        public bool FileExists(string path)
+        {
+            return AssumeFileExists;
+        }
+
+        public void WriteToFile(string _uri, StringBuilder sb)
+        {
+            Uri = _uri;
+            Contents = sb.ToString();
+        }
+    }
+
 
     class UTInterpreterContext : ZeroCode2.Interpreter.IInterpreterContext
     {
@@ -114,5 +146,96 @@ namespace ZeroCode2UnitTests
             Assert.AreEqual(res, "");
         }
 
+        [TestMethod]
+        public void TestFilePathClassWithPathEnding()
+        {
+
+            TestFilePath fp = new TestFilePath();
+            FileEmitter fe = new FileEmitter
+            {
+                FilePath = fp
+            };
+
+            fp.AssumeDirectoryExists = false;
+            fp.AssumeFileExists = true;
+
+            fe.OutputPath = @"C:\temp\a\b\";
+
+            fe.EnsurePathExists();
+
+            Assert.AreEqual(4, fp.CreatedDirectories.Count);
+            Assert.AreEqual(fe.OutputPath, fp.CreatedDirectories.Peek());
+        }
+
+        [TestMethod]
+        public void TestFilePathClassWithPathNotEnding()
+        {
+
+            TestFilePath fp = new TestFilePath();
+            FileEmitter fe = new FileEmitter
+            {
+                FilePath = fp
+            };
+
+            fp.AssumeDirectoryExists = false;
+            fp.AssumeFileExists = true;
+
+            fe.OutputPath = @"C:\temp\a\b";
+
+            fe.EnsurePathExists();
+
+            Assert.AreEqual(4, fp.CreatedDirectories.Count);
+            Assert.IsTrue(fp.CreatedDirectories.Peek().EndsWith(@"b\"));
+        }
+
+        [TestMethod]
+        public void TestFilePathClassOutput()
+        {
+
+            TestFilePath fp = new TestFilePath();
+            FileEmitter fe = new FileEmitter
+            {
+                FilePath = fp
+            };
+
+            fp.AssumeDirectoryExists = false;
+            fp.AssumeFileExists = true;
+
+            fe.OutputPath = @"C:\temp\a\b";
+
+            fe.Open("output.txt");
+            fe.Emit("output");
+            fe.Close();
+
+            Assert.AreEqual(4, fp.CreatedDirectories.Count);
+            Assert.IsTrue(fp.CreatedDirectories.Peek().EndsWith(@"b\"));
+            Assert.AreEqual(@"C:\temp\a\b\output.txt", fp.Uri);
+            Assert.AreEqual(@"output", fp.Contents);
+        }
+
+        [TestMethod]
+        public void TestFilePathClassOutputWithPathInFile()
+        {
+
+            TestFilePath fp = new TestFilePath();
+            FileEmitter fe = new FileEmitter
+            {
+                FilePath = fp
+            };
+
+            fp.AssumeDirectoryExists = false;
+            fp.AssumeFileExists = true;
+
+            fe.OutputPath = @"C:\temp\a\b\";
+
+            fe.Open(@"generated\component\output.txt");
+            fe.Emit("output");
+            fe.Close();
+
+            Assert.AreEqual(6, fp.CreatedDirectories.Count);
+            Assert.IsTrue(fp.CreatedDirectories.Peek().EndsWith(@"component\"));
+            Assert.AreEqual(@"C:\temp\a\b\generated\component\output.txt", fp.Uri);
+            Assert.AreEqual(@"output", fp.Contents);
+        }
     }
 }

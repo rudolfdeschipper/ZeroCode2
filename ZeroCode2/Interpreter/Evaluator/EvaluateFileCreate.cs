@@ -13,8 +13,7 @@ namespace ZeroCode2.Interpreter.Evaluator
             var resolver = new FilepathResolver();
             string expr = resolver.ResolvePath(context, expression);
 
-            var fileEmitter = context.Emitter as Emitter.FileEmitter;
-            if (fileEmitter != null && fileEmitter.Exists(expr))
+            if (context.Emitter.Exists(expr))
             {
                 return new EvaluatorResult(false, string.Empty);
             }

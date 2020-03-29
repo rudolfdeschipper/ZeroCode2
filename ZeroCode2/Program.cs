@@ -8,6 +8,7 @@ using Antlr4.Runtime.Misc;
 using ZeroCode2.Grammars;
 using CommandLine;
 using static ZeroCode2.Grammars.ZeroCode2;
+using System.IO;
 
 namespace ZeroCode2
 {
@@ -80,6 +81,8 @@ namespace ZeroCode2
                             emitter = new Interpreter.Emitter.NullEmitter();
                         }
 
+                        emitter.OutputPath = cmdOptions.OutputPath;
+
                         ModelExecutor executor = new ModelExecutor();
 
                         executor.ExecuteProgram(modelParser, templateParser, emitter);
@@ -97,7 +100,7 @@ namespace ZeroCode2
                     }
                     catch (Exception ex)
                     {
-                        logger.Fatal(ex, "ERROR:");
+                        logger.Fatal(ex, "ERROR: {0}", ex);
                         Console.Write("Hit RETURN to exit: ");
                     }
                 }
@@ -140,7 +143,7 @@ namespace ZeroCode2
     {
         NLog.Logger logger = NLog.LogManager.GetCurrentClassLogger();
 
-        public ModelCollector modelCollector { get; set; }
+        public ModelCollector ModelCollector { get; set; }
 
         public List<string> Errors { get; set; } = new List<string>();
         public bool HasErrors { get; set; }
@@ -170,7 +173,7 @@ namespace ZeroCode2
 
             walker.Walk(Listener, parser.zcDefinition());
 
-            modelCollector = Listener.collector;
+            ModelCollector = Listener.Collector;
 
             if (ResolveInheritance() == false)
             {
@@ -192,7 +195,7 @@ namespace ZeroCode2
             var resolver = new Models.InheritanceResolver();
             var ok = true;
 
-            modelCollector.SingleModels.ForEach(m => ok &= resolver.ResolveInheritance(m, modelCollector));
+            ModelCollector.SingleModels.ForEach(m => ok &= resolver.ResolveInheritance(m, ModelCollector));
             this.Errors.AddRange(resolver.Errors);
 
             return ok;
@@ -217,7 +220,7 @@ namespace ZeroCode2
                 var it = new Models.Iterator();
                 do
                 {
-                    var itlocator = new Models.PropertyLocator("@Models", modelCollector, null);
+                    var itlocator = new Models.PropertyLocator("@Models", ModelCollector, null);
                     itlocator.Locate();
                     var c = it.Iterate(itlocator.LocatedProperty());
                     logger.Info("Model: " + c.Name);
@@ -240,7 +243,7 @@ namespace ZeroCode2
                 } while (it.HasMore);
 
                 // test absolute locator:
-                var locator = new Models.PropertyLocator("#Parameters.appName", modelCollector, null);
+                var locator = new Models.PropertyLocator("#Parameters.appName", ModelCollector, null);
                 locator.Locate();
                 var el = locator.LocatedProperty();
                 //logger.Info("Located: {0} = {1}", el.Name, el.Value.GetText());
@@ -258,33 +261,33 @@ namespace ZeroCode2
 
                 // locator from a specific point in the tree (iterator):
 
-                locator = new Models.PropertyLocator("@ViewModels", modelCollector, null);
+                locator = new Models.PropertyLocator("@ViewModels", ModelCollector, null);
                 it = new Models.Iterator();
                 locator.Locate();
                 var c4 = it.Iterate(locator.LocatedProperty());
 
                 var loopStack = new Stack<Interpreter.IteratorManager>();
                 loopStack.Push(new Interpreter.IteratorManager(it, c4) { Path = "@ViewModels" });
-                locator = new Models.PropertyLocator("Name.Length", modelCollector, loopStack);
+                locator = new Models.PropertyLocator("Name.Length", ModelCollector, loopStack);
                 locator.Locate();
                 el = locator.LocatedProperty();
                 logger.Info("Located: {0} = {1}", el.Name, el.GetText());
 
-                locator = new Models.PropertyLocator("Test.Title", modelCollector, loopStack);
+                locator = new Models.PropertyLocator("Test.Title", ModelCollector, loopStack);
                 locator.Locate();
                 el = locator.LocatedProperty();
                 logger.Info("Located: {0} = {1}", el.Name, el.GetText());
 
-                locator = new Models.PropertyLocator("Title.SomeOtherProperty.Title", modelCollector, loopStack);
+                locator = new Models.PropertyLocator("Title.SomeOtherProperty.Title", ModelCollector, loopStack);
                 locator.Locate();
                 el = locator.LocatedProperty();
                 logger.Info("Located: {0} = {1}", el.Name, el.GetText());
 
-                locator = new Models.PropertyLocator("Title.SomeOtherProperty.Name", modelCollector, loopStack);
+                locator = new Models.PropertyLocator("Title.SomeOtherProperty.Name", ModelCollector, loopStack);
                 locator.Locate();
                 el = locator.LocatedProperty();
                 logger.Info("Located: {0} = {1}", el.Name, el.GetText());
-                locator = new Models.PropertyLocator("$", modelCollector, loopStack);
+                locator = new Models.PropertyLocator("$", ModelCollector, loopStack);
                 locator.Locate();
                 el = locator.LocatedProperty();
                 logger.Info("Located: $ = {0}", el.Name);
@@ -323,8 +326,10 @@ namespace ZeroCode2
 
             var walker = new Antlr4.Runtime.Tree.ParseTreeWalker();
 
-            var Listener = new ZeroCode2TemplateListener();
-            Listener.Program = Program;
+            var Listener = new ZeroCode2TemplateListener
+            {
+                Program = Program
+            };
 
             walker.Walk(Listener, parser.template());
 
@@ -354,10 +359,11 @@ namespace ZeroCode2
         public void ExecuteProgram(ModelParser modelParser, TemplateParser templateParser, Interpreter.Emitter.IEmitter emitter)
         {
             var instructions = templateParser.Program.Instructions;
-            var context = new Interpreter.InterpreterContext();
-
-            context.Model = modelParser.modelCollector;
-            context.Emitter = emitter;
+            var context = new Interpreter.InterpreterContext
+            {
+                Model = modelParser.ModelCollector,
+                Emitter = emitter
+            };
 
             var PC = instructions[0];
             Interpreter.InterpreterInstructionBase next = null;
@@ -401,7 +407,7 @@ namespace ZeroCode2
         // Logging
         private static NLog.Logger logger = NLog.LogManager.GetCurrentClassLogger();
 
-        public ModelCollector collector { get; set; } = new ModelCollector();
+        public ModelCollector Collector { get; set; } = new ModelCollector();
 
         public Antlr4.Runtime.Tree.ParseTreeProperty<Models.IModelObject> ValueProps { get; set; } = new Antlr4.Runtime.Tree.ParseTreeProperty<Models.IModelObject>();
         public Antlr4.Runtime.Tree.ParseTreeProperty<Models.IModelObject> PairProps { get; set; } = new Antlr4.Runtime.Tree.ParseTreeProperty<Models.IModelObject>();
@@ -429,14 +435,14 @@ namespace ZeroCode2
                 parameter.Value.Add(p);
             }
             // check for doubles
-            var existing = collector.ParameterModels.FirstOrDefault(p => p.Name == parameter.Name);
+            var existing = Collector.ParameterModels.FirstOrDefault(p => p.Name == parameter.Name);
             if (existing != null)
             {
                 existing.Value.AddRange(parameter.Value);
             }
             else
             {
-                collector.ParameterModels.Add(parameter);
+                Collector.ParameterModels.Add(parameter);
             }
 
             base.ExitParameters(context);
@@ -461,14 +467,14 @@ namespace ZeroCode2
             var TopLevelModel = new Models.SingleModel("@" + context.ID().GetText(), list);
 
             // check for doubles
-            var existing = collector.SingleModels.FirstOrDefault(p => p.Name == TopLevelModel.Name);
+            var existing = Collector.SingleModels.FirstOrDefault(p => p.Name == TopLevelModel.Name);
             if (existing != null)
             {
                 existing.Value.AddRange(TopLevelModel.Value);
             }
             else
             {
-                collector.SingleModels.Add(TopLevelModel);
+                Collector.SingleModels.Add(TopLevelModel);
             }
 
             base.ExitGenericModel(context);
@@ -545,32 +551,40 @@ namespace ZeroCode2
         public override void ExitValueNumber([NotNull] ValueNumberContext context)
         {
             base.ExitValueNumber(context);
-            var newObj = new Models.ModelNumberObject();
-            newObj.Value = decimal.Parse(context.NUMBER().GetText());
+            var newObj = new Models.ModelNumberObject
+            {
+                Value = decimal.Parse(context.NUMBER().GetText())
+            };
             ValueProps.Put(context, newObj);
         }
 
         public override void ExitValueObject([NotNull] ValueObjectContext context)
         {
             base.ExitValueObject(context);
-            var newObj = new Models.ModelCompositeObject();
-            newObj.Value = ObjProps.Get(context.obj());
+            var newObj = new Models.ModelCompositeObject
+            {
+                Value = ObjProps.Get(context.obj())
+            };
             ValueProps.Put(context, newObj);
         }
 
         public override void ExitValueFalse([NotNull] ValueFalseContext context)
         {
             base.ExitValueFalse(context);
-            var newObj = new Models.ModelBoolObject();
-            newObj.Value = false;
+            var newObj = new Models.ModelBoolObject
+            {
+                Value = false
+            };
             ValueProps.Put(context, newObj);
         }
 
         public override void ExitValueTrue([NotNull] ValueTrueContext context)
         {
             base.ExitValueTrue(context);
-            var newObj = new Models.ModelBoolObject();
-            newObj.Value = true;
+            var newObj = new Models.ModelBoolObject
+            {
+                Value = true
+            };
             ValueProps.Put(context, newObj);
         }
 
@@ -582,28 +596,28 @@ namespace ZeroCode2
 
             mp.ParseInputFile(context.GetText().Substring(1));
 
-            foreach (var item in mp.modelCollector.ParameterModels)
+            foreach (var item in mp.ModelCollector.ParameterModels)
             {
-                var exists = collector.ParameterModels.FirstOrDefault(m => m.Name == item.Name);
+                var exists = Collector.ParameterModels.FirstOrDefault(m => m.Name == item.Name);
                 if (exists != null)
                 {
                     exists.Value.AddRange(item.Value);
                 }
                 else
                 {
-                    collector.ParameterModels.Add(item);
+                    Collector.ParameterModels.Add(item);
                 }
             }
-            foreach (var item in mp.modelCollector.SingleModels)
+            foreach (var item in mp.ModelCollector.SingleModels)
             {
-                var exists = collector.SingleModels.FirstOrDefault(m => m.Name == item.Name);
+                var exists = Collector.SingleModels.FirstOrDefault(m => m.Name == item.Name);
                 if (exists != null)
                 {
                     exists.Value.AddRange(item.Value);
                 }
                 else
                 {
-                    collector.SingleModels.Add(item);
+                    Collector.SingleModels.Add(item);
                 }
             }
 
