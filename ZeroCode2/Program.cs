@@ -65,20 +65,20 @@ namespace ZeroCode2
 
                         logger.Info("Parsing model:");
 #if DEBUG
-                        modelParser = r.RunModelParser(cmdOptions, true);
+                        modelParser = r.RunModelParser(cmdOptions, false);
 #else
                         modelParser = r.RunModelParser(cmdOptions, false);
 #endif
                         logger.Info("Parsing Template:");
                         templateParser = r.RunTemplateParser(cmdOptions);
 
-                        if (!cmdOptions.Simulate)
+                        if (cmdOptions.Simulate == true)
                         {
-                            emitter = new Interpreter.Emitter.FileEmitter();
+                            emitter = new Interpreter.Emitter.NullEmitter();
                         }
                         else
                         {
-                            emitter = new Interpreter.Emitter.NullEmitter();
+                            emitter = new Interpreter.Emitter.FileEmitter();
                         }
 
                         emitter.OutputPath = cmdOptions.OutputPath;
@@ -497,6 +497,8 @@ namespace ZeroCode2
                 pair.Modifier = context.modifier.Text;
             }
 
+            logger.Trace("Pair = {0}{1}", pair.Name, context.inherits() != null ? " : " + pair.InheritsFrom : "");
+
             base.ExitPair(context);
         }
 
@@ -511,7 +513,7 @@ namespace ZeroCode2
                 model.InheritsFrom = context.inherits().ID().GetText();
             }
 
-            logger.Trace("Single model = {0}", model.Name);
+            logger.Trace("Single model = {0}{1}", model.Name, context.inherits() != null ? " : " + model.InheritsFrom : "");
 
             SingleModels.Put(context, model);
             base.ExitSinglemodel(context);
