@@ -237,5 +237,65 @@ namespace ZeroCode2UnitTests
             Assert.AreEqual(@"C:\temp\a\b\generated\component\output.txt", fp.Uri);
             Assert.AreEqual(@"output", fp.Contents);
         }
+
+        [TestMethod]
+        public void TestFileExistsOutputWithPathInFileNoDir()
+        {
+
+            TestFilePath fp = new TestFilePath();
+            FileEmitter fe = new FileEmitter
+            {
+                FilePath = fp
+            };
+
+            fp.AssumeDirectoryExists = false;
+            fp.AssumeFileExists = true;
+
+            fe.OutputPath = @"C:\temp\a\b\";
+
+            bool retval = fe.Exists(@"generated\component\output.txt");
+
+            Assert.IsFalse(retval);
+        }
+
+        [TestMethod]
+        public void TestFileExistsOutputWithPathInFileNoFile()
+        {
+
+            TestFilePath fp = new TestFilePath();
+            FileEmitter fe = new FileEmitter
+            {
+                FilePath = fp
+            };
+
+            fp.AssumeDirectoryExists = true;
+            fp.AssumeFileExists = false;
+
+            fe.OutputPath = @"C:\temp\a\b\";
+
+            bool retval = fe.Exists(@"generated\component\output.txt");
+
+            Assert.IsFalse(retval);
+        }
+
+        [TestMethod]
+        public void TestFileExistsOutputWithPathInFileWithFile()
+        {
+
+            TestFilePath fp = new TestFilePath();
+            FileEmitter fe = new FileEmitter
+            {
+                FilePath = fp
+            };
+
+            fp.AssumeDirectoryExists = true;
+            fp.AssumeFileExists = true;
+
+            fe.OutputPath = @"C:\temp\a\b\";
+
+            bool retval = fe.Exists(@"generated\component\output.txt");
+
+            Assert.IsTrue(retval);
+        }
     }
 }

@@ -18,8 +18,9 @@ namespace ZeroCode2.Interpreter.Emitter
 
         public IFilePath FilePath { get; set; } = new FilePath();
 
-        public void EnsurePathExists()
+        public bool EnsurePathExists(bool doCreate = true)
         {
+            bool retVal = true;
 
             if (!OutputPath.EndsWith(Path.DirectorySeparatorChar.ToString()))
             {
@@ -40,11 +41,23 @@ namespace ZeroCode2.Interpreter.Emitter
                 currentPath += item + Path.DirectorySeparatorChar.ToString();
                 if (!FilePath.DirectoryExists(currentPath))
                 {
-                    FilePath.CreateDirectory(currentPath);
+                    if (doCreate)
+                    {
+                        FilePath.CreateDirectory(currentPath);
+                    }
+                    else
+                    {
+                        retVal = false;
+                        break;
+                    }
                 }
             }
-            OutputPath = currentPath;
-            _uri = file;
+            if (doCreate)
+            {
+                OutputPath = currentPath;
+                _uri = file;
+            }
+            return retVal;
         }
 
         public void Close()
@@ -52,7 +65,7 @@ namespace ZeroCode2.Interpreter.Emitter
             logger.Info("Closing: " + _uri);
 
             // create path if not there yet
-            EnsurePathExists();
+            EnsurePathExists(true);
 
             FilePath.WriteToFile(Path.Combine(OutputPath, _uri), _sb);
         }
@@ -76,7 +89,12 @@ namespace ZeroCode2.Interpreter.Emitter
 
         public bool Exists(string fileName)
         {
-            return FilePath.FileExists(fileName);
+            if (!EnsurePathExists(false))
+            {
+                // directory path did not even exist, so for sure the file doesn't either
+                return false;
+            }
+            return FilePath.FileExists(Path.Combine(OutputPath, fileName));
         }
 
         public void Open(string uri)
