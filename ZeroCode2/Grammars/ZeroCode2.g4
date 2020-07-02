@@ -31,7 +31,11 @@ obj : LC pairs+=pair (COMMA pairs+=pair)* RC #ObjFull
 	| LC RC #ObjEmpty
     ;
 
-pair : modifier=PROPMODIFIER? ID inherits? COLON value;
+pair : modifier=PROPMODIFIER? ID pairvalue;
+
+pairvalue	: inherits? COLON value
+			| inherits
+			;
 
 value : STRING #ValueString
 	| NUMBER #ValueNumber

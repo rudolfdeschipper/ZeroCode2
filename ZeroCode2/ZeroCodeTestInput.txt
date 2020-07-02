@@ -48,8 +48,8 @@ Example:
 Person : {
 ID : { Type:"int", Name:"ID of Person", Title:"ID"},
 Name : { Type:"string", Name:"Name", Title:"Name", Length:50, Nullable:false },
-Title : { Type:"string", Name:"Title", Title:"Title", Length:100, Nullable:false, SomeOtherProperty <- DataDictionary.NameField : { Name : "Another name", +Something : true } }
-
+Title : { Type:"string", Name:"Title", Title:"Title", Length:100, Nullable:false, SomeOtherProperty <- DataDictionary.NameField : { Name : "Another name", +Something : true } },
+InheritedField <- DataDictionary.NameField
 }
 
 Stakeholder : {
@@ -160,7 +160,7 @@ Mobile : {
 
 Project <- Definitions.DefaultObject : {
 	Properties : {
-	ID <- Definitions.DefaultObject.ID : {},
+	ID <- Definitions.DefaultObject.ID,
 	Code <- Definitions.DefaultObject.Code : {},
 	+Budget <- DataDictionary.AmountField : { Name : "Budget", Title : "Budget" },
 	+Status <- DataDictionary.StatusField : {

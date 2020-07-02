@@ -9,6 +9,7 @@ using ZeroCode2.Grammars;
 using CommandLine;
 using static ZeroCode2.Grammars.ZeroCode2;
 using System.IO;
+using ZeroCode2.Models;
 
 namespace ZeroCode2
 {
@@ -36,7 +37,7 @@ namespace ZeroCode2
 
     class Program
     {
-        private static NLog.Logger logger = NLog.LogManager.GetCurrentClassLogger();
+        private static readonly NLog.Logger logger = NLog.LogManager.GetCurrentClassLogger();
 
         static void Main(string[] args)
         {
@@ -141,7 +142,7 @@ namespace ZeroCode2
 
     public class ModelParser
     {
-        NLog.Logger logger = NLog.LogManager.GetCurrentClassLogger();
+        readonly NLog.Logger logger = NLog.LogManager.GetCurrentClassLogger();
 
         public ModelCollector ModelCollector { get; set; }
 
@@ -245,7 +246,7 @@ namespace ZeroCode2
                 // test absolute locator:
                 var locator = new Models.PropertyLocator("#Parameters.appName", ModelCollector, null);
                 locator.Locate();
-                var el = locator.LocatedProperty();
+                _ = locator.LocatedProperty();
                 //logger.Info("Located: {0} = {1}", el.Name, el.Value.GetText());
                 //el = locator.Locate("@Models.Person.ID.Name", modelCollector);
                 //logger.Info("Located: {0} = {1}", el.Name, el.Value.GetText());
@@ -270,7 +271,7 @@ namespace ZeroCode2
                 loopStack.Push(new Interpreter.IteratorManager(it, c4) { Path = "@ViewModels" });
                 locator = new Models.PropertyLocator("Name.Length", ModelCollector, loopStack);
                 locator.Locate();
-                el = locator.LocatedProperty();
+                IModelObject el = locator.LocatedProperty();
                 logger.Info("Located: {0} = {1}", el.Name, el.GetText());
 
                 locator = new Models.PropertyLocator("Test.Title", ModelCollector, loopStack);
@@ -351,7 +352,7 @@ namespace ZeroCode2
 
     public class ModelExecutor
     {
-        NLog.Logger logger = NLog.LogManager.GetCurrentClassLogger();
+        readonly NLog.Logger logger = NLog.LogManager.GetCurrentClassLogger();
 
         public List<string> Errors { get; set; } = new List<string>();
         public bool HasErrors { get; set; } = false;
@@ -405,7 +406,7 @@ namespace ZeroCode2
     public class ZeroCodeListener : ZeroCode2.Grammars.ZeroCode2BaseListener
     {
         // Logging
-        private static NLog.Logger logger = NLog.LogManager.GetCurrentClassLogger();
+        private static readonly NLog.Logger logger = NLog.LogManager.GetCurrentClassLogger();
 
         public ModelCollector Collector { get; set; } = new ModelCollector();
 
@@ -425,7 +426,7 @@ namespace ZeroCode2
 
         public override void ExitParameters([NotNull] ParametersContext context)
         {
-            logger.Trace(" Exit Params={0}", context._pairs.Aggregate("", (a, r) => a += r.ID().GetText() + " = " + r.value().GetText() + "\n"));
+            logger.Trace(" Exit Params={0}", context._pairs.Aggregate("", (a, r) => a += r.ID().GetText() + " = " + r.pairvalue().GetText() + "\n"));
 
             var parameter = new Models.ParameterModel("#" + context.ID().GetText());
             //parameter.Section = CurrentSection;
@@ -482,14 +483,25 @@ namespace ZeroCode2
 
         public override void ExitPair([NotNull] PairContext context)
         {
-            Models.IModelObject pair = ValueProps.Get(context.value());
+            Models.IModelObject pair = null;
+            if (context.pairvalue().value() != null)
+            {
+                pair = ValueProps.Get(context.pairvalue().value());
+            }
+            if (pair == null)
+            {
+                var value = new List<Models.IModelObject>();
+                pair = new Models.ModelCompositeObject {
+                    Value = value
+                };
+            }
             pair.Name = context.ID().GetText();
 
             PairProps.Put(context, pair);
-            if (context.inherits() != null)
+            if (context.pairvalue().inherits() != null)
             {
                 pair.Inherits = true;
-                pair.InheritsFrom = context.inherits().ID().GetText();
+                pair.InheritsFrom = context.pairvalue().inherits().ID().GetText();
             }
             if (context.modifier != null)
             {
@@ -497,7 +509,7 @@ namespace ZeroCode2
                 pair.Modifier = context.modifier.Text;
             }
 
-            logger.Trace("Pair = {0}{1}", pair.Name, context.inherits() != null ? " : " + pair.InheritsFrom : "");
+            logger.Trace("Pair = {0}{1}", pair.Name, context.pairvalue().inherits() != null ? " : " + pair.InheritsFrom : "");
 
             base.ExitPair(context);
         }
@@ -630,7 +642,7 @@ namespace ZeroCode2
     class ZeroCode2TemplateListener : ZeroCode2.Grammars.ZeroCode2TemplateBaseListener
     {
         // Logging
-        private static NLog.Logger logger = NLog.LogManager.GetCurrentClassLogger();
+        private static readonly NLog.Logger logger = NLog.LogManager.GetCurrentClassLogger();
         public Interpreter.InterpreterProgram Program { get; set; }
 
         public override void ExitLiteralCommand([NotNull] ZeroCode2Template.LiteralCommandContext context)

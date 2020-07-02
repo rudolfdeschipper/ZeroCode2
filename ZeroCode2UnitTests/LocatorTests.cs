@@ -80,6 +80,21 @@ namespace ZeroCode2UnitTests
         }
 
         [TestMethod]
+        public void TestLocateWithDirectModelPathInheritedOnly()
+        {
+            var path = "@Models.Person.InheritedField.Title";
+            var value = "Generic Title";
+
+            var locator = new ZeroCode2.Models.PropertyLocator(path, ModelCollector, LoopStack);
+
+            locator.Locate();
+            var outp = locator.LocatedProperty();
+
+            Assert.IsNotNull(outp);
+            Assert.AreEqual(outp.GetText(), value);
+        }
+
+        [TestMethod]
         public void TestLocateWithDirectModelPathNotFound()
         {
             var locator = new ZeroCode2.Models.PropertyLocator("@Models.Stakeholder.Name.Nullable", ModelCollector, LoopStack);
