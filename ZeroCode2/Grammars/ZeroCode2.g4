@@ -31,7 +31,9 @@ obj : LC pairs+=pair (COMMA pairs+=pair)* RC #ObjFull
 	| LC RC #ObjEmpty
     ;
 
-pair : modifier=PROPMODIFIER? ID pairvalue;
+pair	: modifier=PROPADD? ID pairvalue
+		| modifier=PROPREMOVE ID
+		;
 
 pairvalue	: inherits? COLON value
 			| inherits

@@ -484,7 +484,7 @@ namespace ZeroCode2
         public override void ExitPair([NotNull] PairContext context)
         {
             Models.IModelObject pair = null;
-            if (context.pairvalue().value() != null)
+            if (context.pairvalue()?.value() != null)
             {
                 pair = ValueProps.Get(context.pairvalue().value());
             }
@@ -498,7 +498,7 @@ namespace ZeroCode2
             pair.Name = context.ID().GetText();
 
             PairProps.Put(context, pair);
-            if (context.pairvalue().inherits() != null)
+            if (context.pairvalue()?.inherits() != null)
             {
                 pair.Inherits = true;
                 pair.InheritsFrom = context.pairvalue().inherits().ID().GetText();
@@ -509,7 +509,7 @@ namespace ZeroCode2
                 pair.Modifier = context.modifier.Text;
             }
 
-            logger.Trace("Pair = {0}{1}", pair.Name, context.pairvalue().inherits() != null ? " : " + pair.InheritsFrom : "");
+            logger.Trace("Pair = {0}{1}", pair.Name, context.pairvalue()?.inherits() != null ? " : " + pair.InheritsFrom : "");
 
             base.ExitPair(context);
         }

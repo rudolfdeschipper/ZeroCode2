@@ -34,8 +34,8 @@ by putting a - after the identifier to remove it, or a + to add it. Changing the
 
 Example:
 	Person <- Models.Person : { // this Person item inherits from the Person item in the @Models section.
-	-ID : {}, // remove the ID from this item
-	+SomeProperty : { // Add a new property; definition inside {} is needed
+	-ID, // remove the ID from this item
+	+SomeProperty : { // Add a new property; further definition inside {} is possible, but not required
 	},
 	Name : { Title : "changed title"}, // all other properties are kept from Person model. A property without a qualifier (+/-) means it is an existing one that is changed
 	+SomeOtherProperty <- DataDictionary.Name : { Name : "Another name" } // add a new property, inherit it from DataDictionary.Name and change its name
@@ -46,23 +46,22 @@ Example:
 @Models
 
 Person : {
-ID : { Type:"int", Name:"ID of Person", Title:"ID"},
-Name : { Type:"string", Name:"Name", Title:"Name", Length:50, Nullable:false },
-Title : { Type:"string", Name:"Title", Title:"Title", Length:100, Nullable:false, SomeOtherProperty <- DataDictionary.NameField : { Name : "Another name", +Something : true } },
-InheritedField <- DataDictionary.NameField
+	ID : { Type:"int", Name:"ID of Person", Title:"ID"},
+	Name : { Type:"string", Name:"Name", Title:"Name", Length:50, Nullable:false },
+	Title : { Type:"string", Name:"Title", Title:"Title", Length:100, Nullable:false, SomeOtherProperty <- DataDictionary.NameField : { Name : "Another name", +Something : true } },
+	InheritedField <- DataDictionary.NameField
 }
 
 Stakeholder : {
-ID : { Type:"int", Name:"ID", Title:"ID"},
-Name <- DataDictionary.NameField : { -Nullable : {} },
-Title : { Type:"string", Name:"Title", Title:"Title", Length:100, Nullable:false }
-
+	ID : { Type:"int", Name:"ID", Title:"ID"},
+	Name <- DataDictionary.NameField : { -Nullable },
+	Title : { Type:"string", Name:"Title", Title:"Title", Length:100, Nullable:false }
 }
 
 @ViewModels
 
 Person <- Models.Person : {
-	-ID : {},
+	-ID,
 	Name : { Length:75 },
 	+Test : { Title : "hello"}
 }

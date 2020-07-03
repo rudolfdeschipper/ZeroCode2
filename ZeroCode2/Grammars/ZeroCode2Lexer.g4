@@ -28,7 +28,9 @@ LC : '{';
 RC : '}';
 COMMA : ',';
 
-PROPMODIFIER : ('-'|'+');
+PROPADD : '+';
+
+PROPREMOVE : '-';
 
 INHERITS
 	: '<-'
