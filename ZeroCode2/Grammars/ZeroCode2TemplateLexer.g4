@@ -35,6 +35,8 @@ EXPRO : '=<' -> pushMode(EX);
 
 ID : [a-zA-Z][a-zA-Z_0-9]*;
 
+PATHPART: ('#'|'@')? (ID DOT)* (ID | '$');
+
 FILEPATH : [a-zA-Z_0-9\\]+;
 
 WS     : [ \r\t\n]+;
@@ -46,13 +48,16 @@ EXCL: '!';
 EQU: '=';
 QUEST: '?';
 
+REFSTART: '[';
+REFEND: ']';
+
 mode FC;
 NL: '\r'? '\n' -> more, popMode;
 IGNORE: ~('\n'|'\r')+;
 
 mode EX;
 EXPRC : '>' -> popMode;
-EXIGNORE: ('#'|'@')? (ID DOT)* (ID | '$');
+EXIGNORE: ('#'|'@')? ((ID | REFSTART PATHPART REFEND) DOT)* ((ID | REFSTART PATHPART REFEND) | '$');
 
 mode IF_MODE;
 IFTEXT : EXCL? ('#'|'@')? (ID DOT)* (ID | '$') ((EQU ID) | QUEST)?;

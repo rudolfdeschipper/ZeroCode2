@@ -103,5 +103,18 @@ namespace ZeroCode2UnitTests
             Assert.IsTrue(res.Value == string.Empty);
             Assert.IsFalse(res.Result == ZeroCode2.Interpreter.Evaluator.EvaluationResultValues.True);
         }
+
+        [TestMethod]
+        public void TestEvalWithReference()
+        {
+            var exprEval = new ZeroCode2.Interpreter.Evaluator.ExpressionEvaluator();
+            var context = new ZeroCode2.Interpreter.InterpreterContext();
+            context.Model = ModelCollector;
+
+            var res = exprEval.Evaluate(context, "@Models.Person.[#Parameters.reference].[#Parameters.[#Parameters.reference1]2]ame");
+
+            Assert.IsTrue(res.Value == "Name");
+            Assert.IsTrue(res.Result == ZeroCode2.Interpreter.Evaluator.EvaluationResultValues.True);
+        }
     }
 }

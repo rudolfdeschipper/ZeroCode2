@@ -17,6 +17,9 @@ The definition also supports "parameters", KVPs structured in "#" identifier sec
 appName : "My test application in Zero Code"
 nameSpace : "ZeroCode"
 debug : "on"
+reference : "Name"
+reference1 : "reference"
+reference2 : "N"
 
 /*
 This is the models section
