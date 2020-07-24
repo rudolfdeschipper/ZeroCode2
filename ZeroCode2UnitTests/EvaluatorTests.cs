@@ -116,5 +116,18 @@ namespace ZeroCode2UnitTests
             Assert.IsTrue(res.Value == "Name");
             Assert.IsTrue(res.Result == ZeroCode2.Interpreter.Evaluator.EvaluationResultValues.True);
         }
+
+        [TestMethod]
+        public void TestEvalWithReferenceInResult()
+        {
+            var exprEval = new ZeroCode2.Interpreter.Evaluator.ExpressionEvaluator();
+            var context = new ZeroCode2.Interpreter.InterpreterContext();
+            context.Model = ModelCollector;
+
+            var res = exprEval.Evaluate(context, "@Models.Person.CodeField");
+
+            Assert.IsTrue(res.Value == "<Input Type='string' >");
+            Assert.IsTrue(res.Result == ZeroCode2.Interpreter.Evaluator.EvaluationResultValues.True);
+        }
     }
 }

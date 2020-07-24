@@ -51,6 +51,13 @@ namespace ZeroCode2.Interpreter.Evaluator
             }
             string result = context.EvaluateProperty(expression);
 
+            // check for references in the result:
+            while (result.Contains("["))
+            {
+                // evaluate the sub-expression into the current expression
+                result = EvaluateReferences(context, result);
+            }
+
             return new EvaluatorResult(true, result);
         }
     }
