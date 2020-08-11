@@ -25,9 +25,11 @@ using =<#Parameters.nameSpace>.Models;
 %/Loop:Panel
 
 %Loop:@Datamodel
+//
 public class =<$>
 {
 	%Loop:Properties
+	// =<Screen.Name>
 	public =<Type> =<$> {get; set;}
 	%/Loop:Properties
 }

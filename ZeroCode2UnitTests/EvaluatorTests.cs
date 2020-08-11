@@ -30,8 +30,10 @@ namespace ZeroCode2UnitTests
         public void TestIfWithQuestionMarkValueQ()
         {
             var IfEval = new ZeroCode2.Interpreter.Evaluator.IfEvaluator("#Parameters.debug?");
-            var context = new ZeroCode2.Interpreter.InterpreterContext();
-            context.Model = ModelCollector;
+            var context = new ZeroCode2.Interpreter.InterpreterContext
+            {
+                Model = ModelCollector
+            };
 
             var res = IfEval.Evaluate(context, "");
 
@@ -43,8 +45,10 @@ namespace ZeroCode2UnitTests
         public void TestIfWithQuestionMarkNoValueQ()
         {
             var IfEval = new ZeroCode2.Interpreter.Evaluator.IfEvaluator("#Parameters.Debug?");
-            var context = new ZeroCode2.Interpreter.InterpreterContext();
-            context.Model = ModelCollector;
+            var context = new ZeroCode2.Interpreter.InterpreterContext
+            {
+                Model = ModelCollector
+            };
 
             var res = IfEval.Evaluate(context, "");
 
@@ -55,8 +59,10 @@ namespace ZeroCode2UnitTests
         public void TestIfWithQuestionMarkValueTrue()
         {
             var IfEval = new ZeroCode2.Interpreter.Evaluator.IfEvaluator("#Parameters.debug=on");
-            var context = new ZeroCode2.Interpreter.InterpreterContext();
-            context.Model = ModelCollector;
+            var context = new ZeroCode2.Interpreter.InterpreterContext
+            {
+                Model = ModelCollector
+            };
 
             var res = IfEval.Evaluate(context, "");
 
@@ -69,8 +75,10 @@ namespace ZeroCode2UnitTests
         public void TestIfWithQuestionMarkValueFalse()
         {
             var IfEval = new ZeroCode2.Interpreter.Evaluator.IfEvaluator("#Parameters.debug=off");
-            var context = new ZeroCode2.Interpreter.InterpreterContext();
-            context.Model = ModelCollector;
+            var context = new ZeroCode2.Interpreter.InterpreterContext
+            {
+                Model = ModelCollector
+            };
 
             var res = IfEval.Evaluate(context, "");
 
@@ -82,8 +90,10 @@ namespace ZeroCode2UnitTests
         public void TestIfWithQuestionMarkNegativeValueTrue()
         {
             var IfEval = new ZeroCode2.Interpreter.Evaluator.IfEvaluator("!#Parameters.debug=off");
-            var context = new ZeroCode2.Interpreter.InterpreterContext();
-            context.Model = ModelCollector;
+            var context = new ZeroCode2.Interpreter.InterpreterContext
+            {
+                Model = ModelCollector
+            };
 
             var res = IfEval.Evaluate(context, "");
 
@@ -95,8 +105,10 @@ namespace ZeroCode2UnitTests
         public void TestIfWithQuestionMarkNegativeValueFalse()
         {
             var IfEval = new ZeroCode2.Interpreter.Evaluator.IfEvaluator("!#Parameters.debug=on");
-            var context = new ZeroCode2.Interpreter.InterpreterContext();
-            context.Model = ModelCollector;
+            var context = new ZeroCode2.Interpreter.InterpreterContext
+            {
+                Model = ModelCollector
+            };
 
             var res = IfEval.Evaluate(context, "");
 
@@ -108,8 +120,10 @@ namespace ZeroCode2UnitTests
         public void TestEvalWithReference()
         {
             var exprEval = new ZeroCode2.Interpreter.Evaluator.ExpressionEvaluator();
-            var context = new ZeroCode2.Interpreter.InterpreterContext();
-            context.Model = ModelCollector;
+            var context = new ZeroCode2.Interpreter.InterpreterContext
+            {
+                Model = ModelCollector
+            };
 
             var res = exprEval.Evaluate(context, "@Models.Person.[#Parameters.reference].[#Parameters.[#Parameters.reference1]2]ame");
 
@@ -121,8 +135,10 @@ namespace ZeroCode2UnitTests
         public void TestEvalWithReferenceInResult()
         {
             var exprEval = new ZeroCode2.Interpreter.Evaluator.ExpressionEvaluator();
-            var context = new ZeroCode2.Interpreter.InterpreterContext();
-            context.Model = ModelCollector;
+            var context = new ZeroCode2.Interpreter.InterpreterContext
+            {
+                Model = ModelCollector
+            };
 
             var res = exprEval.Evaluate(context, "@Models.Person.CodeField");
 

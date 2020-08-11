@@ -15,7 +15,7 @@ namespace ZeroCode2
 {
     public class CommandlineOptions
     {
-        [Option(HelpText ="File with the input parameters for the ZeroCode generator", Required = true)]
+        [Option(HelpText = "File with the input parameters for the ZeroCode generator", Required = true)]
         public string InputFile { get; set; }
         [Option(HelpText = "File with the master template for the ZeroCode generator", Required = true)]
         public string Template { get; set; }
@@ -48,7 +48,7 @@ namespace ZeroCode2
 
             if (cmdOptions != null)
             {
-                if (cmdOptions.LogLevel < 0 ||cmdOptions.LogLevel > 5)
+                if (cmdOptions.LogLevel < 0 || cmdOptions.LogLevel > 5)
                 {
                     Console.Error.WriteLine("LogLevel must be between 0 and 5");
                 }
@@ -203,7 +203,7 @@ namespace ZeroCode2
         }
 
         public void DumpErrors()
-        { 
+        {
             if (HasErrors)
             {
                 foreach (var item in Errors)
@@ -369,7 +369,7 @@ namespace ZeroCode2
             var PC = instructions[0];
             Interpreter.InterpreterInstructionBase next = null;
 
-            while (PC != null )
+            while (PC != null)
             {
                 try
                 {
@@ -491,7 +491,8 @@ namespace ZeroCode2
             if (pair == null)
             {
                 var value = new List<Models.IModelObject>();
-                pair = new Models.ModelCompositeObject {
+                pair = new Models.ModelCompositeObject
+                {
                     Value = value
                 };
             }
@@ -509,7 +510,7 @@ namespace ZeroCode2
                 pair.Modifier = context.modifier.Text;
             }
 
-            logger.Trace("Pair = {0}{1}", pair.Name, context.pairvalue()?.inherits() != null ? " : " + pair.InheritsFrom : "");
+            logger.Trace("Pair: {0}{1} = {2}{3}", pair.Modifier, pair.Name, pair.GetText() ?? "unknown", context.pairvalue()?.inherits() != null ? " : " + pair.InheritsFrom : "");
 
             base.ExitPair(context);
         }
@@ -654,7 +655,9 @@ namespace ZeroCode2
 
         public override void ExitFileCreateCommand([NotNull] ZeroCode2Template.FileCreateCommandContext context)
         {
-            string instrVal = context.IGNORE().Aggregate("", (s, t) => s += t.GetText());
+            string instrVal = context.FILECREATE().GetText().Substring("%FileCreate:".Length);
+
+            instrVal = RemoveLineEnd(instrVal);
 
             Program.AddFileCreate(context.start.Line, context.start.StartIndex, instrVal);
 
@@ -663,7 +666,9 @@ namespace ZeroCode2
 
         public override void ExitFileOverwriteCommand([NotNull] ZeroCode2Template.FileOverwriteCommandContext context)
         {
-            string instrVal = context.IGNORE().Aggregate("", (s, t) => s += t.GetText());
+            string instrVal = context.FILEOVERWRITE().GetText().Substring("%FileOverwrite:".Length);
+
+            instrVal = RemoveLineEnd(instrVal);
 
             Program.AddFileOverwrite(context.start.Line, context.start.StartIndex, instrVal);
 
@@ -672,30 +677,38 @@ namespace ZeroCode2
 
         public override void ExitLoopCommand([NotNull] ZeroCode2Template.LoopCommandContext context)
         {
+            string loopArgument = context.GetText().Substring("%Loop:".Length);
 
-            Program.AddLoop(context.start.Line, context.start.StartIndex, context.IGNORE().GetText());
+            loopArgument = RemoveLineEnd(loopArgument).Trim();
+
+            Program.AddLoop(context.start.Line, context.start.StartIndex, loopArgument);
 
             base.ExitLoopCommand(context);
         }
 
         public override void ExitEndFileCommand([NotNull] ZeroCode2Template.EndFileCommandContext context)
         {
+            var instrVal = RemoveLineEnd(context.GetText());
 
-            Program.AddEndFile(context.start.Line, context.start.StartIndex, context.GetText());
+            Program.AddEndFile(context.start.Line, context.start.StartIndex, instrVal);
 
             base.ExitEndFileCommand(context);
         }
 
         public override void ExitEndLoopCommand([NotNull] ZeroCode2Template.EndLoopCommandContext context)
         {
-            Program.AddEndLoop(context.start.Line, context.start.StartIndex, context.GetText());
+            var instrVal = RemoveLineEnd(context.GetText());
+
+            Program.AddEndLoop(context.start.Line, context.start.StartIndex, instrVal);
 
             base.ExitEndLoopCommand(context);
         }
 
         public override void ExitIncludeCommand([NotNull] ZeroCode2Template.IncludeCommandContext context)
         {
-            string instrVal = context.IGNORE().Aggregate("", (s, t) => s += t.GetText());
+            var instrVal = RemoveLineEnd(context.GetText());
+
+            instrVal = instrVal.Substring("%Include:".Length); ;
 
             logger.Info("Including {0}", instrVal);
 
@@ -710,43 +723,65 @@ namespace ZeroCode2
 
         public override void ExitExprCommand([NotNull] ZeroCode2Template.ExprCommandContext context)
         {
-            Program.AddExpression(context.start.Line, context.start.StartIndex, context.EXIGNORE().GetText());
+            string instrVal = context.GetText().Substring("=<".Length);
+
+            instrVal = instrVal.Replace(">", "");
+
+            Program.AddExpression(context.start.Line, context.start.StartIndex, instrVal);
 
             base.ExitExprCommand(context);
         }
 
         public override void ExitIfCommand([NotNull] ZeroCode2Template.IfCommandContext context)
         {
-            Program.AddIf(context.start.Line, context.start.StartIndex, context.IFTEXT().GetText());
+            string instrVal = context.GetText().Substring("%If:".Length).Trim();
+
+            instrVal = RemoveLineEnd(instrVal).Trim();
+
+            Program.AddIf(context.start.Line, context.start.StartIndex, instrVal);
 
             base.ExitIfCommand(context);
         }
 
         public override void ExitElseCommand([NotNull] ZeroCode2Template.ElseCommandContext context)
         {
-            Program.AddElse(context.start.Line, context.start.StartIndex, context.GetText());
+            var instrVal = RemoveLineEnd(context.GetText()).Trim();
+
+            Program.AddElse(context.start.Line, context.start.StartIndex, instrVal);
 
             base.ExitElseCommand(context);
         }
 
         public override void ExitEndIfCommand([NotNull] ZeroCode2Template.EndIfCommandContext context)
         {
-            Program.AddEndif(context.start.Line, context.start.StartIndex, context.GetText());
+            var instrVal = RemoveLineEnd(context.GetText()).Trim();
+
+            Program.AddEndif(context.start.Line, context.start.StartIndex, instrVal);
 
             base.ExitEndIfCommand(context);
         }
 
         public override void ExitLogCommand([NotNull] ZeroCode2Template.LogCommandContext context)
         {
-            var id = context.GetChild(0);
-            var logType = id.GetChild(0).GetText();
-            var val = id.GetChild(1).GetText();
+            var instrVal = RemoveLineEnd(context.GetText()).Trim();
+
+            var logType = instrVal.Substring(0, instrVal.IndexOf(':') + 1);
+            var val = instrVal.Substring(instrVal.IndexOf(':') + 1);
 
             Program.AddLogInstruction(context.start.Line, context.start.StartIndex, logType, val);
 
             base.ExitLogCommand(context);
         }
 
+        private string RemoveLineEnd(string inString)
+        {
+            string outString;
+
+            outString = inString.Replace("\n", "");
+            outString = outString.Replace("\r", "");
+            return outString;
+        }
     }
+
 
 }

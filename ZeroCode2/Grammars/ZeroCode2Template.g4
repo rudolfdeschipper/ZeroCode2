@@ -11,48 +11,47 @@ options { tokenVocab=ZeroCode2TemplateLexer; }
 
 template
 	: templateelement+ EOF
+	| EOF
 	;
 
 templateelement
-	: command			 #commandCommandIgnore
-	| expr				 #exprCommandIgnore
-	| (TEXT | EQU | WS ) #LiteralCommand
+	: command				#commandCommandIgnore
+	| (TEXT | EQU | PERC )	#LiteralCommand
 	;
 
 
 command
-	: filec			#filecCommandIgnore
-	| fileo			#fileoCommandIgnore
-	| include		#includeCommandIgnore
-	| IF IFTEXT IF_WS		#IfCommand
-	| LOOP IGNORE	#LoopCommand
-	| ENDFILE		#EndFileCommand
-	| ENDIF			#EndIfCommand
-	| ELSE			#ElseCommand
-	| ENDLOOP		#EndLoopCommand
-	| log			#LogCommand
-	;
+	: filec					#filecCommandIgnore
+	| fileo					#fileoCommandIgnore
+	| include				#includeCommandIgnore
+	| IF					#IfCommand
+	| LOOP NEWLINE?			#LoopCommand
+	| ENDFILE NEWLINE?		#EndFileCommand
+	| ENDIF					#EndIfCommand
+	| ELSE					#ElseCommand
+	| ENDLOOP NEWLINE?		#EndLoopCommand
+	| log					#LogCommand
+	| EXPR					#ExprCommand
+;
 
 filec
-	: FILEC (IGNORE)+ #FileCreateCommand
+	: FILECREATE NEWLINE #FileCreateCommand
 	;
 
 fileo
-	: FILEO (IGNORE)+ #FileOverwriteCommand
+	: FILEOVERWRITE NEWLINE #FileOverwriteCommand
 	;
 
 include
-	: INCLUDE (IGNORE)+  #IncludeCommand
+	: INCLUDE NEWLINE	#IncludeCommand
 	;
 
-expr
-	: EXPRO EXIGNORE EXPRC #ExprCommand
-	;
 
 log
-	: INFO (IGNORE)+
-	| DEBUG (IGNORE)+
-	| LOG (IGNORE)+
-	| ERROR (IGNORE)+
-	| TRACE (IGNORE)+
-	;
+	: INFO NEWLINE
+    | DEBUG NEWLINE
+    | LOG NEWLINE
+    | ERROR NEWLINE
+    | TRACE NEWLINE
+    ;
+

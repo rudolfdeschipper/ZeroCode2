@@ -11,7 +11,10 @@ namespace ZeroCode2.Interpreter
         //public string InputFile { get; set; }
 
         // Logging
-        private static NLog.Logger logger = NLog.LogManager.GetCurrentClassLogger();
+        private static readonly NLog.Logger logger = NLog.LogManager.GetCurrentClassLogger();
+
+        private readonly Stack<InterpreterInstructionBranch> loopStack = new Stack<InterpreterInstructionBranch>();
+        private readonly Stack<InterpreterInstructionBase> ifElseStack = new Stack<InterpreterInstructionBase>();
 
         public InterpreterProgram()
         {
@@ -79,6 +82,8 @@ namespace ZeroCode2.Interpreter
             AddInstruction(instruction1);
             AddInstruction(instruction2);
 
+            loopStack.Push(instruction2);
+
             DebugInstruction("Loop", instruction2);
 
         }
@@ -98,25 +103,28 @@ namespace ZeroCode2.Interpreter
             var instruction1 = new Interpreter.InterpreterInstructionNoOp(line, pos, value, new Interpreter.Evaluator.NoOpEvaluator());
             var instruction2 = new Interpreter.InterpreterInstructionNoOp(line, pos, value, new Interpreter.Evaluator.ExitLoopEvaluator());
 
-            AddInstruction(instruction1);
-            AddInstruction(instruction2);
-
-            var closestLoop = Instructions.LastOrDefault(i => i._evaluator.GetType() == typeof(Interpreter.Evaluator.LoopEvaluator) && i.GetType() == typeof(Interpreter.InterpreterInstructionBranch) && ((Interpreter.InterpreterInstructionBranch)i)?.Alternative == null) as Interpreter.InterpreterInstructionBranch;
+            //if (Instructions.LastOrDefault(i => 
+            //    i._evaluator.GetType() == typeof(Interpreter.Evaluator.LoopEvaluator) 
+            //    && i.GetType() == typeof(Interpreter.InterpreterInstructionBranch) 
+            //    && ((Interpreter.InterpreterInstructionBranch)i)?.Alternative == null) 
+            //    is Interpreter.InterpreterInstructionBranch closestLoop)
+            var closestLoop = loopStack.Count > 0 ? loopStack.Pop() : null;
 
             if (closestLoop != null)
             {
+                AddInstruction(instruction1);
+                AddInstruction(instruction2);
+
                 instruction1.Next = closestLoop;
                 closestLoop.Alternative = instruction2;
                 closestLoop.EndBranch = instruction2;
+
+                DebugInstruction("EndLoop", instruction1);
             }
             else
             {
                 logger.Error("End loop without matching Loop on line {0} - {1} ({2})", line, pos, value);
             }
-
-
-            DebugInstruction("EndLoop", instruction1);
-
         }
 
         public void AddExpression(int line, int pos, string value)
@@ -136,6 +144,8 @@ namespace ZeroCode2.Interpreter
 
             var instruction = new Interpreter.InterpreterInstructionBranch(line, pos, value, evaluator);
 
+            ifElseStack.Push(instruction);
+
             AddInstruction(instruction);
 
             DebugInstruction("If", instruction);
@@ -147,22 +157,26 @@ namespace ZeroCode2.Interpreter
             var instruction = new Interpreter.InterpreterInstructionNoOp(line, pos, value, new Interpreter.Evaluator.NoOpEvaluator());
             var instruction2 = new Interpreter.InterpreterInstructionNoOp(line, pos, value, new Interpreter.Evaluator.NoOpEvaluator());
 
-            AddInstruction(instruction);
-            AddInstruction(instruction2);
-
-            var prevIf = Instructions.LastOrDefault(i => i._evaluator.GetType() == typeof(Interpreter.Evaluator.IfEvaluator) && i.GetType() == typeof(Interpreter.InterpreterInstructionBranch) && ((Interpreter.InterpreterInstructionBranch)i).Alternative == null);
+            //var prevIf = Instructions.LastOrDefault(i => i._evaluator.GetType() == typeof(Interpreter.Evaluator.IfEvaluator) && i.GetType() == typeof(Interpreter.InterpreterInstructionBranch) && ((Interpreter.InterpreterInstructionBranch)i).Alternative == null);
+            var prevIf = ifElseStack.Count > 0 ? ifElseStack.Pop() as InterpreterInstructionBranch : null;
             if (prevIf != null)
             {
+                AddInstruction(instruction);
+                AddInstruction(instruction2);
+
                 ((Interpreter.InterpreterInstructionBranch)prevIf).Alternative = instruction2;
+
+                ifElseStack.Push(instruction);
+
+                // set to null so that the next instruction will link to this one and not to instruction2
+                instruction.Next = null;
+
+                DebugInstruction("Else", instruction);
             }
             else
             {
                 logger.Error("Else without matching If on line {0} - {1} ({2})", line, pos, value);
             }
-            // set to null so that the next instruction will link to this one and not to instruction2
-            instruction.Next = null;
-
-            DebugInstruction("Else", instruction);
 
         }
 
@@ -174,11 +188,14 @@ namespace ZeroCode2.Interpreter
             // determine if there was a previous else - if so set its first instruction's next to here
             // if there was no else, set the alternative of the closest if to this instruction
             // so need to find the closest if that has an open alternative or the closest else that has no next yet
-            var closestIfOrElse = Instructions.LastOrDefault(i =>
-               (i._evaluator.GetType() == typeof(Interpreter.Evaluator.IfEvaluator) && i.GetType() == typeof(Interpreter.InterpreterInstructionBranch) && ((Interpreter.InterpreterInstructionBranch)i).Alternative == null)
-               ||
-               (i.GetType() == typeof(Interpreter.InterpreterInstructionNoOp) && i.Instruction == "%Else" && i.Next == null)
-            );
+
+            var closestIfOrElse = ifElseStack.Count > 0 ? ifElseStack.Pop() : null;
+
+//                Instructions.LastOrDefault(i =>
+//               (i._evaluator.GetType() == typeof(Interpreter.Evaluator.IfEvaluator) && i.GetType() == typeof(Interpreter.InterpreterInstructionBranch) && ((Interpreter.InterpreterInstructionBranch)i).Alternative == null)
+//               ||
+//               (i.GetType() == typeof(Interpreter.InterpreterInstructionNoOp) && i.Instruction == "%Else" && i.Next == null)
+//            );
             if (closestIfOrElse != null)
             {
                 if (closestIfOrElse.GetType() == typeof(Interpreter.InterpreterInstructionBranch))
@@ -192,16 +209,15 @@ namespace ZeroCode2.Interpreter
                     // this was an else
                     closestIfOrElse.Next = instruction;
                 }
+
+                AddInstruction(instruction);
+
+                DebugInstruction("EndIf", instruction);
             }
             else
             {
                 logger.Error("EndIf without matching If or Else on line {0} - {1} ({2})", line, pos, value);
             }
-
-            AddInstruction(instruction);
-
-            DebugInstruction("EndIf", instruction);
-
         }
 
         public void AddLogInstruction(int line, int pos, string logType, string value)

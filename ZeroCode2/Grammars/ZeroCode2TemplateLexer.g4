@@ -3,62 +3,66 @@
  * To change this template file, choose Tools | Templates
  * and open the template in the editor.
  */
-
 lexer grammar ZeroCode2TemplateLexer;
-// ------- LEXER ----------
 
-FILEC : '%FileCreate:' -> pushMode(FC);
+FILEOVERWRITE: '%FileOverwrite:' ~(' '|'\r'|'\n')+ -> pushMode(LINE)
+        ;
 
-FILEO : '%FileOverwrite:' -> pushMode(FC);
+FILECREATE: '%FileCreate:' ~(' '|'\r'|'\n')+ -> pushMode(LINE)
+        ;
 
-INCLUDE : '%Include:' -> pushMode(FC);
+INCLUDE: '%Include:' ~(' '|'\r'|'\n')+ -> pushMode(LINE)
+       ;
 
-IF : '%If:' -> pushMode(IF_MODE);
+ENDFILE: '%/File' -> pushMode(LINE)
+         ;
 
-ELSE : '%Else';
+LOOP: '%Loop:' (('#'|'@')? ((ID | REFSTART PATHPART REFEND) DOT)* ((ID | REFSTART PATHPART REFEND) | '$')) (' ' | ('\r'? '\n'))
+    ;
 
-ENDIF : '%EndIf';
+ENDLOOP: 
+       '%/Loop:' ~(' '|'\r'|'\n')* (' ' | ('\r'? '\n'))
+       | '%/Loop'
+       ;
 
-LOOP : '%Loop:' -> pushMode(FC);
+IF: '%If:' (EXCL? ('#'|'@')? (ID DOT)* (ID | '$') ((EQU ID) | QUEST)?) (' ' | ('\r'? '\n'))
+  ;
 
-ENDLOOP : '%/Loop' ~[\r\n]*;
+ELSE: '%Else' (' ' | ('\r'? '\n'))
+    ;
 
-ENDFILE : '%/File'  ~[\r\n]*;
+ENDIF: '%EndIf' (' ' | ('\r'? '\n'))
+     ;
 
-INFO	: '%Info:' -> pushMode(FC);
-DEBUG	: '%Debug:' -> pushMode(FC);
-ERROR	: '%Error:' -> pushMode(FC);
-LOG		: '%Log:' -> pushMode(FC);
-TRACE	: '%Trace:' -> pushMode(FC);
+EXPR: '=<' (('#'|'@')? ((ID | REFSTART PATHPART REFEND) DOT)* ((ID | REFSTART PATHPART REFEND) | '$')) '>'
+    ;
+        
+INFO	: '%Info:' ~('\r'|'\n')+ -> pushMode(LINE);
+DEBUG	: '%Debug:' ~('\r'|'\n')+ -> pushMode(LINE);
+ERROR	: '%Error:' ~('\r'|'\n')+ -> pushMode(LINE);
+LOG	    : '%Log:' ~('\r'|'\n')+ -> pushMode(LINE);
+TRACE	: '%Trace:' ~('\r'|'\n')+ -> pushMode(LINE);
 
-EXPRO : '=<' -> pushMode(EX);
-
-ID : [a-zA-Z][a-zA-Z_0-9]*;
-
-PATHPART: ('#'|'@')? (ID DOT)* (ID | '$');
-
-FILEPATH : [a-zA-Z_0-9\\]+;
-
-WS     : [ \r\t\n]+;
-
-TEXT : ~('%'|'=')+;
-
-DOT : '.';
-EXCL: '!';
 EQU: '=';
-QUEST: '?';
+PERC: '%';
 
-REFSTART: '[';
-REFEND: ']';
+TEXT: ~[%=]+
+    ;
 
-mode FC;
-NL: '\r'? '\n' -> more, popMode;
-IGNORE: ~('\n'|'\r')+;
+fragment ID : [a-zA-Z][a-zA-Z_0-9]*;
 
-mode EX;
-EXPRC : '>' -> popMode;
-EXIGNORE: ('#'|'@')? ((ID | REFSTART PATHPART REFEND) DOT)* ((ID | REFSTART PATHPART REFEND) | '$');
+fragment PATHPART: ('#'|'@')? (ID DOT)* (ID | '$');
 
-mode IF_MODE;
-IFTEXT : EXCL? ('#'|'@')? (ID DOT)* (ID | '$') ((EQU ID) | QUEST)?;
-IF_WS     : [ \r\t\n]+ -> popMode;
+fragment DOT : '.';
+
+fragment EXCL: '!';
+
+fragment QUEST: '?';
+
+fragment REFSTART: '[';
+
+fragment REFEND: ']';
+
+mode LINE;
+NEWLINE: ('\r'? '\n') -> popMode
+       ;

@@ -10,7 +10,7 @@ namespace ZeroCode2.Interpreter.Evaluator
     {
         public string LogType { get; set; }
         // Logging
-        private static NLog.Logger logger = NLog.LogManager.GetCurrentClassLogger();
+        private static readonly NLog.Logger logger = NLog.LogManager.GetCurrentClassLogger();
 
         public EvaluateLogging(string logType)
         {

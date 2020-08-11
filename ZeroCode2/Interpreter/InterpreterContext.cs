@@ -121,8 +121,7 @@ namespace ZeroCode2.Interpreter
             }
 
             logger.Trace("Exit loop: " + expression);
-
-            var it = LoopStack.Pop();
+            _ = LoopStack.Pop();
             //if (it.Path != expression)
             //{
             //    throw new Exception("Exit loop does not match the expression: " + it.Path);
@@ -134,7 +133,24 @@ namespace ZeroCode2.Interpreter
     public class IteratorManager
     {
         private Models.Iterator Iterator { get; set; }
-        public string Path { get; set; }
+
+        private string _path;
+
+        public string Path
+        {
+            get { return _path;  }
+            set
+            {
+                if (value.StartsWith("@"))
+                {
+                    _path = value.Substring(1);
+                }
+                else
+                {
+                    _path = value;
+                }
+            }
+        }
         public Models.IModelObject Root { get; set; }
         public Models.IModelObject CurrentModel { get; private set; }
 

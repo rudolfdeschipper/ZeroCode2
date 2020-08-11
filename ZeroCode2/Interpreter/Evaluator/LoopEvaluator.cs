@@ -10,12 +10,9 @@ namespace ZeroCode2.Interpreter.Evaluator
     {
         public EvaluatorResult Evaluate(IInterpreterContext context, string expression)
         {
-            bool result = false;
-
             var loop = context.EvaluateLoop(expression);
 
-            result = loop.HasMore || loop.CurrentModel != null;
-
+            bool result = loop.HasMore || loop.CurrentModel != null;
             return new EvaluatorResult(result, string.Empty);
         }
     }
