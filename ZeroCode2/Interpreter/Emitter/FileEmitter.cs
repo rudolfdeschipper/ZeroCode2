@@ -9,10 +9,13 @@ namespace ZeroCode2.Interpreter.Emitter
 {
     public class FileEmitter : IEmitter
     {
-        NLog.Logger logger = NLog.LogManager.GetCurrentClassLogger();
+        readonly NLog.Logger logger = NLog.LogManager.GetCurrentClassLogger();
 
         private System.Text.StringBuilder _sb;
         private string _uri;
+
+        private string fileName = "";
+        private string pathName = "";
 
         public string OutputPath { get; set; }
 
@@ -54,8 +57,8 @@ namespace ZeroCode2.Interpreter.Emitter
             }
             if (doCreate)
             {
-                OutputPath = currentPath;
-                _uri = file;
+                pathName = currentPath;
+                fileName = file;
             }
             return retVal;
         }
@@ -67,19 +70,16 @@ namespace ZeroCode2.Interpreter.Emitter
             // create path if not there yet
             EnsurePathExists(true);
 
-            FilePath.WriteToFile(Path.Combine(OutputPath, _uri), _sb);
+            FilePath.WriteToFile(Path.Combine(pathName, fileName), _sb);
         }
 
         public void Emit(string output)
         {
-            logger.Info("Emitting: " + output);
+            logger.Trace("Emitting: " + output);
             if (_sb != null)
             {
-                if (!string.IsNullOrWhiteSpace(output))
-                {
-                    logger.Info("Emitting: " + output);
-                    _sb.Append(output);
-                }
+                logger.Debug("Emitting: " + output);
+                _sb.Append(output);
             }
             else
             {
@@ -94,7 +94,7 @@ namespace ZeroCode2.Interpreter.Emitter
                 // directory path did not even exist, so for sure the file doesn't either
                 return false;
             }
-            return FilePath.FileExists(Path.Combine(OutputPath, fileName));
+            return FilePath.FileExists(Path.Combine(pathName, fileName));
         }
 
         public void Open(string uri)
