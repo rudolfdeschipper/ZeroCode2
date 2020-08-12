@@ -69,9 +69,27 @@ namespace ZeroCode2
                         modelParser = r.RunModelParser(cmdOptions, false);
 #else
                         modelParser = r.RunModelParser(cmdOptions, false);
-#endif
+#endif      
+                        if (modelParser.HasErrors)
+                        {
+                            logger.Error("Model errors");
+                            foreach (var item in modelParser.Errors)
+                            {
+                                logger.Error(item);
+                            }
+                            throw new ApplicationException("Model errors");
+                        }
                         logger.Info("Parsing Template:");
                         templateParser = r.RunTemplateParser(cmdOptions);
+                        if (templateParser.HasErrors)
+                        {
+                            logger.Error("Template errors");
+                            foreach (var item in templateParser.Errors)
+                            {
+                                logger.Error(item);
+                            }
+                            throw new ApplicationException("Template errors");
+                        }
 
                         if (cmdOptions.Simulate == true)
                         {
@@ -304,6 +322,9 @@ namespace ZeroCode2
     {
         public Interpreter.InterpreterProgram Program { get; set; }
 
+        public List<string> Errors { get; set; } = new List<string>();
+        public bool HasErrors { get; set; }
+
         public TemplateParser(Interpreter.InterpreterProgram program)
         {
             Program = program;
@@ -333,6 +354,9 @@ namespace ZeroCode2
             };
 
             walker.Walk(Listener, parser.template());
+
+            Errors.AddRange(Program.Errors());
+            HasErrors = Errors.Count > 0;
 
         }
 

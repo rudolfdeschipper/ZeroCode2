@@ -8,8 +8,6 @@ namespace ZeroCode2.Interpreter
 {
     public class InterpreterProgram
     {
-        //public string InputFile { get; set; }
-
         // Logging
         private static readonly NLog.Logger logger = NLog.LogManager.GetCurrentClassLogger();
 
@@ -19,13 +17,11 @@ namespace ZeroCode2.Interpreter
         public InterpreterProgram()
         {
             Instructions = new List<Interpreter.InterpreterInstructionBase>();
-            //InputFile = inFile;
         }
 
         public InterpreterProgram(List<InterpreterInstructionBase> instructions)
         {
             Instructions = instructions;
-            //InputFile = inFile;
         }
 
         public List<InterpreterInstructionBase> Instructions { get; set; }
@@ -50,7 +46,6 @@ namespace ZeroCode2.Interpreter
             AddInstruction(instruction);
 
             DebugInstruction("Literal", instruction);
-
         }
 
         public void AddFileCreate(int line, int pos, string value)
@@ -60,7 +55,6 @@ namespace ZeroCode2.Interpreter
             AddInstruction(instruction);
 
             DebugInstruction("FileCreate", instruction);
-
         }
 
 
@@ -71,7 +65,6 @@ namespace ZeroCode2.Interpreter
             AddInstruction(instruction);
 
             DebugInstruction("FileOverwrite", instruction);
-
         }
 
         public void AddLoop(int line, int pos, string value)
@@ -85,7 +78,6 @@ namespace ZeroCode2.Interpreter
             loopStack.Push(instruction2);
 
             DebugInstruction("Loop", instruction2);
-
         }
 
         public void AddEndFile(int line, int pos, string value)
@@ -95,7 +87,6 @@ namespace ZeroCode2.Interpreter
             AddInstruction(instruction);
 
             DebugInstruction("EndFile", instruction);
-
         }
 
         public void AddEndLoop(int line, int pos, string value)
@@ -103,11 +94,6 @@ namespace ZeroCode2.Interpreter
             var instruction1 = new Interpreter.InterpreterInstructionNoOp(line, pos, value, new Interpreter.Evaluator.NoOpEvaluator());
             var instruction2 = new Interpreter.InterpreterInstructionNoOp(line, pos, value, new Interpreter.Evaluator.ExitLoopEvaluator());
 
-            //if (Instructions.LastOrDefault(i => 
-            //    i._evaluator.GetType() == typeof(Interpreter.Evaluator.LoopEvaluator) 
-            //    && i.GetType() == typeof(Interpreter.InterpreterInstructionBranch) 
-            //    && ((Interpreter.InterpreterInstructionBranch)i)?.Alternative == null) 
-            //    is Interpreter.InterpreterInstructionBranch closestLoop)
             var closestLoop = loopStack.Count > 0 ? loopStack.Pop() : null;
 
             if (closestLoop != null)
@@ -149,7 +135,6 @@ namespace ZeroCode2.Interpreter
             AddInstruction(instruction);
 
             DebugInstruction("If", instruction);
-
         }
 
         public void AddElse(int line, int pos, string value)
@@ -157,7 +142,6 @@ namespace ZeroCode2.Interpreter
             var instruction = new Interpreter.InterpreterInstructionNoOp(line, pos, value, new Interpreter.Evaluator.NoOpEvaluator());
             var instruction2 = new Interpreter.InterpreterInstructionNoOp(line, pos, value, new Interpreter.Evaluator.NoOpEvaluator());
 
-            //var prevIf = Instructions.LastOrDefault(i => i._evaluator.GetType() == typeof(Interpreter.Evaluator.IfEvaluator) && i.GetType() == typeof(Interpreter.InterpreterInstructionBranch) && ((Interpreter.InterpreterInstructionBranch)i).Alternative == null);
             var prevIf = ifElseStack.Count > 0 ? ifElseStack.Pop() as InterpreterInstructionBranch : null;
             if (prevIf != null)
             {
@@ -177,7 +161,6 @@ namespace ZeroCode2.Interpreter
             {
                 logger.Error("Else without matching If on line {0} - {1} ({2})", line, pos, value);
             }
-
         }
 
 
@@ -191,11 +174,6 @@ namespace ZeroCode2.Interpreter
 
             var closestIfOrElse = ifElseStack.Count > 0 ? ifElseStack.Pop() : null;
 
-//                Instructions.LastOrDefault(i =>
-//               (i._evaluator.GetType() == typeof(Interpreter.Evaluator.IfEvaluator) && i.GetType() == typeof(Interpreter.InterpreterInstructionBranch) && ((Interpreter.InterpreterInstructionBranch)i).Alternative == null)
-//               ||
-//               (i.GetType() == typeof(Interpreter.InterpreterInstructionNoOp) && i.Instruction == "%Else" && i.Next == null)
-//            );
             if (closestIfOrElse != null)
             {
                 if (closestIfOrElse.GetType() == typeof(Interpreter.InterpreterInstructionBranch))
@@ -234,6 +212,22 @@ namespace ZeroCode2.Interpreter
         private void DebugInstruction(string type, Interpreter.InterpreterInstructionBase instruction)
         {
             logger.Trace("{0} {1} - {2}: '{3}'", type, instruction.Line, instruction.Position, instruction.Instruction);
+        }
+
+        public List<string> Errors()
+        {
+            var errors = new List<string>();
+
+            foreach (var item in loopStack)
+            {
+                errors.Add(string.Format("Loop {0} starting at line {1} is not terminated by a %/Loop statement.", item.Instruction, item.Line));
+            }
+            foreach (var item in ifElseStack)
+            {
+                errors.Add(string.Format("If/Endif {0} starting at line {1} is not terminated by a %EndIf statement.", item.Instruction, item.Line));
+            }
+
+            return errors;
         }
 
     }
