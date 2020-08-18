@@ -56,11 +56,6 @@ namespace ZeroCode2.Interpreter
 
         public IteratorManager EvaluateLoop(string expression)
         {
-            if (expression.StartsWith("@"))
-            {
-                expression = expression.Substring(1);
-            }
-
             var iterator = LoopStack.FirstOrDefault(l => l.Path == expression);
 
             if (iterator == null)
@@ -97,12 +92,6 @@ namespace ZeroCode2.Interpreter
 
             var locator = new Models.PropertyLocator(expression, Model, LoopStack);
 
-            if (expression.StartsWith("@"))
-            {
-                // throw away "@"
-                iterator.Path = iterator.Path.Substring(1);
-            }
-
             if (locator.Locate() == false)
             {
                 throw new ApplicationException(string.Format("Could not understand this loop expression {0}", expression));
@@ -135,22 +124,27 @@ namespace ZeroCode2.Interpreter
         private Models.Iterator Iterator { get; set; }
 
         private string _path;
-
+        private string _loopid;
         public string Path
         {
             get { return _path;  }
             set
             {
-                if (value.StartsWith("@"))
+                _path = value;
+                if (value.StartsWith("@") || value.StartsWith("#"))
                 {
-                    _path = value.Substring(1);
+                    _loopid = value.Substring(1);
                 }
                 else
                 {
-                    _path = value;
+                    _loopid = value;
                 }
             }
         }
+        /// <summary>
+        /// Returns the Loop ID of the iterator. Use this to refer to the loop
+        /// </summary>
+        public string LoopID { get { return _loopid; } }
         public Models.IModelObject Root { get; set; }
         public Models.IModelObject CurrentModel { get; private set; }
 

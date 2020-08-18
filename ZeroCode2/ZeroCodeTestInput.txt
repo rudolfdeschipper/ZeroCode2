@@ -59,7 +59,8 @@ Person : {
 Stakeholder : {
 	ID : { Type:"int", Name:"ID", Title:"ID"},
 	Name <- DataDictionary.NameField : { -Nullable },
-	Title : { Type:"string", Name:"Title", Title:"Title", Length:100, Nullable:false }
+	Title : { Type:"string", Name:"Title", Title:"Title", Length:100, Nullable:false },
+	Inherited <- DataDictionary.NameField
 }
 
 @ViewModels

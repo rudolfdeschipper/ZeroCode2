@@ -193,6 +193,8 @@ namespace ZeroCode2.Models
     {
         public List<string> Errors { get; set; } = new List<string>();
 
+        private static readonly NLog.Logger logger = NLog.LogManager.GetCurrentClassLogger();
+
         public bool ResolveInheritance(IModelObject pair, ModelCollector modelList)
         {
             var ok = true;
@@ -209,6 +211,7 @@ namespace ZeroCode2.Models
                 ok = pair.ParentObject != null;
                 if (!ok)
                 {
+                    logger.Error(string.Format("{0} inheritance to {1} could not be resolved", pair.Name, pair.InheritsFrom));
                     Errors.Add(string.Format("{0} inheritance to {1} could not be resolved", pair.Name, pair.InheritsFrom));
                 }
             }
@@ -245,6 +248,7 @@ namespace ZeroCode2.Models
                 ok = model.ParentObject != null;
                 if (!ok)
                 {
+                    logger.Error(string.Format("{0} inheritance to {1} could not be resolved", model.Name, model.InheritsFrom));
                     Errors.Add(string.Format("{0} inheritance to {1} could not be resolved", model.Name, model.InheritsFrom));
                 }
             }
@@ -271,6 +275,7 @@ namespace ZeroCode2.Models
                 var cycle = stack.FirstOrDefault(s => s == parent);
                 if (cycle != null)
                 {
+                    logger.Error(string.Format("{0} inheritance defines a cyclic relation.", cycle.Name));
                     Errors.Add(string.Format("{0} inheritance defines a cyclic relation.", cycle.Name));
                     return false;
                 }
@@ -296,23 +301,12 @@ namespace ZeroCode2.Models
     /// </summary>
     public class PropertyResolver
     {
+        private static readonly NLog.Logger logger = NLog.LogManager.GetCurrentClassLogger();
+
         public void PopulateProperties(IModelObject pair)
         {
-            List<IModelObject> newProps = new List<IModelObject>();
-
-            // no inheritance
-            if (!pair.Inherits)
-            {
-                return;
-            }
-
-             // already resolved
+            // already resolved
             if (pair.IsResolved)
-            {
-                return;
-            }
-           // no inheritance
-            if (pair.Inherits && pair.ParentObject == null)
             {
                 return;
             }
@@ -321,8 +315,30 @@ namespace ZeroCode2.Models
             {
                 return;
             }
+
+            // resolve properties first:
+            foreach (var item in pair.AsComposite().Value)
+            {
+                PopulateProperties(item);
+            }
+
+            // no inheritance
+            if (!pair.Inherits)
+            {
+                return;
+            }
+
+           // invalid inheritance chain
+            if (pair.ParentObject == null)
+            {
+                logger.Error("{0} inherits from {1} but was not resolved", pair.Name, pair.InheritsFrom);
+                
+                return;
+            }
             if (pair.ParentObject.IsObject())
             {
+                List<IModelObject> newProps = new List<IModelObject>();
+
                 // only copy the "+" from the current list:
                 newProps.AddRange(pair.AsComposite().Value.Where( mp => mp.Modifier == "+"));
  
@@ -359,6 +375,10 @@ namespace ZeroCode2.Models
                 // set the new set as the value:
                 pair.AsComposite().Value = newProps;
                 pair.IsResolved = true;
+            }
+            else
+            {
+                logger.Error("{0} inherits from {1} but this is not an object", pair.Name, pair.InheritsFrom);
             }
         }
     }
@@ -416,6 +436,8 @@ namespace ZeroCode2.Models
         public IModelObject CurrentRoot { get; set; }
         private Stack<Interpreter.IteratorManager> LoopStack { get; set; }
 
+        private static readonly NLog.Logger logger = NLog.LogManager.GetCurrentClassLogger();
+
         public PropertyLocator(string path, ModelCollector collector, Stack<Interpreter.IteratorManager> loopStack)
         {
             Path = path;
@@ -433,164 +455,13 @@ namespace ZeroCode2.Models
         public bool Locate()
         {
             return LocateElement();
-
-            //// 1. Check of CurrentRoot is set
-            //if (!DetermineRoot())
-            //{
-            //    return false;
-            //}
-            //if (CurrentRoot != null)
-            //{
-            //    CurrentRoot.Resolve();
-            //}
-
-            //// 2. Now we have a root, check if there is still a path to run
-            //if (currentPosition < PathElements.Length - 1)
-            //{
-            //    // yes, so recurse
-            //    currentPosition++;
-            //    return Locate();
-            //}
-            //else
-            //{
-            //    // we're at the end of the path
-            //    // we're looking for the Name element, so return the current root
-            //    if (PathElements[currentPosition] == "$")
-            //    {
-            //        return true;
-            //    }
-            //    // if it is an object, find an element with the name we are looking for, or null
-            //    if (CurrentRoot.Name != PathElements[currentPosition] && CurrentRoot.IsObject())
-            //    {
-            //        var mp = CurrentRoot.AsComposite().Value.FirstOrDefault(m => m.Name == PathElements[currentPosition] && !(m.Modified && m.Modifier == "-"));
-            //        CurrentRoot = mp;
-            //        return mp != null;
-            //    }
-            //    else
-            //    {
-            //        // return the root itself if it is the one we need, otherwise null
-            //        return CurrentRoot.Name == PathElements[currentPosition];
-            //    }
-            //}
-        }
-
-        private bool DetermineRoot()
-        {
-            var oldRoot = CurrentRoot; // we will need it
-            // set to Null to ensure we will fail in case we could not set a root.
-            CurrentRoot = null;
-            // Strategy:
-            // work with the currentPos to work through the path. each iteration will change the current root
-            // 1. Check if path starts with a section, in that case it is a full path
-            // so look for the section and locate the second element in the path and set this as root
-            if (currentPosition == 0)
-            {
-                if (PathElements[currentPosition].StartsWith("@"))
-                {
-                    var models = Collector.SingleModels.SingleOrDefault(s => s.Name == PathElements[currentPosition]);
-                    if (models != null)
-                    {
-                        CurrentRoot = models;
-                    }
-                    return CurrentRoot != null;
-                }
-                if (PathElements[currentPosition].StartsWith("#"))
-                {
-                    var models = Collector.ParameterModels.SingleOrDefault(s => s.Name == PathElements[currentPosition]);
-                    if (models != null)
-                    {
-                        CurrentRoot = models;
-                    }
-                    return CurrentRoot != null;
-                }
-                // 2. the Path has length of one: take top iterator as root
-                // 3. Not a direct path, it is a relative one, so determine the iterator from the loopstack
-                // 4. First look for a LoopX
-                // 5. Then for an iterator identifier
-                // 6. Last, take the top element
-                if (LoopStack != null)
-                {
-                    // 4. Check for "Loopx" as path identifier, if so select the correct iterator as root
-                    if (PathElements[currentPosition].StartsWith("Loop"))
-                    {
-                        var loopIndex = int.Parse(PathElements[currentPosition].Substring(4));
-                        if (LoopStack.Count > loopIndex)
-                        {
-                            var mp = LoopStack.ElementAt(loopIndex);
-                            if (mp.CurrentModel == null)
-                            {
-                                mp.Iterate();
-                            }
-                            CurrentRoot = mp.CurrentModel;
-                        }
-                        return CurrentRoot != null;
-                    }
-                    // The Path has length > one, the path may contain a reference to an iterator
-                    // 5. Check if the first path identifier exists as an iterator - if so, get the root from there
-                    if (LoopStack.Count > 0)
-                    {
-                        var it = LoopStack.SingleOrDefault(m => m.Root?.Name.Substring(m.Root.Name.StartsWith("@") ? 1 : 0) == PathElements[currentPosition]);
-
-                        // 6. No iterator was found, assume it is the top one, select that as root
-                        if (it == null)
-                        {
-                            it = LoopStack.Peek();
-                        }
-                        if (it != null)
-                        {
-                            if (it.CurrentModel == null)
-                            {
-                                it.Iterate();
-                            }
-                            CurrentRoot = it.CurrentModel;
-
-                            // we're looking for the Name element, so return the current root
-                            if (currentPosition == PathElements.Length - 1 && PathElements.Last().EndsWith("$"))
-                            {
-                                return CurrentRoot != null;
-                            }
-
-                            // step one deeper in the model, as the iterated element is not part of the path
-                            // if this fails, fall back to the iteration current model
-                            CurrentRoot = it.CurrentModel?.AsComposite()?.Value.SingleOrDefault(mp => mp.Name == PathElements[currentPosition] && !(mp.Modified && mp.Modifier == "-")) ?? it.CurrentModel;
-                        }
-                    }
-                    return CurrentRoot != null;
-                }
-            }
-            else
-            {
-                // we are at second or higher element, go on looking
-                if (CurrentRoot == null || currentPosition > 1) // once we are past the first one or two, we need to walk the object graph
-                {
-                    // 8. dive into the oldRoot
-                    if (oldRoot != null && oldRoot.IsObject())
-                    {
-                        oldRoot.Resolve();
-
-                        // we're looking for the Name element, so return the current root
-                        if (currentPosition == PathElements.Length - 1 && PathElements.Last().EndsWith("$"))
-                        {
-                            CurrentRoot = oldRoot;
-                            return CurrentRoot != null;
-                        }
-
-                        CurrentRoot = oldRoot.AsComposite().Value.SingleOrDefault(mp => mp.Name == PathElements[currentPosition] && !(mp.Modified && mp.Modifier == "-"));
-                    }
-                    else
-                    {
-                        CurrentRoot = oldRoot;
-                    }
-                }
-            }
-            // return true if the root was set. in case anything fails, return false
-            return CurrentRoot != null;
         }
 
         private bool LocateElement()
         {
             if (!LocateModel())
             {
+                logger.Error("{0} could not be located in the model", Path);
                 return false;
             }
             // we have a model
@@ -613,15 +484,12 @@ namespace ZeroCode2.Models
                 {
                     break;
                 }
-                if (!CurrentRoot.IsResolved)
-                {
-                    CurrentRoot.Resolve();
-                }
 
                 CurrentRoot = CurrentRoot.AsComposite()?.Value.SingleOrDefault(mp => mp.Name == item && !(mp.Modified && mp.Modifier == "-"));
 
                 if (CurrentRoot == null)
                 {
+                    logger.Trace("{0} could not be located in the model", Path);
                     break;
                 }
                 currentPosition++;
@@ -656,6 +524,7 @@ namespace ZeroCode2.Models
             // from here we are using the loop stack so first check if it has elements
             if (LoopStack.Count == 0)
             {
+                logger.Error("{0} was evaluated as on Loop stack - but stack is empty", Path);
                 return -1;
             }
             // single element, so this refers to the innermost loop
@@ -672,11 +541,12 @@ namespace ZeroCode2.Models
                 return GetFromLoopX();
             }
             // refer to any other loop on the stack - go look for it
-            var loopElement = LoopStack.FirstOrDefault(l => Path.StartsWith(l.Path));
+            var loopElement = LoopStack.FirstOrDefault(l => Path.StartsWith(l.LoopID));
             if (loopElement != null)
             {
                 CurrentRoot = SetModelFromIterator(loopElement);
-                return loopElement.Path.Length + 1;
+                logger.Trace("{0} was evaluated as on loop stack - CurrentRoot was {1}", Path, CurrentRoot == null ? "not found" : "found");
+                return loopElement.LoopID.Length + 1;
             }
             // could not find anything - try this
             return GetFromTopLoopStack();
@@ -690,12 +560,14 @@ namespace ZeroCode2.Models
                 var mp = LoopStack.ElementAt(loopIndex);
                 CurrentRoot = SetModelFromIterator(mp);
             }
+            logger.Trace("{0} was evaluated as LoopX - CurrentRoot was {1}", Path, CurrentRoot == null ? "not found" : "found");
             return PathElements[0].Length + 1;
         }
 
         private int GetFromTopLoopStack()
         {
             CurrentRoot = SetModelFromIterator(LoopStack.Peek());
+            logger.Trace("{0} was evaluated as top loop - CurrentRoot was {1}", Path, CurrentRoot == null ? "not found" : "found");
             return 0;
         }
 
@@ -706,6 +578,7 @@ namespace ZeroCode2.Models
             {
                 CurrentRoot = models;
             }
+            logger.Trace("{0} was evaluated as Parameter - CurrentRoot was {1}", Path, CurrentRoot == null ? "not found" : "found");
             return PathElements[0].Length + 1;
         }
 
@@ -716,6 +589,7 @@ namespace ZeroCode2.Models
             {
                 CurrentRoot = models;
             }
+            logger.Trace("{0} was evaluated as Single model - CurrentRoot was {1}", Path, CurrentRoot == null ? "not found" : "found");
             return PathElements[0].Length + 1;
         }
 

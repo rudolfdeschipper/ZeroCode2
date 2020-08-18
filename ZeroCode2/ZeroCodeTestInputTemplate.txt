@@ -9,7 +9,7 @@
 using System;
 using =<#Parameters.nameSpace>.Models;
 
-%Loop:Screen.Panel
+%Loop:Panel
 %If:!Panel.Edit=true
 	var Title = "=<Panel.Title>" + %If:#Parameters.debug=on =<Panel.Title>.=<Panel.Title> %EndIf ;
 	@Some if(x==y) 
