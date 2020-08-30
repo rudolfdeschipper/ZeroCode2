@@ -25,7 +25,7 @@ ENDLOOP:
        | '%/Loop'
        ;
 
-IF: '%If:' (EXCL? ('#'|'@')? (ID DOT)* (ID | '$') ((EQU ID) | QUEST)?) (' ' | ('\r'? '\n'))
+IF: '%If:' (EXCL? ('#'|'@')? (ID DOT)* (ID | '$') ((QUEST? EXCL? EQU ID) | QUEST)?) (' ' | ('\r'? '\n'))
   ;
 
 ELSE: '%Else' (' ' | ('\r'? '\n'))

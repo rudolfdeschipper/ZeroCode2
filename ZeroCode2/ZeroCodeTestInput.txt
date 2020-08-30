@@ -91,6 +91,24 @@ Person :
 	}
 }
 
+Account : 
+{
+	Name : "Account",
+	Panel :
+	{
+		EditPanel : 
+		{
+			Edit : true,
+			Title : "Edit an Account"
+		},
+		DisplayPanel : 
+		{
+			Edit : false,
+			Title : "Display an Account"
+		}
+	}
+}
+
 @DataDictionary
 
 NameField : {

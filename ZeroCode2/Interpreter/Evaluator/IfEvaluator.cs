@@ -12,9 +12,12 @@ namespace ZeroCode2.Interpreter.Evaluator
         private IEvaluator evaluator;
         private string leftSide, rightSide;
         private readonly bool checkForExistence = false;
+        private readonly bool CompareEqual = true;
 
         public IfEvaluator(string expression)
         {
+            int ComparePosition = 0;
+
             IsNegate = expression[0] == '!';
 
             if (IsNegate == true)
@@ -22,13 +25,23 @@ namespace ZeroCode2.Interpreter.Evaluator
                 expression = expression.Substring(1);
             }
 
-            leftSide = expression.Contains("=") ? expression.Remove(expression.IndexOf("=")) : expression;
-            rightSide = (expression.Contains("=") ? expression.Substring(expression.IndexOf("=") + 1) : "true").ToLower();
+            if (expression.Contains("="))
+            {
+                ComparePosition = expression.IndexOf("=");
+                CompareEqual = true;
+            }
+            if (expression.Contains("!="))
+            {
+                ComparePosition = expression.IndexOf("!=");
+                CompareEqual = false;
+            }
+
+            leftSide = ComparePosition > 0 ? expression.Remove(ComparePosition) : expression;
+            rightSide = (ComparePosition > 0 ? expression.Substring(ComparePosition + (CompareEqual ? 1 : 2)) : "").ToLower();
 
             // check for %If:SomeProperty?
             if (leftSide.EndsWith("?"))
             {
-                // rightside must be interpreted as "exists"
                 leftSide = leftSide.Substring(0, leftSide.Length - 1); // strip off the "?" at the end
                 checkForExistence = true;
             }
@@ -38,34 +51,39 @@ namespace ZeroCode2.Interpreter.Evaluator
 
         public EvaluatorResult Evaluate(IInterpreterContext context, string expression)
         {
-            string value = "";
+            string LeftValue = "";
 
             try
             {
                 if (checkForExistence)
                 {
                     var res = context.PropertyExists(leftSide);
-                    if (IsNegate)
-                    {
-                        res = !res;
-                    }
-                    return new EvaluatorResult(res, string.Empty);
-                }
 
+                    // just check existence, nothing else, or it does not exist
+                    if (res == false || rightSide == "")
+                    {
+                        if (IsNegate)
+                        {
+                            res = !res;
+                        }
+                        return new EvaluatorResult(res, string.Empty);
+                    }
+                }
+                // existence of property is assumed (it is either checked or no "?" was present
                 if (evaluator is Evaluator.ExpressionEvaluator)
                 {
-                    value = context.EvaluateProperty(leftSide);
+                    LeftValue = context.EvaluateProperty(leftSide);
                 }
                 else
                 {
                     var evalRes = evaluator.Evaluate(context, leftSide);
                     if (evalRes.Result == EvaluationResultValues.True)
                     {
-                        value = evalRes.Value;
+                        LeftValue = evalRes.Value;
                     }
                     else
                     {
-                        value = "error";
+                        LeftValue = "error";
                     }
                 }
             }
@@ -74,9 +92,22 @@ namespace ZeroCode2.Interpreter.Evaluator
                 return new EvaluatorResult(ex);
             }
 
-            value = value.ToLower();
-            var retVal = IsNegate == false ? value == rightSide : value != rightSide;
+            LeftValue = LeftValue.ToLower();
 
+            bool retVal;
+
+            if (CompareEqual)
+            {
+                retVal = LeftValue == rightSide;
+            }
+            else {
+                retVal = LeftValue != rightSide;
+            }
+            // leading "!" is valid for the complete if-clause
+            if (IsNegate)
+            {
+                retVal = !retVal;
+            }
             return new EvaluatorResult(retVal, string.Empty);
         }
     }

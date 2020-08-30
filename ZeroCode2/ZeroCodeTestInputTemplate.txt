@@ -9,8 +9,26 @@
 using System;
 using =<#Parameters.nameSpace>.Models;
 
+%If:ThisDoesNotExist?=NonExistent
+%Log:Incorrect: Nonexisting property has value
+%Else
+%Log:Correct: Nonexisting property not found
+%EndIf
+
+%If:Name?=Person
+%Log:Name Person found: =<Name>
+%Else
+%Log:Name found, not Person: =<Name>
+%EndIf
+
+%If:Name?!=Person
+%Log:Other than Name Person found: =<Name>
+%Else
+%Log:Name Person found: =<Name>
+%EndIf
+
 %Loop:Panel
-%If:!Panel.Edit=true
+%If:!Panel.Edit?=true
 	var Title = "=<Panel.Title>" + %If:#Parameters.debug=on =<Panel.Title>.=<Panel.Title> %EndIf ;
 	@Some if(x==y) 
 	{ 
