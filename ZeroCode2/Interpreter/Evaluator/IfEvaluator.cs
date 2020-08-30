@@ -13,6 +13,7 @@ namespace ZeroCode2.Interpreter.Evaluator
         private string leftSide, rightSide;
         private readonly bool checkForExistence = false;
         private readonly bool CompareEqual = true;
+        private readonly bool NoRightSide = true;
 
         public IfEvaluator(string expression)
         {
@@ -29,15 +30,17 @@ namespace ZeroCode2.Interpreter.Evaluator
             {
                 ComparePosition = expression.IndexOf("=");
                 CompareEqual = true;
+                NoRightSide = false;
             }
             if (expression.Contains("!="))
             {
                 ComparePosition = expression.IndexOf("!=");
                 CompareEqual = false;
+                NoRightSide = false;
             }
 
             leftSide = ComparePosition > 0 ? expression.Remove(ComparePosition) : expression;
-            rightSide = (ComparePosition > 0 ? expression.Substring(ComparePosition + (CompareEqual ? 1 : 2)) : "").ToLower();
+            rightSide = (ComparePosition > 0 ? expression.Substring(ComparePosition + (CompareEqual ? 1 : 2)) : "true").ToLower();
 
             // check for %If:SomeProperty?
             if (leftSide.EndsWith("?"))
@@ -60,7 +63,7 @@ namespace ZeroCode2.Interpreter.Evaluator
                     var res = context.PropertyExists(leftSide);
 
                     // just check existence, nothing else, or it does not exist
-                    if (res == false || rightSide == "")
+                    if (res == false || NoRightSide)
                     {
                         if (IsNegate)
                         {
