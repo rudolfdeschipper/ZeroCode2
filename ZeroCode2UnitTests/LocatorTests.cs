@@ -191,6 +191,41 @@ namespace ZeroCode2UnitTests
         }
 
         [TestMethod]
+        public void TestLocateLoopOrdering()
+        {
+
+            string[] fields = { "Name", "Title", "InheritedField", "CodeField", "Test" };
+            var im = new ZeroCode2.Interpreter.IteratorManager(new ZeroCode2.Models.Iterator());
+            im.Path = "@ViewModels";
+            var locator = new ZeroCode2.Models.PropertyLocator(im.Path, ModelCollector, null);
+            locator.Locate();
+            im.Root = locator.LocatedProperty();
+
+            LoopStack = new Stack<ZeroCode2.Interpreter.IteratorManager>();
+            LoopStack.Push(im);
+
+            int i = 0;
+            while (im.Iterate())
+            {
+                Assert.IsTrue(i < 5);
+
+                locator = new ZeroCode2.Models.PropertyLocator("$", ModelCollector, LoopStack);
+
+                locator.Locate();
+                var outp = locator.LocatedProperty();
+
+                Assert.IsNotNull(outp);
+                Assert.AreEqual(fields[i], outp.GetText());
+
+                i++;
+            }
+
+            LoopStack = null;
+
+        }
+
+
+        [TestMethod]
         public void TestLocateWithLoopExplicitIteratorName()
         {
             var im = new ZeroCode2.Interpreter.IteratorManager(new ZeroCode2.Models.Iterator());

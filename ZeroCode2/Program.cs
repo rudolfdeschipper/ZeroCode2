@@ -217,6 +217,8 @@ namespace ZeroCode2
             ModelCollector.SingleModels.ForEach(m => ok &= resolver.ResolveInheritance(m, ModelCollector));
             this.Errors.AddRange(resolver.Errors);
 
+            ModelCollector.SingleModels.ForEach(m => m.Resolve());
+
             return ok;
         }
 

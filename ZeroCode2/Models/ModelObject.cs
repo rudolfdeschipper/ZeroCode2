@@ -338,12 +338,13 @@ namespace ZeroCode2.Models
             if (pair.ParentObject.IsObject())
             {
                 List<IModelObject> newProps = new List<IModelObject>();
+                List<IModelObject> addedProps = new List<IModelObject>();
 
                 // only copy the "+" from the current list:
-                newProps.AddRange(pair.AsComposite().Value.Where( mp => mp.Modifier == "+"));
+                addedProps.AddRange(pair.AsComposite().Value.Where( mp => mp.Modifier == "+"));
  
                 // we need to resolve these too, so we do that here:
-                foreach (var item in newProps)
+                foreach (var item in addedProps)
                 {
                     PopulateProperties(item);
                 }
@@ -371,6 +372,9 @@ namespace ZeroCode2.Models
                         newProps.Add(item);
                     }
                 }
+
+                // put added props at the end
+                newProps.AddRange(addedProps);
 
                 // set the new set as the value:
                 pair.AsComposite().Value = newProps;
