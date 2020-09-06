@@ -196,7 +196,7 @@ namespace ZeroCode2UnitTests
 
             string[] fields = { "Name", "Title", "InheritedField", "CodeField", "Test" };
             var im = new ZeroCode2.Interpreter.IteratorManager(new ZeroCode2.Models.Iterator());
-            im.Path = "@ViewModels";
+            im.Path = "@ViewModels.Person";
             var locator = new ZeroCode2.Models.PropertyLocator(im.Path, ModelCollector, null);
             locator.Locate();
             im.Root = locator.LocatedProperty();
@@ -205,8 +205,9 @@ namespace ZeroCode2UnitTests
             LoopStack.Push(im);
 
             int i = 0;
-            while (im.Iterate())
+            do
             {
+                im.Iterate();
                 Assert.IsTrue(i < 5);
 
                 locator = new ZeroCode2.Models.PropertyLocator("$", ModelCollector, LoopStack);
@@ -215,10 +216,12 @@ namespace ZeroCode2UnitTests
                 var outp = locator.LocatedProperty();
 
                 Assert.IsNotNull(outp);
-                Assert.AreEqual(fields[i], outp.GetText());
+                Assert.AreEqual(fields[i], outp.Name);
 
                 i++;
-            }
+            } while (im.HasMore);
+
+            Assert.IsTrue(i == 5);
 
             LoopStack = null;
 

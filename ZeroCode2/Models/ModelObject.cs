@@ -363,13 +363,35 @@ namespace ZeroCode2.Models
                 // and we add any changed properties back in too:
                 foreach (var item in pair.AsComposite().Value.Where(p => !p.Modified || p.Modifier == "-"))
                 {
-                    // remove it if it is already there
-                    newProps.RemoveAll(mp => mp.Name == item.Name);
+                    // find if it is already there
+                    int index = newProps.FindIndex(mp => mp.Name == item.Name);
 
-                    // and add its replacement if it is a replacement (deletions we don't add back):
-                    if (!item.Modified)
+                    // if the property already exists, we merge the two elements
+                    if (index != -1)
                     {
-                        newProps.Add(item);
+                        // only if not modified, if it is modified either it is added and we don't 
+                        // have to try to merge (nothing to do)
+                        // or it is deleted, and then it shall be removed, so no merging needed either
+                        if (!item.Modified)
+                        {
+                            var itemToUpdate = newProps[index];
+
+                            MergeProperties(itemToUpdate, item);
+
+                        }
+                        if (item.Modifier == "-")
+                        {
+                            newProps.RemoveAt(index);
+                        }
+                    }
+                    else
+                    {
+                        // item does not exist
+                        if (!item.Modified)
+                        {
+                            // actually this means it was in fact a "+" but we tolerate this
+                            newProps.Add(item);
+                        }
                     }
                 }
 
@@ -383,6 +405,28 @@ namespace ZeroCode2.Models
             else
             {
                 logger.Error("{0} inherits from {1} but this is not an object", pair.Name, pair.InheritsFrom);
+            }
+        }
+
+        private void MergeProperties(IModelObject itemToUpdate, IModelObject item)
+        {
+            // for each item, run through its properties
+            // if a property exists in itemToUpdate, overwrite it
+            // if it does not exist, add it
+            if (itemToUpdate.IsObject() && item.IsObject())
+            {
+                foreach (var prop in item.AsComposite().Value)
+                {
+                    var propToUpdate = itemToUpdate.AsComposite().Value.FindIndex(p => p.Name == prop.Name);
+                    if (propToUpdate != -1)
+                    {
+                        itemToUpdate.AsComposite().Value[propToUpdate] = prop;
+                    }
+                    else
+                    {
+                        itemToUpdate.AsComposite().Value.Add(prop);
+                    }
+                }
             }
         }
     }
