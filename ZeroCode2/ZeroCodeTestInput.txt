@@ -58,7 +58,7 @@ Person : {
 
 Stakeholder : {
 	ID : { Type:"int", Name:"ID", Title:"ID"},
-	Name <- DataDictionary.NameField : { -Nullable },
+	Name <- DataDictionary.NameField : { -Nullable, Length: 95 },
 	Title : { Type:"string", Name:"Title", Title:"Title", Length:100, Nullable:false },
 	Inherited <- DataDictionary.NameField
 }
@@ -122,7 +122,7 @@ NameField : {
 // -------------------
 // A more reasonable example of a full application might look like this
 // -------------------
-
+/*
 #Params
 appName : "My test application in Zero Code"
 nameSpace : "ZeroCode"
@@ -211,6 +211,7 @@ Project <- Datamodel.Project : {}
 
 @DTO // data transfer objects
 Project <- Datamodel.Project : {}
+*/
 
 // Include some basic definitions
 

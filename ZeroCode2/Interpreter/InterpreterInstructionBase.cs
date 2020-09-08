@@ -19,10 +19,10 @@ namespace ZeroCode2.Interpreter
             Line = line;
             Position = pos;
             Instruction = instruction;
-            _evaluator = evaluator;
+            Evaluator = evaluator;
         }
 
-        public Evaluator.IEvaluator _evaluator { get; private set; }
+        public Evaluator.IEvaluator Evaluator { get; private set; }
 
         /// <summary>
         /// Sets the pointer to the Next instruction based on the result passed in
@@ -34,7 +34,7 @@ namespace ZeroCode2.Interpreter
 
             try
             {
-                var result = _evaluator.Evaluate(context, Instruction);
+                var result = Evaluator.Evaluate(context, Instruction);
 
                 return SetResult(result);
             }

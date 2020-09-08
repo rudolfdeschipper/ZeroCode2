@@ -19,12 +19,12 @@ namespace ZeroCode2.Interpreter
         {
             Result = result;
             // if false, jump to alternative
-            if (result.Result == Evaluator.EvaluationResultValues.False)
+            if (result.Result == Interpreter.Evaluator.EvaluationResultValues.False)
             {
                 return Alternative;
             }
             // if fail, jump to just after the endif / end loop
-            if (result.Result == Evaluator.EvaluationResultValues.Failed)
+            if (result.Result == Interpreter.Evaluator.EvaluationResultValues.Failed)
             {
                 if (Alternative.Instruction == "%EndIf" || Alternative.Instruction == "%/Loop")
                 {

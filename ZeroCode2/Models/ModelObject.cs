@@ -20,7 +20,7 @@ namespace ZeroCode2.Models
         bool Is<P>();
         bool IsString();
         bool IsNumber();
-        bool IsObject();
+        bool IsComposite();
         bool IsBool();
 
         ModelObject<M> As<M>() where M : class;
@@ -35,6 +35,7 @@ namespace ZeroCode2.Models
 
         string GetText();
         void Resolve();
+        IModelObject Duplicate();
     }
 
     public abstract class ModelObject<T> : IModelObject
@@ -62,10 +63,10 @@ namespace ZeroCode2.Models
 
         public bool IsNumber()
         {
-            return Is<double>();
+            return Is<decimal>();
         }
 
-        public bool IsObject()
+        public bool IsComposite()
         {
             return Is<List<IModelObject>>();
         }
@@ -114,6 +115,8 @@ namespace ZeroCode2.Models
 
         public abstract string GetText();
 
+        public abstract IModelObject Duplicate();
+
         public int CompareTo(IModelObject other)
         {
             return this.ToString().CompareTo(other.ToString());
@@ -122,14 +125,45 @@ namespace ZeroCode2.Models
 
     public class ModelStringObject : ModelObject<string>
     {
+        public override IModelObject Duplicate()
+        {
+            return new ModelStringObject()
+            {
+                Inherits = this.Inherits,
+                InheritsFrom = this.InheritsFrom,
+                IsResolved = this.IsResolved,
+                Modified = this.Modified,
+                Modifier = this.Modifier,
+                Name = this.Name,
+                ParentObject = this.ParentObject,
+                Value = this.Value
+            };
+        }
+
         public override string GetText()
         {
             return Value;
         }
+
     }
 
     public class ModelBoolObject : ModelObject<bool>
     {
+        public override IModelObject Duplicate()
+        {
+            return new ModelBoolObject()
+            {
+                Inherits = this.Inherits,
+                InheritsFrom = this.InheritsFrom,
+                IsResolved = this.IsResolved,
+                Modified = this.Modified,
+                Modifier = this.Modifier,
+                Name = this.Name,
+                ParentObject = this.ParentObject,
+                Value = this.Value
+            };
+        }
+
         public override string GetText()
         {
             return Value ? "true" : "false";
@@ -139,6 +173,20 @@ namespace ZeroCode2.Models
 
     public class ModelNumberObject : ModelObject<decimal>
     {
+        public override IModelObject Duplicate()
+        {
+            return new ModelNumberObject()
+            {
+                Inherits = this.Inherits,
+                InheritsFrom = this.InheritsFrom,
+                IsResolved = this.IsResolved,
+                Modified = this.Modified,
+                Modifier = this.Modifier,
+                Name = this.Name,
+                ParentObject = this.ParentObject,
+                Value = this.Value
+            };
+        }
 
         public override string GetText()
         {
@@ -148,6 +196,24 @@ namespace ZeroCode2.Models
 
     public class ModelCompositeObject : ModelObject<List<IModelObject>>
     {
+        public override IModelObject Duplicate()
+        {
+            var obj = new ModelCompositeObject()
+            {
+                Inherits = this.Inherits,
+                InheritsFrom = this.InheritsFrom,
+                IsResolved = this.IsResolved,
+                Modified = this.Modified,
+                Modifier = this.Modifier,
+                Name = this.Name,
+                ParentObject = this.ParentObject,
+                Value = new List<IModelObject>()
+            };
+            obj.Value.AddRange(this.Value.Select(p => p.Duplicate()));
+
+            return obj;
+        }
+
         public override string GetText()
         {
             var r = Value.Select(m => m.Name + " = " + m.GetText());
@@ -220,7 +286,7 @@ namespace ZeroCode2.Models
                 // check next parents for cycles:
                 ok &= CheckForCycle(pair);
             }
-            if (pair.IsObject())
+            if (pair.IsComposite())
             {
                 // recurse:
                 foreach (var item in pair.AsComposite().Value)
@@ -311,7 +377,7 @@ namespace ZeroCode2.Models
                 return;
             }
             // not an object
-            if (!pair.IsObject())
+            if (!pair.IsComposite())
             {
                 return;
             }
@@ -335,7 +401,7 @@ namespace ZeroCode2.Models
                 
                 return;
             }
-            if (pair.ParentObject.IsObject())
+            if (pair.ParentObject.IsComposite())
             {
                 List<IModelObject> newProps = new List<IModelObject>();
                 List<IModelObject> addedProps = new List<IModelObject>();
@@ -352,13 +418,9 @@ namespace ZeroCode2.Models
                 // then, recurse into the children of the ParentObject, to ensure all is resolved before we copy from it
                 PopulateProperties(pair.ParentObject);
 
-                foreach (var item in pair.ParentObject.AsComposite().Value)
-                {
-                    PopulateProperties(item);
-                }
-
                 // Now we can add all properties from the inheritance object
-                newProps.AddRange(pair.ParentObject.AsComposite().Value.Where(mp => mp.Modifier != "-"));
+                // ensure we make copies of them to ensure we don't overwrite the original
+                newProps.AddRange(pair.ParentObject.AsComposite().Value.Where(mp => mp.Modifier != "-").Select(p => p.Duplicate()));
 
                 // and we add any changed properties back in too:
                 foreach (var item in pair.AsComposite().Value.Where(p => !p.Modified || p.Modifier == "-"))
@@ -413,7 +475,7 @@ namespace ZeroCode2.Models
             // for each item, run through its properties
             // if a property exists in itemToUpdate, overwrite it
             // if it does not exist, add it
-            if (itemToUpdate.IsObject() && item.IsObject())
+            if (itemToUpdate.IsComposite() && item.IsComposite())
             {
                 foreach (var prop in item.AsComposite().Value)
                 {
@@ -427,6 +489,22 @@ namespace ZeroCode2.Models
                         itemToUpdate.AsComposite().Value.Add(prop);
                     }
                 }
+                return;
+            }
+            if (itemToUpdate.IsBool() && item.IsBool())
+            {
+                itemToUpdate.AsBool().Value = item.AsBool().Value;
+                return;
+            }
+            if (itemToUpdate.IsNumber() && item.IsNumber())
+            {
+                itemToUpdate.AsNumber().Value = item.AsNumber().Value;
+                return;
+            }
+            if (itemToUpdate.IsString() && item.IsString())
+            {
+                itemToUpdate.AsString().Value = item.AsString().Value;
+                return;
             }
         }
     }

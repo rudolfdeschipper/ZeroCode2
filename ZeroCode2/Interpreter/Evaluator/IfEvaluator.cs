@@ -8,9 +8,10 @@ namespace ZeroCode2.Interpreter.Evaluator
 {
     public class IfEvaluator : IEvaluator
     {
-        private bool IsNegate;
-        private IEvaluator evaluator;
-        private string leftSide, rightSide;
+        private readonly bool IsNegate;
+        private readonly IEvaluator evaluator;
+        private readonly string leftSide;
+        private readonly string rightSide;
         private readonly bool checkForExistence = false;
         private readonly bool CompareEqual = true;
         private readonly bool NoRightSide = true;
@@ -54,8 +55,7 @@ namespace ZeroCode2.Interpreter.Evaluator
 
         public EvaluatorResult Evaluate(IInterpreterContext context, string expression)
         {
-            string LeftValue = "";
-
+            string LeftValue;
             try
             {
                 if (checkForExistence)
