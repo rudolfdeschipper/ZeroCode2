@@ -229,7 +229,7 @@ namespace ZeroCode2UnitTests
             do
             {
                 im.Iterate();
-                Assert.IsTrue(i < 5);
+                Assert.IsTrue(i < fields.Length);
 
                 locator = new ZeroCode2.Models.PropertyLocator("$", ModelCollector, LoopStack);
 
@@ -242,7 +242,46 @@ namespace ZeroCode2UnitTests
                 i++;
             } while (im.HasMore);
 
-            Assert.IsTrue(i == 5);
+            Assert.IsTrue(i == fields.Length);
+
+            LoopStack = null;
+
+        }
+
+        [TestMethod]
+        public void TestLocateLoopOrderingWithOrderingStatement()
+        {
+
+            string[] fields = { "ID", "Code", "Description", "Budget", "Startdate", "Enddate", "Status" };
+            var im = new ZeroCode2.Interpreter.IteratorManager(new ZeroCode2.Models.Iterator())
+            {
+                Path = "@Datamodel.Project.Properties"
+            };
+            var locator = new ZeroCode2.Models.PropertyLocator(im.Path, ModelCollector, null);
+            locator.Locate();
+            im.Root = locator.LocatedProperty();
+
+            LoopStack = new Stack<ZeroCode2.Interpreter.IteratorManager>();
+            LoopStack.Push(im);
+
+            int i = 0;
+            do
+            {
+                im.Iterate();
+                Assert.IsTrue(i < fields.Length);
+
+                locator = new ZeroCode2.Models.PropertyLocator("$", ModelCollector, LoopStack);
+
+                locator.Locate();
+                var outp = locator.LocatedProperty();
+
+                Assert.IsNotNull(outp);
+                Assert.AreEqual(fields[i], outp.Name);
+
+                i++;
+            } while (im.HasMore);
+
+            Assert.IsTrue(i == fields.Length);
 
             LoopStack = null;
 

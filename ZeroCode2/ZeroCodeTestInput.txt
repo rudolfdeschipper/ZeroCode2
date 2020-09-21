@@ -176,23 +176,22 @@ Mobile : {
 		ContractService : true
 	}
 }
-
+*/
 
 @Datamodel
 
-Project <- Definitions.DefaultObject : {
-	Properties : {
-	ID <- Definitions.DefaultObject.ID,
-	Code <- Definitions.DefaultObject.Code : {},
-	+Budget <- DataDictionary.AmountField : { Name : "Budget", Title : "Budget" },
-	+Status <- DataDictionary.StatusField : {
-		Values : {
-			Planned : "1 - Planned",
-			Open : "2 - Open",
-			Closed : "3 - Closed",
-			Cancelled : "9 - Cancelled"
+Project : {
+	Properties <- Definitions.DefaultObject : {
+		+Budget <- DataDictionary.AmountField : { Name : "Budget", Title : "Budget" },
+		+Status <- DataDictionary.StatusField : {
+			Values : {
+				Planned : "1 - Planned",
+				Open : "2 - Open",
+				Closed : "3 - Closed",
+				Cancelled : "9 - Cancelled"
 			}
 		}
+		/ ID, Code, Description, Budget
 	}
 }
 
@@ -204,6 +203,7 @@ DefaultObject : {
 	Description <- DataDictionary.DescriptionField : {},
 	Startdate <- DataDictionary.DateField :  { Name : "Startdate", Title : "Startdate" }, 
 	Enddate <- DataDictionary.DateField : { Name : "Enddate", Title : "Enddate" }
+	/ ID, Code, Startdate, Enddate, Description, xx
 }
 
 @ViewModel
@@ -211,7 +211,6 @@ Project <- Datamodel.Project : {}
 
 @DTO // data transfer objects
 Project <- Datamodel.Project : {}
-*/
 
 // Include some basic definitions
 

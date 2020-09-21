@@ -42,18 +42,25 @@ using =<#Parameters.nameSpace>.Models;
 %EndIf
 %/Loop:Panel
 
+%Log:Ending file Controllers\Generated\=<Screen.Name>Controller.cs here
+%/File
+
+%/Loop:@Screen
+
 %Loop:@Datamodel
+%FileOverwrite:Controllers\Generated\=<$>Model.cs
+
 //
 public class =<$>
 {
 	%Loop:Properties
-	// =<Screen.Name>
+	// =<$>
+	%Log:Property: =<$>
 	public =<Type> =<$> {get; set;}
 	%/Loop:Properties
 }
+%/File
 
 %/Loop:@Datamodel
 
-%Log:Ending file Controllers\Generated\=<Screen.Name>Controller.cs here
-%/File
-%/Loop:@Screen
+

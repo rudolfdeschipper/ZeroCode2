@@ -27,8 +27,8 @@ inherits
 	: (INHERITS ID )
 	;
 
-obj : LC pairs+=pair (COMMA pairs+=pair)* RC #ObjFull
-	| LC RC #ObjEmpty
+obj : LC pairs+=pair (COMMA pairs+=pair)* orderstatement? RC #ObjFull
+	| LC orderstatement? RC #ObjEmpty
     ;
 
 pair	: modifier=PROPADD? ID pairvalue
@@ -46,3 +46,5 @@ value : STRING #ValueString
 	| TFALSE #ValueFalse
     ;
 
+orderstatement : ORDERING orderby+=ID (COMMA orderby+=ID)*
+	;

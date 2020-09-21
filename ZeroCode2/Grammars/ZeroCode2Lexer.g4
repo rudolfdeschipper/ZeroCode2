@@ -32,6 +32,8 @@ PROPADD : '+';
 
 PROPREMOVE : '-';
 
+ORDERING: '/';
+
 INHERITS
 	: '<-'
 	;

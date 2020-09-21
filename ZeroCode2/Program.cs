@@ -439,6 +439,7 @@ namespace ZeroCode2
         public Antlr4.Runtime.Tree.ParseTreeProperty<Models.IModelObject> ValueProps { get; set; } = new Antlr4.Runtime.Tree.ParseTreeProperty<Models.IModelObject>();
         public Antlr4.Runtime.Tree.ParseTreeProperty<Models.IModelObject> PairProps { get; set; } = new Antlr4.Runtime.Tree.ParseTreeProperty<Models.IModelObject>();
         public Antlr4.Runtime.Tree.ParseTreeProperty<List<Models.IModelObject>> ObjProps { get; set; } = new Antlr4.Runtime.Tree.ParseTreeProperty<List<Models.IModelObject>>();
+        public Antlr4.Runtime.Tree.ParseTreeProperty<List<string>> ObjOrderByProps { get; set; } = new Antlr4.Runtime.Tree.ParseTreeProperty<List<string>>();
         public Antlr4.Runtime.Tree.ParseTreeProperty<Models.SingleModel> SingleModels { get; set; } = new Antlr4.Runtime.Tree.ParseTreeProperty<Models.SingleModel>();
 
         public override void EnterParameters([NotNull] ParametersContext context)
@@ -544,15 +545,23 @@ namespace ZeroCode2
         public override void ExitSinglemodel([NotNull] SinglemodelContext context)
         {
             var obj = ObjProps.Get(context.obj());
+
             var model = new Models.SingleModel(context.ID().GetText(), obj);
+
+            var orderby = ObjOrderByProps.Get(context.obj());
+            model.OrderBy.AddRange(orderby);
+
             //model.Section = CurrentSection;
             if (context.inherits() != null)
             {
                 model.Inherits = true;
                 model.InheritsFrom = context.inherits().ID().GetText();
             }
-
-            logger.Trace("Single model = {0}{1}", model.Name, context.inherits() != null ? " : " + model.InheritsFrom : "");
+            string obs = "";
+            logger.Trace("Single model = {0}{1}{2}", 
+                model.Name, 
+                context.inherits() != null ? " : " + model.InheritsFrom : "",
+                orderby.Any() ? " / " + orderby.Aggregate(obs, (f, run) => obs += run + ", ") : "");
 
             SingleModels.Put(context, model);
             base.ExitSinglemodel(context);
@@ -561,18 +570,37 @@ namespace ZeroCode2
         public override void ExitObjFull([NotNull] ObjFullContext context)
         {
             var obj = new List<Models.IModelObject>();
+            var orderby = new List<string>();
+
+            if (context.orderstatement() != null) {
+                foreach (var item in context.orderstatement()._orderby)
+                {
+                    orderby.Add(item.Text);
+                }
+            }
             foreach (var item in context._pairs)
             {
                 var p = PairProps.Get(item);
                 obj.Add(p);
             }
             ObjProps.Put(context, obj);
+            ObjOrderByProps.Put(context, orderby);
             base.ExitObjFull(context);
         }
 
         public override void ExitObjEmpty([NotNull] ObjEmptyContext context)
         {
             var obj = new List<Models.IModelObject>();
+            var orderby = new List<string>();
+
+            if (context.orderstatement() != null)
+            {
+                foreach (var item in context.orderstatement()._orderby)
+                {
+                    orderby.Add(item.Text);
+                }
+            }
+            ObjOrderByProps.Put(context, orderby);
             ObjProps.Put(context, obj);
             base.ExitObjEmpty(context);
         }
@@ -606,6 +634,9 @@ namespace ZeroCode2
             {
                 Value = ObjProps.Get(context.obj())
             };
+            var orderby = ObjOrderByProps.Get(context.obj());
+            newObj.OrderBy.AddRange(orderby);
+
             ValueProps.Put(context, newObj);
         }
 
