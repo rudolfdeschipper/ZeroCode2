@@ -74,13 +74,16 @@
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="CommandlineOptions.cs" />
     <Compile Include="Interpreter\Emitter\FileEmitter.cs" />
     <Compile Include="Interpreter\Emitter\FilePath.cs" />
     <Compile Include="Interpreter\Emitter\IEmitter.cs" />
     <Compile Include="Interpreter\Emitter\IFilePath.cs" />
     <Compile Include="Interpreter\Emitter\NullEmitter.cs" />
+    <Compile Include="Interpreter\Emitter\NullFilePath.cs" />
     <Compile Include="Interpreter\Evaluator\EvaluateEndFile.cs" />
     <Compile Include="Interpreter\Evaluator\EvaluateLogging.cs" />
+    <Compile Include="Interpreter\Evaluator\EvaluatorResult.cs" />
     <Compile Include="Interpreter\Evaluator\HasMoreExpressionEvaluator.cs" />
     <Compile Include="Interpreter\Evaluator\IndexExpressionEvaluator.cs" />
     <Compile Include="Interpreter\Evaluator\OrdinalExpressionEvaluator.cs" />
@@ -104,9 +107,27 @@
     <Compile Include="Interpreter\InterpreterInstructionNoOp.cs" />
     <Compile Include="Interpreter\InterpreterInstructionValue.cs" />
     <Compile Include="Interpreter\InterpreterProgram.cs" />
+    <Compile Include="Interpreter\IteratorManager.cs" />
+    <Compile Include="ModelCollector.cs" />
+    <Compile Include="ModelExecutor.cs" />
+    <Compile Include="ModelParser.cs" />
+    <Compile Include="Models\IModelObject.cs" />
+    <Compile Include="Models\InheritanceResolver.cs" />
+    <Compile Include="Models\Iterator.cs" />
+    <Compile Include="Models\ModelBoolObject.cs" />
+    <Compile Include="Models\ModelCompositeObject.cs" />
+    <Compile Include="Models\ModelNumberObject.cs" />
     <Compile Include="Models\ModelObject.cs" />
+    <Compile Include="Models\ModelStringObject.cs" />
+    <Compile Include="Models\ParameterModel.cs" />
+    <Compile Include="Models\PropertyLocator.cs" />
+    <Compile Include="Models\PropertyResolver.cs" />
+    <Compile Include="Models\SingleModel.cs" />
     <Compile Include="Program.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
+    <Compile Include="TemplateParser.cs" />
+    <Compile Include="ZeroCode2TemplateListener.cs" />
+    <Compile Include="ZeroCodeListener.cs" />
   </ItemGroup>
   <ItemGroup>
     <None Include="App.config" />
