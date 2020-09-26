@@ -25,6 +25,7 @@ namespace ZeroCode2.Interpreter.Emitter
         {
             bool retVal = true;
 
+            logger.Trace("EnsurePathExists Create paths: {0}. Full path: {1}", doCreate, OutputPath);
             if (!OutputPath.EndsWith(Path.DirectorySeparatorChar.ToString()))
             {
                 OutputPath += Path.DirectorySeparatorChar.ToString();
@@ -35,7 +36,7 @@ namespace ZeroCode2.Interpreter.Emitter
 
             // extract file
             string file = pathParts.Last();
-            pathParts[pathParts.Length-1] = "";
+            pathParts[pathParts.Length - 1] = "";
 
             string currentPath = "";
 
@@ -46,10 +47,12 @@ namespace ZeroCode2.Interpreter.Emitter
                 {
                     if (doCreate)
                     {
+                        logger.Trace("Create subdirectory {0}", currentPath);
                         FilePath.CreateDirectory(currentPath);
                     }
                     else
                     {
+                        logger.Trace("Subdirectory {0} does not exist, but will not be created.", currentPath);
                         retVal = false;
                         break;
                     }
@@ -78,7 +81,10 @@ namespace ZeroCode2.Interpreter.Emitter
             logger.Trace("Emitting: " + output);
             if (_sb != null)
             {
-                logger.Debug("Emitting: " + output);
+                if (!logger.IsEnabled(NLog.LogLevel.Trace))
+                { 
+                    logger.Debug("Emitting: " + output);
+                }
                 _sb.Append(output);
             }
             else
