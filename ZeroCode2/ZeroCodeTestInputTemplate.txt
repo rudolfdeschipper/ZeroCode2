@@ -57,6 +57,13 @@ public class =<$>
 	// =<$>
 	%Log:Property: =<$>
 	public =<Type> =<$> {get; set;}
+	%If:Values?
+	%Log:Values found
+	%Loop:Values
+		%Log:Value = =<$> =<[$]>
+		// =<[$]>
+	%/Loop:Values
+	%EndIf
 	%/Loop:Properties
 }
 %/File

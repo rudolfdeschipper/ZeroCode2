@@ -63,7 +63,10 @@ namespace ZeroCode2.Models
                     break;
                 }
 
-                CurrentRoot = CurrentRoot.AsComposite()?.Value.SingleOrDefault(mp => mp.Name == item && !(mp.Modified && mp.Modifier == "-"));
+                if (CurrentRoot.IsComposite())
+                {
+                    CurrentRoot = CurrentRoot.AsComposite()?.Value.SingleOrDefault(mp => mp.Name == item && !(mp.Modified && mp.Modifier == "-"));
+                }
 
                 if (CurrentRoot == null)
                 {
