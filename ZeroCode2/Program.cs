@@ -89,12 +89,18 @@ namespace ZeroCode2
                             }
                         }
 
-                        Console.Write("DONE. Hit RETURN to exit: ");
+                        if (cmdOptions.WaitAtExit == true)
+                        {
+                            Console.Write("DONE. Hit RETURN to exit: ");
+                        }
                     }
                     catch (Exception ex)
                     {
                         logger.Fatal(ex, "ERROR: {0}", ex);
-                        Console.Write("Hit RETURN to exit: ");
+                        if (cmdOptions.WaitAtExit == true)
+                        {
+                            Console.Write("Hit RETURN to exit: ");
+                        }
                     }
                 }
             }

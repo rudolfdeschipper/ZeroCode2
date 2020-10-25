@@ -22,6 +22,8 @@ namespace ZeroCode2
          * Error
          * Fatal
          */
+        [Option(HelpText = "Wait after execution of the program for user to press a kay", Required = false, Default = true)]
+        public bool WaitAtExit { get; set; }
     }
 
 
