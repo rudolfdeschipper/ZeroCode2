@@ -8,11 +8,11 @@ namespace ZeroCode2UnitTests
     [TestClass]
     public class LocatorTests
     {
-        public ModelCollector ModelCollector { get; set; }
-        public Stack<ZeroCode2.Interpreter.IteratorManager> LoopStack { get; set; }
+        public static ModelCollector ModelCollector { get; set; }
+        public static Stack<ZeroCode2.Interpreter.IteratorManager> LoopStack { get; set; }
 
-        [TestInitialize]
-        public void Setup()
+        [ClassInitialize]
+        public static void Setup(TestContext context)
         {
             var parser = new ModelParser();
 
@@ -136,6 +136,35 @@ namespace ZeroCode2UnitTests
             Assert.AreEqual("95", outp.GetText());
         }
 
+        [TestMethod]
+        public void TestLocateWithDirectModelDoubleInheritedValue()
+        {
+            var locator = new ZeroCode2.Models.PropertyLocator("@Models.Person.DoubleInheritance.Name", ModelCollector, LoopStack);
+
+            locator.Locate();
+            var outp = locator.LocatedProperty();
+
+            Assert.IsNotNull(outp);
+            Assert.AreEqual("Name", outp.GetText());
+        }
+
+        [TestMethod]
+        public void TestLocateWithDirectModelDoubleInheritedRemovedValue()
+        {
+            var locator = new ZeroCode2.Models.PropertyLocator("@Models.Person.InheritedField.MetaProperties.Type", ModelCollector, LoopStack);
+
+            locator.Locate();
+            var outp = locator.LocatedProperty();
+
+            Assert.IsNull(outp);
+            locator = new ZeroCode2.Models.PropertyLocator("@Models.Person.InheritedField.MetaProperties.Name", ModelCollector, LoopStack);
+
+            locator.Locate();
+            outp = locator.LocatedProperty();
+            Assert.IsNotNull(outp);
+            Assert.AreEqual("Name", outp.GetText());
+        }
+
 
         [TestMethod]
         public void TestLocateWithLoopStackPeekTop()
@@ -213,7 +242,7 @@ namespace ZeroCode2UnitTests
         public void TestLocateLoopOrdering()
         {
 
-            string[] fields = { "Name", "Title", "InheritedField", "CodeField", "Test" };
+            string[] fields = { "Name", "Title", "InheritedField", "CodeField", "DoubleInheritance", "Test" };
             var im = new ZeroCode2.Interpreter.IteratorManager(new ZeroCode2.Models.Iterator())
             {
                 Path = "@ViewModels.Person"

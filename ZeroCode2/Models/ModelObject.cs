@@ -15,6 +15,8 @@ namespace ZeroCode2.Models
 
         public bool Modified { get; set; }
         public string Modifier { get; set; }
+        public bool IsBeingResolved { get; set; } = false;
+        public string Path { get; set; }
 
         public bool Is<P>()
         {
@@ -64,18 +66,6 @@ namespace ZeroCode2.Models
         public ModelObject<List<IModelObject>> AsComposite()
         {
             return As<List<IModelObject>>();
-        }
-
-        /// <summary>
-        /// If the properties of this object are not yet resolved, resolve them, otherwise return
-        /// </summary>
-        public void Resolve()
-        {
-            if (!IsResolved) // not strictly needed as this check is also done in the PropertyResolved
-            {
-                PropertyResolver propResolver = new PropertyResolver();
-                propResolver.PopulateProperties(this);
-            }
         }
 
         public abstract string GetText();

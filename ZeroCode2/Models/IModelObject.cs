@@ -7,10 +7,13 @@ namespace ZeroCode2.Models
     {
         string Name { get; set; }
 
+        string Path { get; set; }
         bool Inherits { get; set; }
         string InheritsFrom { get; set; }
         IModelObject ParentObject { get; set; }
         bool IsResolved { get; set; }
+       
+        bool IsBeingResolved { get; set; }
 
         bool Modified { get; set; }
         string Modifier { get; set; }
@@ -32,7 +35,6 @@ namespace ZeroCode2.Models
         ModelObject<List<IModelObject>> AsComposite();
 
         string GetText();
-        void Resolve();
         IModelObject Duplicate();
     }
 }

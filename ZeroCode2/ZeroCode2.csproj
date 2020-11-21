@@ -10,7 +10,7 @@
     <AppDesignerFolder>Properties</AppDesignerFolder>
     <RootNamespace>ZeroCode2</RootNamespace>
     <AssemblyName>ZeroCode2</AssemblyName>
-    <TargetFrameworkVersion>v4.6.1</TargetFrameworkVersion>
+    <TargetFrameworkVersion>v4.7.2</TargetFrameworkVersion>
     <FileAlignment>512</FileAlignment>
     <AutoGenerateBindingRedirects>true</AutoGenerateBindingRedirects>
     <NuGetPackageImportStamp>
@@ -27,6 +27,7 @@
     <DefineConstants>DEBUG;TRACE</DefineConstants>
     <ErrorReport>prompt</ErrorReport>
     <WarningLevel>4</WarningLevel>
+    <LangVersion>8.0</LangVersion>
   </PropertyGroup>
   <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Release|AnyCPU' ">
     <PlatformTarget>AnyCPU</PlatformTarget>
@@ -36,6 +37,7 @@
     <DefineConstants>TRACE</DefineConstants>
     <ErrorReport>prompt</ErrorReport>
     <WarningLevel>4</WarningLevel>
+    <LangVersion>8.0</LangVersion>
   </PropertyGroup>
   <PropertyGroup>
     <StartupObject>ZeroCode2.Program</StartupObject>
@@ -48,7 +50,7 @@
       <HintPath>..\packages\CommandLineParser.2.8.0\lib\net461\CommandLine.dll</HintPath>
     </Reference>
     <Reference Include="NLog, Version=4.0.0.0, Culture=neutral, PublicKeyToken=5120e14c03d0593c, processorArchitecture=MSIL">
-      <HintPath>..\packages\NLog.4.7.4\lib\net45\NLog.dll</HintPath>
+      <HintPath>..\packages\NLog.4.7.5\lib\net45\NLog.dll</HintPath>
     </Reference>
     <Reference Include="System" />
     <Reference Include="System.ComponentModel.Composition" />
@@ -111,8 +113,11 @@
     <Compile Include="ModelCollector.cs" />
     <Compile Include="ModelExecutor.cs" />
     <Compile Include="ModelParser.cs" />
+    <Compile Include="Models\Graph\GraphElement.cs" />
+    <Compile Include="Models\Graph\InheritanceGraphBuilder.cs" />
+    <Compile Include="Models\Graph\ObjectPathStack.cs" />
+    <Compile Include="Models\Graph\GraphPropertyResolver.cs" />
     <Compile Include="Models\IModelObject.cs" />
-    <Compile Include="Models\InheritanceResolver.cs" />
     <Compile Include="Models\Iterator.cs" />
     <Compile Include="Models\ModelBoolObject.cs" />
     <Compile Include="Models\ModelCompositeObject.cs" />
@@ -121,7 +126,6 @@
     <Compile Include="Models\ModelStringObject.cs" />
     <Compile Include="Models\ParameterModel.cs" />
     <Compile Include="Models\PropertyLocator.cs" />
-    <Compile Include="Models\PropertyResolver.cs" />
     <Compile Include="Models\SingleModel.cs" />
     <Compile Include="Program.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />

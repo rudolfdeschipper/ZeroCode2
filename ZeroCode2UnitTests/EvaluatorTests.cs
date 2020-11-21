@@ -11,11 +11,11 @@ namespace ZeroCode2UnitTests
     [TestClass]
     public class EvaluatorTests
     {
-        public ModelCollector ModelCollector { get; set; }
-        public Stack<ZeroCode2.Interpreter.IteratorManager> LoopStack { get; set; }
+        public static ModelCollector ModelCollector { get; set; }
+        public static Stack<ZeroCode2.Interpreter.IteratorManager> LoopStack { get; set; }
 
-        [TestInitialize]
-        public void Setup()
+        [ClassInitialize]
+        public static void Setup(TestContext context)
         {
             var parser = new ModelParser();
 

@@ -39,11 +39,8 @@ namespace ZeroCode2
                         Interpreter.Emitter.IEmitter emitter;
 
                         logger.Info("Parsing model:");
-#if DEBUG
-                        modelParser = r.RunModelParser(cmdOptions, false);
-#else
-                        modelParser = r.RunModelParser(cmdOptions, false);
-#endif      
+                        modelParser = r.RunModelParser(cmdOptions);
+
                         if (modelParser.HasErrors)
                         {
                             logger.Error("Model errors");
@@ -108,7 +105,7 @@ namespace ZeroCode2
             Console.ReadLine();
         }
 
-        private ModelParser RunModelParser(CommandlineOptions options, bool test)
+        private ModelParser RunModelParser(CommandlineOptions options)
         {
             var fIn = System.IO.File.OpenText(options.InputFile);
 
@@ -117,11 +114,6 @@ namespace ZeroCode2
             runner.ParseInputFile(fIn);
 
             runner.DumpErrors();
-
-            if (test)
-            {
-                runner.RunTests();
-            }
 
             fIn.Close();
             return runner;

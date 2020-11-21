@@ -52,8 +52,14 @@ Person : {
 	ID : { Type:"int", Name:"ID of Person", Title:"ID"},
 	Name : { Type:"string", Name:"Name", Title:"Name", Length:50, Nullable:false },
 	Title : { Type:"string", Name:"Title", Title:"Title", Length:100, Nullable:false, SomeOtherProperty <- DataDictionary.NameField : { Name : "Another name", +Something : true } },
-	InheritedField <- DataDictionary.NameField,
-	CodeField : "<Input Type='[@Models.Person.Name.Type]' >"
+	InheritedField <- DataDictionary.NameField : {
+		MetaProperties: {
+			-Type
+		}
+	}
+	,
+	CodeField : "<Input Type='[@Models.Person.Name.Type]' >",
+	DoubleInheritance <- Models.Stakeholder.Inherited.MetaProperties
 }
 
 Stakeholder : {
@@ -116,7 +122,8 @@ NameField : {
 	Name:"Name", 
 	Title:"Generic Title", 
 	Length:50, 
-	Nullable:false
+	Nullable:false,
+	MetaProperties : { Name: "Name", Type: "string" }
 }
 
 // -------------------

@@ -1,5 +1,6 @@
 ﻿using System.Collections.Generic;
 using ZeroCode2.Models;
+using ZeroCode2.Models.Graph;
 
 namespace ZeroCode2
 {
@@ -9,6 +10,7 @@ namespace ZeroCode2
 
         public ModelCollector ModelCollector { get; set; }
 
+        public Dictionary<string, GraphElement> GraphElements { get; set; }
         public List<string> Errors { get; set; } = new List<string>();
         public bool HasErrors { get; set; }
 
@@ -39,6 +41,8 @@ namespace ZeroCode2
 
             ModelCollector = Listener.Collector;
 
+            GraphElements = Listener.GraphElements;
+
             if (ResolveInheritance() == false)
             {
                 logger.Error("Not all Inheritances were resolved");
@@ -56,15 +60,24 @@ namespace ZeroCode2
 
         private bool ResolveInheritance()
         {
-            var resolver = new Models.InheritanceResolver();
-            var ok = true;
-
-            ModelCollector.SingleModels.ForEach(m => ok &= resolver.ResolveInheritance(m, ModelCollector));
-            this.Errors.AddRange(resolver.Errors);
-
-            ModelCollector.SingleModels.ForEach(m => m.Resolve());
-
-            return ok;
+            bool ok;
+            // from the graph elements, build the inheritance graph
+            var graphBuilder = new InheritanceGraphBuilder
+            {
+                Elements = GraphElements
+            };
+            ok = graphBuilder.BuildGraph();
+            if (!ok)
+            {
+                foreach (var item in GraphElements)
+                {
+                    if (item.Value.State != GraphElementSate.Processed)
+                    {
+                        this.Errors.Add(string.Format("Element {0} was not resolved", item.Key));
+                    }
+                }
+            }
+            return this.Errors.Count == 0;
         }
 
         public void DumpErrors()
@@ -78,91 +91,6 @@ namespace ZeroCode2
             }
         }
 
-        public void RunTests()
-        {
-            // TODO: move to unit tests
-            if (!HasErrors)
-            {
-                var it = new Models.Iterator();
-                do
-                {
-                    var itlocator = new Models.PropertyLocator("@Models", ModelCollector, null);
-                    itlocator.Locate();
-                    var c = it.Iterate(itlocator.LocatedProperty());
-                    logger.Info("Model: " + c.Name);
-
-                    var it2 = new Models.Iterator();
-                    do
-                    {
-                        var c2 = it2.Iterate(c);
-                        logger.Info("\t" + c2.Name);
-
-                        var it3 = new Models.Iterator();
-                        do
-                        {
-                            var c3 = it3.Iterate(c2);
-                            logger.Info("\t\t" + c3.Name + " " + c3.GetText());
-
-                        } while (it3.HasMore);
-                    } while (it2.HasMore);
-
-                } while (it.HasMore);
-
-                // test absolute locator:
-                var locator = new Models.PropertyLocator("#Parameters.appName", ModelCollector, null);
-                locator.Locate();
-                _ = locator.LocatedProperty();
-                //logger.Info("Located: {0} = {1}", el.Name, el.Value.GetText());
-                //el = locator.Locate("@Models.Person.ID.Name", modelCollector);
-                //logger.Info("Located: {0} = {1}", el.Name, el.Value.GetText());
-
-                //el = locator.Locate("@Models.Stakeholder.Name.Title", modelCollector);
-                //logger.Info("Located: {0} = {1}", el.Name, el.Value.GetText());
-
-                //el = locator.Locate("@DataDictionary.IDField.Name", modelCollector);
-                //logger.Info("Located: {0} = {1}", el.Name, el.Value.GetText());
-
-                //el = locator.Locate("@Models.Stakeholder.Name.Nullable", modelCollector);
-                //logger.Info("Not found: {0}", el?.Name ?? "Nullable");
-
-                // locator from a specific point in the tree (iterator):
-
-                locator = new Models.PropertyLocator("@ViewModels", ModelCollector, null);
-                it = new Models.Iterator();
-                locator.Locate();
-                var c4 = it.Iterate(locator.LocatedProperty());
-
-                var loopStack = new Stack<Interpreter.IteratorManager>();
-                loopStack.Push(new Interpreter.IteratorManager(it, c4) { Path = "@ViewModels" });
-                locator = new Models.PropertyLocator("Name.Length", ModelCollector, loopStack);
-                locator.Locate();
-                IModelObject el = locator.LocatedProperty();
-                logger.Info("Located: {0} = {1}", el.Name, el.GetText());
-
-                locator = new Models.PropertyLocator("Test.Title", ModelCollector, loopStack);
-                locator.Locate();
-                el = locator.LocatedProperty();
-                logger.Info("Located: {0} = {1}", el.Name, el.GetText());
-
-                locator = new Models.PropertyLocator("Title.SomeOtherProperty.Title", ModelCollector, loopStack);
-                locator.Locate();
-                el = locator.LocatedProperty();
-                logger.Info("Located: {0} = {1}", el.Name, el.GetText());
-
-                locator = new Models.PropertyLocator("Title.SomeOtherProperty.Name", ModelCollector, loopStack);
-                locator.Locate();
-                el = locator.LocatedProperty();
-                logger.Info("Located: {0} = {1}", el.Name, el.GetText());
-                locator = new Models.PropertyLocator("$", ModelCollector, loopStack);
-                locator.Locate();
-                el = locator.LocatedProperty();
-                logger.Info("Located: $ = {0}", el.Name);
-            }
-            else
-            {
-                logger.Error("Errors were found: Cannot run tests");
-            }
-        }
     }
 
 

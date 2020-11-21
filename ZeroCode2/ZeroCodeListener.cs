@@ -2,6 +2,7 @@
 using System.Linq;
 using Antlr4.Runtime.Misc;
 using ZeroCode2.Grammars;
+using ZeroCode2.Models.Graph;
 using static ZeroCode2.Grammars.ZeroCode2;
 
 namespace ZeroCode2
@@ -13,11 +14,15 @@ namespace ZeroCode2
 
         public ModelCollector Collector { get; set; } = new ModelCollector();
 
+        public Dictionary<string, GraphElement> GraphElements { get; set; } = new Dictionary<string, GraphElement>();
+
         public Antlr4.Runtime.Tree.ParseTreeProperty<Models.IModelObject> ValueProps { get; set; } = new Antlr4.Runtime.Tree.ParseTreeProperty<Models.IModelObject>();
         public Antlr4.Runtime.Tree.ParseTreeProperty<Models.IModelObject> PairProps { get; set; } = new Antlr4.Runtime.Tree.ParseTreeProperty<Models.IModelObject>();
         public Antlr4.Runtime.Tree.ParseTreeProperty<List<Models.IModelObject>> ObjProps { get; set; } = new Antlr4.Runtime.Tree.ParseTreeProperty<List<Models.IModelObject>>();
         public Antlr4.Runtime.Tree.ParseTreeProperty<List<string>> ObjOrderByProps { get; set; } = new Antlr4.Runtime.Tree.ParseTreeProperty<List<string>>();
         public Antlr4.Runtime.Tree.ParseTreeProperty<Models.SingleModel> SingleModels { get; set; } = new Antlr4.Runtime.Tree.ParseTreeProperty<Models.SingleModel>();
+
+        private readonly ObjectPathStack path = new ObjectPathStack();
 
         public override void EnterParameters([NotNull] ParametersContext context)
         {
@@ -57,6 +62,7 @@ namespace ZeroCode2
         {
             var CurrentSection = "@" + context.ID().GetText();
             logger.Trace("Enter Section = {0}", CurrentSection);
+            path.Push(CurrentSection);
         }
 
         public override void ExitGenericModel([NotNull] GenericModelContext context)
@@ -69,7 +75,10 @@ namespace ZeroCode2
                 list.Add(sm);
             }
 
-            var TopLevelModel = new Models.SingleModel("@" + context.ID().GetText(), list);
+            var TopLevelModel = new Models.SingleModel("@" + context.ID().GetText(), list)
+            {
+                Path = path.GetPath()
+            };
 
             // check for doubles
             var existing = Collector.SingleModels.FirstOrDefault(p => p.Name == TopLevelModel.Name);
@@ -81,12 +90,25 @@ namespace ZeroCode2
             {
                 Collector.SingleModels.Add(TopLevelModel);
             }
+            GraphElements.Add(TopLevelModel.Path, new GraphElement(TopLevelModel.Path, TopLevelModel));
+            path.Pop();
 
             base.ExitGenericModel(context);
         }
 
+        public override void EnterPair([NotNull] PairContext context)
+        {
+            base.EnterPair(context);
+            logger.Trace("Enter pair {0}", context.ID().GetText());
+            path.Push(context.ID().GetText());
+        }
+
         public override void ExitPair([NotNull] PairContext context)
         {
+            var fullpath = path.GetPath();
+            path.Pop();
+            logger.Trace("Exit pair {0}", fullpath);
+
             Models.IModelObject pair = null;
             if (context.pairvalue()?.value() != null)
             {
@@ -102,6 +124,8 @@ namespace ZeroCode2
             }
             pair.Name = context.ID().GetText();
 
+            pair.Path = fullpath;
+
             PairProps.Put(context, pair);
             if (context.pairvalue()?.inherits() != null)
             {
@@ -113,19 +137,31 @@ namespace ZeroCode2
                 pair.Modified = true;
                 pair.Modifier = context.modifier.Text;
             }
+            GraphElements.Add(pair.Path, new GraphElement(pair.Path, pair));
 
             logger.Trace("Pair: {0}{1} = {2}{3}", pair.Modifier, pair.Name, pair.GetText() ?? "unknown", context.pairvalue()?.inherits() != null ? " : " + pair.InheritsFrom : "");
 
             base.ExitPair(context);
         }
 
+        public override void EnterSinglemodel([NotNull] SinglemodelContext context)
+        {
+            base.EnterSinglemodel(context);
+            path.Push(context.ID().GetText());
+        }
+
         public override void ExitSinglemodel([NotNull] SinglemodelContext context)
         {
+            var fullpath = path.GetPath();
+            path.Pop();
+            logger.Trace("Exit singlemodel {0}", fullpath);
+
             var obj = ObjProps.Get(context.obj());
 
             var model = new Models.SingleModel(context.ID().GetText(), obj);
 
             var orderby = ObjOrderByProps.Get(context.obj());
+            model.Path = fullpath;
             model.OrderBy.AddRange(orderby);
 
             //model.Section = CurrentSection;
@@ -140,6 +176,7 @@ namespace ZeroCode2
                 context.inherits() != null ? " : " + model.InheritsFrom : "",
                 orderby.Any() ? " / " + orderby.Aggregate(obs, (f, run) => obs += run + ", ") : "");
 
+            GraphElements.Add(model.Path, new GraphElement(model.Path, model));
             SingleModels.Put(context, model);
             base.ExitSinglemodel(context);
         }
@@ -269,7 +306,14 @@ namespace ZeroCode2
                     Collector.SingleModels.Add(item);
                 }
             }
-
+            // get GraphElements from included 
+            foreach (var item in mp.GraphElements)
+            {
+                if (!GraphElements.ContainsKey(item.Key))
+                {
+                    GraphElements.Add(item.Key, item.Value);
+                }
+            }
         }
 
     }

@@ -30,10 +30,10 @@
 
             HasMore = obj.Value.Count > (currentItem + 1);
 
-            if (obj.Value[currentItem] != null)
-            {
-                obj.Value[currentItem].Resolve();
-            }
+            //if (obj.Value[currentItem] != null)
+            //{
+            //    obj.Value[currentItem].Resolve();
+            //}
 
             return obj.Value[currentItem];
         }

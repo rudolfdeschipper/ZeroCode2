@@ -2,18 +2,20 @@
 using System.Collections.Generic;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 using ZeroCode2;
-
+using ZeroCode2.Models.Graph;
 
 namespace ZeroCode2UnitTests
 {
     [TestClass]
     public class InheritanceTests
     {
-        public ModelCollector ModelCollector { get; set; }
-        public Stack<ZeroCode2.Interpreter.IteratorManager> LoopStack { get; set; }
+        public static ModelCollector ModelCollector { get; set; }
+        public static Stack<ZeroCode2.Interpreter.IteratorManager> LoopStack { get; set; }
 
-        [TestInitialize]
-        public void Setup()
+        public static Dictionary<string, GraphElement> GraphElements { get; set; }
+
+        [ClassInitialize]
+        public static void Setup(TestContext context)
         {
             var parser = new ModelParser();
 
@@ -21,16 +23,20 @@ namespace ZeroCode2UnitTests
 
             ModelCollector = parser.ModelCollector;
 
+            GraphElements = parser.GraphElements;
+
             LoopStack = null;
         }
 
         [TestMethod]
         public void TestGraphwalker()
         {
-            var resolver = new ZeroCode2.Models.InheritanceResolver();
+            var resolver = new ZeroCode2.Models.Graph.InheritanceGraphBuilder();
             var outp = true;
 
-            ModelCollector.SingleModels.ForEach(m => outp &= resolver.ResolveInheritance(m, ModelCollector));
+            resolver.Elements = GraphElements;
+
+            outp = resolver.BuildGraph();
 
             Assert.IsTrue(outp);
             Assert.AreEqual(resolver.Errors.Count, 0);
