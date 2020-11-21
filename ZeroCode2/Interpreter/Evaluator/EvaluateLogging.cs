@@ -1,10 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-
-namespace ZeroCode2.Interpreter.Evaluator
+﻿namespace ZeroCode2.Interpreter.Evaluator
 {
     class EvaluateLogging : IEvaluator
     {
@@ -14,7 +8,7 @@ namespace ZeroCode2.Interpreter.Evaluator
 
         public EvaluateLogging(string logType)
         {
-            LogType = logType.Substring(logType.IndexOf('%')+1);
+            LogType = logType.Substring(logType.IndexOf('%') + 1);
             LogType = LogType.Substring(0, LogType.Length - 1);
         }
 

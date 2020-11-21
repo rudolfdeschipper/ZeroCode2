@@ -1,10 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-
-namespace ZeroCode2.Interpreter.Evaluator
+﻿namespace ZeroCode2.Interpreter.Evaluator
 {
     public class ExpressionEvaluator : IEvaluator
     {
@@ -44,7 +38,7 @@ namespace ZeroCode2.Interpreter.Evaluator
         public EvaluatorResult Evaluate(IInterpreterContext context, string expression)
         {
             // check for references:
-            while(expression.Contains("["))
+            while (expression.Contains("["))
             {
                 // evaluate the sub-expression into the current expression
                 expression = EvaluateReferences(context, expression);

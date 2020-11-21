@@ -1,10 +1,6 @@
-﻿using System;
+﻿using CommandLine;
+using System;
 using System.Collections.Generic;
-using System.Text;
-using System.Threading.Tasks;
-using Antlr4.Runtime;
-using CommandLine;
-using System.IO;
 
 namespace ZeroCode2
 {

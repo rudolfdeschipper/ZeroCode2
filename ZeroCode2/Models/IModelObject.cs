@@ -12,7 +12,7 @@ namespace ZeroCode2.Models
         string InheritsFrom { get; set; }
         IModelObject ParentObject { get; set; }
         bool IsResolved { get; set; }
-       
+
         bool IsBeingResolved { get; set; }
 
         bool Modified { get; set; }

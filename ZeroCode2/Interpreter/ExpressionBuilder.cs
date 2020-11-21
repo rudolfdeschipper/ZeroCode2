@@ -1,8 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
+﻿using System.Linq;
 
 namespace ZeroCode2.Interpreter
 {
@@ -10,28 +6,15 @@ namespace ZeroCode2.Interpreter
     {
         public static Evaluator.IEvaluator BuildExpressionEvaluator(string expression)
         {
-            Evaluator.IEvaluator evalObject;
-
             var props = expression.Split('.');
-
-            switch (props.Last())
+            Evaluator.IEvaluator evalObject = (props.Last()) switch
             {
-                case "HasMore":
-                    evalObject = new Interpreter.Evaluator.HasMoreExpressionEvaluator();
-                    break;
-                case "Index":
-                    evalObject = new Interpreter.Evaluator.IndexExpressionEvaluator();
-                    break;
-                case "Ordinal":
-                    evalObject = new Interpreter.Evaluator.OrdinalExpressionEvaluator();
-                    break;
-                case "DateStamp":
-                    evalObject = new Interpreter.Evaluator.TimestampExpressionEvaluator();
-                    break;
-                default:
-                    evalObject = new Interpreter.Evaluator.ExpressionEvaluator();
-                    break;
-            }
+                "HasMore" => new Interpreter.Evaluator.HasMoreExpressionEvaluator(),
+                "Index" => new Interpreter.Evaluator.IndexExpressionEvaluator(),
+                "Ordinal" => new Interpreter.Evaluator.OrdinalExpressionEvaluator(),
+                "DateStamp" => new Interpreter.Evaluator.TimestampExpressionEvaluator(),
+                _ => new Interpreter.Evaluator.ExpressionEvaluator(),
+            };
             return evalObject;
         }
     }

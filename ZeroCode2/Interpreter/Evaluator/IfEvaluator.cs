@@ -1,8 +1,4 @@
 ﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 
 namespace ZeroCode2.Interpreter.Evaluator
 {
@@ -103,7 +99,8 @@ namespace ZeroCode2.Interpreter.Evaluator
             {
                 retVal = LeftValue == rightSide;
             }
-            else {
+            else
+            {
                 retVal = LeftValue != rightSide;
             }
             // leading "!" is valid for the complete if-clause

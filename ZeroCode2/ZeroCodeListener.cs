@@ -1,6 +1,6 @@
-﻿using System.Collections.Generic;
+﻿using Antlr4.Runtime.Misc;
+using System.Collections.Generic;
 using System.Linq;
-using Antlr4.Runtime.Misc;
 using ZeroCode2.Grammars;
 using ZeroCode2.Models.Graph;
 using static ZeroCode2.Grammars.ZeroCode2;
@@ -171,8 +171,8 @@ namespace ZeroCode2
                 model.InheritsFrom = context.inherits().ID().GetText();
             }
             string obs = "";
-            logger.Trace("Single model = {0}{1}{2}", 
-                model.Name, 
+            logger.Trace("Single model = {0}{1}{2}",
+                model.Name,
                 context.inherits() != null ? " : " + model.InheritsFrom : "",
                 orderby.Any() ? " / " + orderby.Aggregate(obs, (f, run) => obs += run + ", ") : "");
 
@@ -186,7 +186,8 @@ namespace ZeroCode2
             var obj = new List<Models.IModelObject>();
             var orderby = new List<string>();
 
-            if (context.orderstatement() != null) {
+            if (context.orderstatement() != null)
+            {
                 foreach (var item in context.orderstatement()._orderby)
                 {
                     orderby.Add(item.Text);

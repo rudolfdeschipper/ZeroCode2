@@ -1,8 +1,5 @@
-﻿using System;
-using System.Collections.Generic;
+﻿using System.Collections.Generic;
 using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 
 namespace ZeroCode2.Models.Graph
 {
@@ -33,7 +30,7 @@ namespace ZeroCode2.Models.Graph
                 PopulateProperties();
             } while (Changed);
 
-            return !Elements.Values.Any( i => i.State != GraphElementSate.Processed);
+            return !Elements.Values.Any(i => i.State != GraphElementSate.Processed);
         }
 
         private void PopulateProperties()

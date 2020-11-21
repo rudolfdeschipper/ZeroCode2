@@ -1,9 +1,6 @@
-﻿using System;
-using System.Collections.Generic;
-using System.IO;
+﻿using System.IO;
 using System.Linq;
 using System.Text;
-using System.Threading.Tasks;
 
 namespace ZeroCode2.Interpreter.Emitter
 {
@@ -82,7 +79,7 @@ namespace ZeroCode2.Interpreter.Emitter
             if (_sb != null)
             {
                 if (!logger.IsEnabled(NLog.LogLevel.Trace))
-                { 
+                {
                     logger.Debug("Emitting: " + output);
                 }
                 _sb.Append(output);

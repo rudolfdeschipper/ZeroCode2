@@ -1,8 +1,5 @@
-﻿using System;
-using System.Collections.Generic;
+﻿using System.Collections.Generic;
 using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 
 namespace ZeroCode2.Interpreter
 {
@@ -28,7 +25,7 @@ namespace ZeroCode2.Interpreter
 
         private void AddInstruction(Interpreter.InterpreterInstructionBase instruction)
         {
-            if (Instructions.Count() > 0 )
+            if (Instructions.Count() > 0)
             {
                 var lastNonLinked = Instructions.LastOrDefault(i => i.Next == null);
                 if (lastNonLinked != null)

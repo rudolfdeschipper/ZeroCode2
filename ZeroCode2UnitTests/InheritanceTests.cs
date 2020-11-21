@@ -1,6 +1,5 @@
-﻿using System;
+﻿using Microsoft.VisualStudio.TestTools.UnitTesting;
 using System.Collections.Generic;
-using Microsoft.VisualStudio.TestTools.UnitTesting;
 using ZeroCode2;
 using ZeroCode2.Models.Graph;
 
@@ -31,13 +30,12 @@ namespace ZeroCode2UnitTests
         [TestMethod]
         public void TestGraphwalker()
         {
-            var resolver = new ZeroCode2.Models.Graph.InheritanceGraphBuilder();
-            var outp = true;
+            var resolver = new ZeroCode2.Models.Graph.InheritanceGraphBuilder
+            {
+                Elements = GraphElements
+            };
 
-            resolver.Elements = GraphElements;
-
-            outp = resolver.BuildGraph();
-
+            bool outp = resolver.BuildGraph();
             Assert.IsTrue(outp);
             Assert.AreEqual(resolver.Errors.Count, 0);
         }

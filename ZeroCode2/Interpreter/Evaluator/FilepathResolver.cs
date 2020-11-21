@@ -1,8 +1,5 @@
-﻿using System;
-using System.Collections.Generic;
+﻿using System.Collections.Generic;
 using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 
 namespace ZeroCode2.Interpreter.Evaluator
 {
@@ -16,8 +13,8 @@ namespace ZeroCode2.Interpreter.Evaluator
             // split in string and expressions
             int start = 0, xprIndex, xprEnd;
 
-            while(start < expression.Length)
-            { 
+            while (start < expression.Length)
+            {
                 string walk = expression.Substring(start);
                 xprIndex = walk.IndexOf("=<");
                 xprEnd = walk.IndexOf(">");

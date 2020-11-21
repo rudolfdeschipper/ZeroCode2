@@ -1,6 +1,6 @@
-﻿using System;
+﻿using Microsoft.VisualStudio.TestTools.UnitTesting;
+using System;
 using System.Text;
-using Microsoft.VisualStudio.TestTools.UnitTesting;
 using ZeroCode2;
 using ZeroCode2.Interpreter;
 using ZeroCode2.Interpreter.Emitter;

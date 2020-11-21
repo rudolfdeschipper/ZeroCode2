@@ -64,7 +64,7 @@ namespace ZeroCode2.Models.Graph
                 return;
             }
 
-           // invalid inheritance chain
+            // invalid inheritance chain
             if (pair.ParentObject == null)
             {
                 logger.Error("{0} inherits from {1} but was not resolved", pair.Name, pair.InheritsFrom);
@@ -78,8 +78,8 @@ namespace ZeroCode2.Models.Graph
 
                 // only copy the "+" from the current list:
                 logger.Trace("Populate Properties for {0} - adding {1} +-modifier properties", pair.Name, pair.AsComposite().Value.Count(mp => mp.Modifier == "+"));
-                addedProps.AddRange(pair.AsComposite().Value.Where( mp => mp.Modifier == "+"));
- 
+                addedProps.AddRange(pair.AsComposite().Value.Where(mp => mp.Modifier == "+"));
+
                 // we need to resolve these too, so we do that here:
                 foreach (var item in addedProps)
                 {
