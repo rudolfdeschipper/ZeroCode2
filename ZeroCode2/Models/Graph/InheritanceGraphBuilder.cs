@@ -14,6 +14,7 @@ namespace ZeroCode2.Models.Graph
 
         public bool BuildGraph()
         {
+            logger.Trace("Building graph");
             do
             {
                 Changed = false;
@@ -21,16 +22,25 @@ namespace ZeroCode2.Models.Graph
                 {
                     if (item.Value.State == GraphElementSate.Unvisited)
                     {
+                        logger.Trace("Visting item {0}", item.Key);
                         item.Value.State = GraphElementSate.Visited;
                         ProcessGraphElement(item.Value);
                     }
                 }
                 // here we must populate all the items that are processed
                 // and insert the new properies in the Elements list
+                logger.Trace("Call PopulateProperties");
                 PopulateProperties();
             } while (Changed);
+            logger.Trace("Done Building graph");
 
-            return !Elements.Values.Any(i => i.State != GraphElementSate.Processed);
+            var cyclesOk = CheckForCycles();
+            logger.Trace("Check for cycles: {0}", cyclesOk);
+
+            var elementsOk = !Elements.Values.Any(i => i.State != GraphElementSate.Processed);
+            logger.Trace("Check if all elements processed: {0}", elementsOk);
+
+            return cyclesOk && elementsOk;
         }
 
         private void PopulateProperties()
@@ -42,17 +52,21 @@ namespace ZeroCode2.Models.Graph
             var toPopulate = Elements.Where(i => i.Value.State == GraphElementSate.Processed && !i.Value.Object.IsResolved).ToList();
             foreach (var item in toPopulate)
             {
+                logger.Trace("Populate properties for item {0}", item.Key);
                 propertyResolver.PopulateProperties(item.Value);
             }
+            logger.Trace("Done PopulateProperties");
         }
 
         private void ProcessGraphElement(GraphElement item)
         {
             if (item.Object.Inherits)
             {
+                logger.Trace("Finding parent {1} for {0}", item.Key, item.Object.InheritsFrom);
                 var inheritedObject = FindElement("@" + item.Object.InheritsFrom);
                 if (inheritedObject != null)
                 {
+                    logger.Trace("Setting parent object for {0} to {1}, item State is Processed", item.Key, inheritedObject.Key);
                     item.Object.ParentObject = inheritedObject.Object;
                     item.State = GraphElementSate.Processed;
                     Changed = true;
@@ -63,11 +77,13 @@ namespace ZeroCode2.Models.Graph
                     // 1. Error in the model
                     // 2. The inheritance is into an object the is not yet resolved
                     // so we put the state to pending, to revisit later
+                    logger.Trace("Did not find parent for {0} - reset State to Unvisited", item.Key);
                     item.State = GraphElementSate.Unvisited;
                 }
             }
             else
             {
+                logger.Trace("Item {0} does not inherit, set to Processed", item.Key);
                 item.State = GraphElementSate.Processed;
             }
         }
@@ -81,6 +97,19 @@ namespace ZeroCode2.Models.Graph
             return null;
         }
 
+        private bool CheckForCycles()
+        {
+            var ok = true;
+            foreach (var item in Elements)
+            {
+                if (item.Value.Object.Inherits && item.Value.State == GraphElementSate.Processed)
+                {
+                    ok &= CheckForCycle(item.Value.Object);
+                }
+            }
+            return ok;
+        }
+
         private bool CheckForCycle(IModelObject model)
         {
             var parent = model.ParentObject;
@@ -90,8 +119,8 @@ namespace ZeroCode2.Models.Graph
                 var cycle = stack.FirstOrDefault(s => s == parent);
                 if (cycle != null)
                 {
-                    logger.Error(string.Format("{0} inheritance defines a cyclic relation.", cycle.Name));
-                    Errors.Add(string.Format("{0} inheritance defines a cyclic relation.", cycle.Name));
+                    logger.Error(string.Format("{0} inheritance defines a cyclic relation.", cycle.Path));
+                    Errors.Add(string.Format("{0} inheritance defines a cyclic relation.", cycle.Path));
                     return false;
                 }
                 stack.Push(parent);
