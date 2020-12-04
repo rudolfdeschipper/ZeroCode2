@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using ZeroCode2;
 using ZeroCode2.Models.Graph;
+using NLog;
 
 namespace ZeroCode2UnitTests
 {
@@ -16,6 +17,7 @@ namespace ZeroCode2UnitTests
         [ClassInitialize]
         public static void Setup(TestContext context)
         {
+            NLog.LogManager.GlobalThreshold = LogLevel.Warn;
             var parser = new ModelParser();
 
             parser.ParseInputFile("ZeroCodeTestInput.txt");

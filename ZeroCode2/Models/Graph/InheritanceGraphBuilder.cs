@@ -22,7 +22,7 @@ namespace ZeroCode2.Models.Graph
                 {
                     if (item.Value.State == GraphElementSate.Unvisited)
                     {
-                        logger.Trace("Visting item {0}", item.Key);
+                        logger.Trace("Visiting item {0}", item.Key);
                         item.Value.State = GraphElementSate.Visited;
                         ProcessGraphElement(item.Value);
                     }
