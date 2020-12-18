@@ -81,24 +81,19 @@ namespace ZeroCode2
                                 logger.Error(item);
                             }
                         }
-
-                        if (cmdOptions.WaitAtExit == true)
-                        {
-                            Console.Write("DONE. Hit RETURN to exit: ");
-                        }
                     }
                     catch (Exception ex)
                     {
                         logger.Fatal(ex, "ERROR: {0}", ex);
-                        if (cmdOptions.WaitAtExit == true)
-                        {
-                            Console.Write("Hit RETURN to exit: ");
-                        }
                     }
                 }
             }
 
-            Console.ReadLine();
+            if (cmdOptions.NoWaitAtExit == false)
+            {
+                Console.Write("Hit RETURN to exit: ");
+                Console.ReadLine();
+            }
         }
 
         private ModelParser RunModelParser(CommandlineOptions options)
