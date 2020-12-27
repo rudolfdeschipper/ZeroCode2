@@ -3,7 +3,6 @@
     /// <summary>
     /// This class allows to iterate through the various collections. HasMore indicates if more items are present.
     /// If not, the Iterate method returns null. It also returns null if the iterations fails for another reason.
-    /// TODO: include inherited properties and exclude the ones that are "-"-ed.
     /// </summary>
     public class Iterator
     {
