@@ -161,7 +161,7 @@ namespace ZeroCode2UnitTests
 
             fe.OutputPath = @"C:\temp\a\b\";
 
-            fe.EnsurePathExists();
+            fe.EnsurePathExists("");
 
             Assert.AreEqual(4, fp.CreatedDirectories.Count);
             Assert.AreEqual(fe.OutputPath, fp.CreatedDirectories.Peek());
@@ -182,7 +182,7 @@ namespace ZeroCode2UnitTests
 
             fe.OutputPath = @"C:\temp\a\b";
 
-            fe.EnsurePathExists();
+            fe.EnsurePathExists("");
 
             Assert.AreEqual(4, fp.CreatedDirectories.Count);
             Assert.IsTrue(fp.CreatedDirectories.Peek().EndsWith(@"b\"));

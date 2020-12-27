@@ -11,14 +11,13 @@ namespace ZeroCode2.Interpreter.Emitter
         private System.Text.StringBuilder _sb;
         private string _uri;
 
-        private string fileName = "";
-        private string pathName = "";
+        private string FullPath = "";
 
         public string OutputPath { get; set; }
 
         public IFilePath FilePath { get; set; } = new FilePath();
 
-        public bool EnsurePathExists(bool doCreate = true)
+        public bool EnsurePathExists(string uri, bool doCreate = true)
         {
             bool retVal = true;
 
@@ -27,7 +26,7 @@ namespace ZeroCode2.Interpreter.Emitter
             {
                 OutputPath += Path.DirectorySeparatorChar.ToString();
             }
-            string fullPath = OutputPath + _uri;
+            string fullPath = OutputPath + uri;
 
             string[] pathParts = fullPath.Split(Path.DirectorySeparatorChar);
 
@@ -55,11 +54,9 @@ namespace ZeroCode2.Interpreter.Emitter
                     }
                 }
             }
-            if (doCreate)
-            {
-                pathName = currentPath;
-                fileName = file;
-            }
+
+            FullPath = Path.Combine(currentPath, file);
+
             return retVal;
         }
 
@@ -68,9 +65,9 @@ namespace ZeroCode2.Interpreter.Emitter
             logger.Info("Closing: " + _uri);
 
             // create path if not there yet
-            EnsurePathExists(true);
+            EnsurePathExists(_uri, true);
 
-            FilePath.WriteToFile(Path.Combine(pathName, fileName), _sb);
+            FilePath.WriteToFile(FullPath, _sb);
         }
 
         public void Emit(string output)
@@ -92,12 +89,12 @@ namespace ZeroCode2.Interpreter.Emitter
 
         public bool Exists(string fileName)
         {
-            if (!EnsurePathExists(false))
+            if (!EnsurePathExists(fileName, false))
             {
                 // directory path did not even exist, so for sure the file doesn't either
                 return false;
             }
-            return FilePath.FileExists(Path.Combine(pathName, fileName));
+            return FilePath.FileExists(FullPath);
         }
 
         public void Open(string uri)
