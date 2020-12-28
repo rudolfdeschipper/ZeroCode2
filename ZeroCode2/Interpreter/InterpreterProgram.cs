@@ -10,6 +10,7 @@ namespace ZeroCode2.Interpreter
 
         private readonly Stack<InterpreterInstructionBranch> loopStack = new Stack<InterpreterInstructionBranch>();
         private readonly Stack<InterpreterInstructionBase> ifElseStack = new Stack<InterpreterInstructionBase>();
+        private InterpreterInstructionBranch LastFileCreateInstruction = null;
 
         public InterpreterProgram()
         {
@@ -49,6 +50,12 @@ namespace ZeroCode2.Interpreter
         {
             var instruction = new Interpreter.InterpreterInstructionBranch(line, pos, value, new Interpreter.Evaluator.EvaluateFileCreate());
 
+            if (LastFileCreateInstruction != null)
+            {
+                logger.Error("Line {0} - cannnot have a FileCreate before ending a another FileCreate instruction.", line);
+            }
+            LastFileCreateInstruction = instruction;
+
             AddInstruction(instruction);
 
             DebugInstruction("FileCreate", instruction);
@@ -59,6 +66,10 @@ namespace ZeroCode2.Interpreter
         {
             var instruction = new Interpreter.InterpreterInstructionBranch(line, pos, value, new Interpreter.Evaluator.EvaluateFileOverwrite());
 
+            if (LastFileCreateInstruction != null)
+            {
+                logger.Error("Line {0} - cannnot have a FileOverWrite before ending a FileCreate instruction.", line);
+            }
             AddInstruction(instruction);
 
             DebugInstruction("FileOverwrite", instruction);
@@ -81,6 +92,11 @@ namespace ZeroCode2.Interpreter
         {
             var instruction = new Interpreter.InterpreterInstructionNoOp(line, pos, value, new Interpreter.Evaluator.EvaluateEndFile());
 
+            if (LastFileCreateInstruction != null)
+            {
+                LastFileCreateInstruction.Alternative = instruction;
+                LastFileCreateInstruction = null;
+            }
             AddInstruction(instruction);
 
             DebugInstruction("EndFile", instruction);
