@@ -6,14 +6,14 @@
         {
             return new ModelNumberObject()
             {
-                Inherits = this.Inherits,
-                InheritsFrom = this.InheritsFrom,
-                IsResolved = this.IsResolved,
-                Modified = this.Modified,
-                Modifier = this.Modifier,
-                Name = this.Name,
-                ParentObject = this.ParentObject,
-                Value = this.Value
+                Inherits = Inherits,
+                InheritsFrom = InheritsFrom,
+                IsResolved = IsResolved,
+                Modified = Modified,
+                Modifier = Modifier,
+                Name = Name,
+                ParentObject = ParentObject,
+                Value = Value
             };
         }
 

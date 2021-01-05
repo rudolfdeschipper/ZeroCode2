@@ -74,7 +74,7 @@ namespace ZeroCode2.Models
 
         public int CompareTo(IModelObject other)
         {
-            return this.ToString().CompareTo(other.ToString());
+            return ToString().CompareTo(other.ToString());
         }
     }
 }

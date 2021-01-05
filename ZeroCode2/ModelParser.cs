@@ -72,11 +72,11 @@ namespace ZeroCode2
                 {
                     if (item.Value.State != GraphElementSate.Processed)
                     {
-                        this.Errors.Add(string.Format("Element {0} was not resolved", item.Key));
+                        Errors.Add(string.Format("Element {0} was not resolved", item.Key));
                     }
                 }
             }
-            return this.Errors.Count == 0;
+            return Errors.Count == 0;
         }
 
         public void DumpErrors()

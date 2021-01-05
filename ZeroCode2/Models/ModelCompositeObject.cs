@@ -10,17 +10,17 @@ namespace ZeroCode2.Models
         {
             var obj = new ModelCompositeObject()
             {
-                Inherits = this.Inherits,
-                InheritsFrom = this.InheritsFrom,
-                IsResolved = this.IsResolved,
-                Modified = this.Modified,
-                Modifier = this.Modifier,
-                Name = this.Name,
-                ParentObject = this.ParentObject,
+                Inherits = Inherits,
+                InheritsFrom = InheritsFrom,
+                IsResolved = IsResolved,
+                Modified = Modified,
+                Modifier = Modifier,
+                Name = Name,
+                ParentObject = ParentObject,
                 Value = new List<IModelObject>()
             };
-            obj.Value.AddRange(this.Value.Select(p => p.Duplicate()));
-            obj.OrderBy.AddRange(this.OrderBy);
+            obj.Value.AddRange(Value.Select(p => p.Duplicate()));
+            obj.OrderBy.AddRange(OrderBy);
 
             return obj;
         }

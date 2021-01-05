@@ -1,7 +1,7 @@
 ﻿using Microsoft.VisualStudio.TestTools.UnitTesting;
+using NLog;
 using System.Collections.Generic;
 using ZeroCode2;
-using NLog;
 
 namespace ZeroCode2UnitTests
 {

@@ -1,8 +1,8 @@
 ﻿using Microsoft.VisualStudio.TestTools.UnitTesting;
+using NLog;
 using System.Collections.Generic;
 using ZeroCode2;
 using ZeroCode2.Models.Graph;
-using NLog;
 
 namespace ZeroCode2UnitTests
 {

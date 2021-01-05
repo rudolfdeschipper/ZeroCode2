@@ -161,7 +161,7 @@ namespace ZeroCode2.Interpreter
                 AddInstruction(instruction);
                 AddInstruction(instruction2);
 
-                ((Interpreter.InterpreterInstructionBranch)prevIf).Alternative = instruction2;
+                prevIf.Alternative = instruction2;
 
                 ifElseStack.Push(instruction);
 
