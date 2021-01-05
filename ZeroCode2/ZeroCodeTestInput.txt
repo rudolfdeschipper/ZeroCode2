@@ -69,6 +69,13 @@ Stakeholder : {
 	Inherited <- DataDictionary.NameField
 }
 
+Quotes: {
+	QuoteField: "This is a quote: \"",
+	EscapedTabField: "This is a tab: \b",
+	EscapedBackslashField: "This is a backslash: \\",
+	EscapedQuoteField: "This is an escaped quote: \\\""
+}
+
 @ViewModels
 
 Person <- Models.Person : {

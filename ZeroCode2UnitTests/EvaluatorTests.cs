@@ -143,5 +143,64 @@ namespace ZeroCode2UnitTests
             Assert.IsTrue(res.Value == "<Input Type='string' >");
             Assert.IsTrue(res.Result == ZeroCode2.Interpreter.Evaluator.EvaluationResultValues.True);
         }
+
+        [TestMethod]
+        public void TestEscapeCharacters()
+        {
+            var exprEval = new ZeroCode2.Interpreter.Evaluator.ExpressionEvaluator();
+            var context = new ZeroCode2.Interpreter.InterpreterContext
+            {
+                Model = ModelCollector
+            };
+
+            var res = exprEval.Evaluate(context, "@Models.Quotes.QuoteField");
+
+            Assert.IsTrue(res.Value == "This is a quote: \"");
+            Assert.IsTrue(res.Result == ZeroCode2.Interpreter.Evaluator.EvaluationResultValues.True);
+        }
+
+        [TestMethod]
+        public void TestTabCharacters()
+        {
+            var exprEval = new ZeroCode2.Interpreter.Evaluator.ExpressionEvaluator();
+            var context = new ZeroCode2.Interpreter.InterpreterContext
+            {
+                Model = ModelCollector
+            };
+
+            var res = exprEval.Evaluate(context, "@Models.Quotes.EscapedTabField");
+
+            Assert.IsTrue(res.Value == "This is a tab: \\b");
+            Assert.IsTrue(res.Result == ZeroCode2.Interpreter.Evaluator.EvaluationResultValues.True);
+        }
+        [TestMethod]
+        public void TestBackslashCharacters()
+        {
+            var exprEval = new ZeroCode2.Interpreter.Evaluator.ExpressionEvaluator();
+            var context = new ZeroCode2.Interpreter.InterpreterContext
+            {
+                Model = ModelCollector
+            };
+
+            var res = exprEval.Evaluate(context, "@Models.Quotes.EscapedBackslashField");
+
+            Assert.IsTrue(res.Value == "This is a backslash: \\");
+            Assert.IsTrue(res.Result == ZeroCode2.Interpreter.Evaluator.EvaluationResultValues.True);
+        }
+
+        [TestMethod]
+        public void TestEscapedQuoteCharacters()
+        {
+            var exprEval = new ZeroCode2.Interpreter.Evaluator.ExpressionEvaluator();
+            var context = new ZeroCode2.Interpreter.InterpreterContext
+            {
+                Model = ModelCollector
+            };
+
+            var res = exprEval.Evaluate(context, "@Models.Quotes.EscapedQuoteField");
+
+            Assert.IsTrue(res.Value == "This is an escaped quote: \\\"");
+            Assert.IsTrue(res.Result == ZeroCode2.Interpreter.Evaluator.EvaluationResultValues.True);
+        }
     }
 }

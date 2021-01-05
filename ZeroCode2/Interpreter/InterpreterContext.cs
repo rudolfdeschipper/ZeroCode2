@@ -45,7 +45,15 @@ namespace ZeroCode2.Interpreter
                 {
                     return mp.Name;
                 }
-                return mp.GetText();
+                var result = mp.GetText();
+
+                // replace backslash-quote by quote
+                result = result.Replace("\\\"", "\"");
+                // replace double backslash by a single backslash
+                result = result.Replace("\\\\", "\\");
+                // combination of the two properly replaces 3 backslashes and a quote by a backslash and a quote
+
+                return result;
             }
             else
             {
