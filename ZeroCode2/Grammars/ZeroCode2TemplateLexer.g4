@@ -25,7 +25,7 @@ ENDLOOP:
        | '%/Loop'
        ;
 
-IF: '%If:' (EXCL? ('#'|'@')? (ID DOT)* (ID | '$') ((QUEST? EXCL? EQU ID) | QUEST)?) (' ' | ('\r'? '\n'))
+IF: '%If:' (EXCL? ('#'|'@')? (ID DOT)* (ID | '$') ((QUEST? EXCL? EQU (ID | NUM)) | QUEST)?) (' ' | ('\r'? '\n'))
   ;
 
 ELSE: '%Else' (' ' | ('\r'? '\n'))
@@ -50,6 +50,8 @@ TEXT: ~[%=]+
     ;
 
 fragment ID : [a-zA-Z][a-zA-Z_0-9]*;
+
+fragment NUM : [+-]?[0-9]+;
 
 fragment PATHPART: ('#'|'@')? (ID DOT)* (ID | '$');
 

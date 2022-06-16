@@ -85,6 +85,22 @@ namespace ZeroCode2UnitTests
         }
 
         [TestMethod]
+        public void TestIfWithNumerical()
+        {
+            var IfEval = new ZeroCode2.Interpreter.Evaluator.IfEvaluator("#Parameters.number=42");
+            var context = new ZeroCode2.Interpreter.InterpreterContext
+            {
+                Model = ModelCollector
+            };
+
+            var res = IfEval.Evaluate(context, "");
+
+            Assert.IsTrue(res.Value == string.Empty);
+            Assert.IsTrue(res.Result == ZeroCode2.Interpreter.Evaluator.EvaluationResultValues.True);
+        }
+
+
+        [TestMethod]
         public void TestIfWithQuestionMarkNegativeValueTrue()
         {
             var IfEval = new ZeroCode2.Interpreter.Evaluator.IfEvaluator("!#Parameters.debug=off");
