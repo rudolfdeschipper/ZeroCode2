@@ -87,9 +87,9 @@ namespace ZeroCode2
                         logger.Fatal(ex, "ERROR: {0}", ex);
                     }
                 }
-            }
 
-            if (cmdOptions.NoWaitAtExit == false)
+            }
+            if (cmdOptions is null || cmdOptions.NoWaitAtExit == false)
             {
                 Console.Write("Hit RETURN to exit: ");
                 Console.ReadLine();

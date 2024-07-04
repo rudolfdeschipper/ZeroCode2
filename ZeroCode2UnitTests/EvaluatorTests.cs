@@ -218,5 +218,7 @@ namespace ZeroCode2UnitTests
             Assert.IsTrue(res.Value == "This is an escaped quote: \\\"");
             Assert.IsTrue(res.Result == ZeroCode2.Interpreter.Evaluator.EvaluationResultValues.True);
         }
+
+
     }
 }

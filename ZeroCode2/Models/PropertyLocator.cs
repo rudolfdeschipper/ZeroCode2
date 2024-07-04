@@ -27,6 +27,14 @@ namespace ZeroCode2.Models
 
         public IModelObject LocatedProperty()
         {
+            if (Collector.Variables.ContainsKey(Path))
+            {
+                ModelStringObject var = new ModelStringObject();
+                var.Value = Collector.Variables[Path];
+                var.Path = Path;
+
+                return var;
+            }
             return CurrentRoot;
         }
 
@@ -37,6 +45,10 @@ namespace ZeroCode2.Models
 
         private bool LocateElement()
         {
+            if (Collector.Variables.ContainsKey(Path))
+            {
+                return true;
+            }
             if (!LocateModel())
             {
                 logger.Error("{0} could not be located in the model", Path);

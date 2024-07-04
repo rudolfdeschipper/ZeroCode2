@@ -27,7 +27,14 @@ using =<#Parameters.nameSpace>.Models;
 %Log:Name Person found: =<Name>
 %EndIf
 
+=<VarFirst=true>
 %Loop:Panel
+%If:VarFirst=true
+// -- FIRST --
+=<VarFirst=false>
+%Else
+// -- SECOND --
+%EndIf
 %If:!Panel.Edit?=true
 	var Title = "=<Panel.Title>" + %If:#Parameters.debug=on =<Panel.Title>.=<Panel.Title> %EndIf ;
 	@Some if(x==y) 

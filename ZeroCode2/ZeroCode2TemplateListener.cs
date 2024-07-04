@@ -136,6 +136,16 @@ namespace ZeroCode2
             base.ExitLogCommand(context);
         }
 
+        public override void ExitVarCommand([NotNull] ZeroCode2Template.VarCommandContext context)
+        {
+            string instrVal = context.GetText().Substring("=<".Length);
+
+            instrVal = instrVal.Replace(">", "");
+
+            Program.AddVar(context.start.Line, context.start.StartIndex, instrVal);
+
+            base.ExitVarCommand(context);
+        }
         private string RemoveLineEnd(string inString)
         {
             string outString;

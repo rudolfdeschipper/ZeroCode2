@@ -418,6 +418,61 @@ namespace ZeroCode2UnitTests
 
             LoopStack = null;
         }
+
+        [TestMethod]
+        public void TestVarDecl()
+        {
+            var exprEval = new ZeroCode2.Interpreter.Evaluator.EvaluateVariable();
+
+            var context = new ZeroCode2.Interpreter.InterpreterContext
+            {
+                Model = ModelCollector
+            };
+
+            exprEval.Evaluate(context, "Var=Value");
+
+            var locator = new ZeroCode2.Models.PropertyLocator("Var", ModelCollector, null);
+            locator.Locate();
+            var res = locator.LocatedProperty();
+
+            Assert.IsTrue(res.GetText() == "Value");
+        }
+
+        [TestMethod]
+        public void TestVarDeclRemove()
+        {
+            var exprEval = new ZeroCode2.Interpreter.Evaluator.EvaluateVariable();
+
+            var context = new ZeroCode2.Interpreter.InterpreterContext
+            {
+                Model = ModelCollector,
+            }; exprEval.Evaluate(context, "Var=Value");
+            LoopStack = new Stack<ZeroCode2.Interpreter.IteratorManager>();
+
+            var locator = new ZeroCode2.Models.PropertyLocator("Var", ModelCollector, LoopStack);
+            locator.Locate();
+            var res = locator.LocatedProperty();
+
+            Assert.IsTrue(res.GetText() == "Value");
+
+
+            exprEval.Evaluate(context, "Var=Value2");
+
+            locator = new ZeroCode2.Models.PropertyLocator("Var", ModelCollector, LoopStack);
+            locator.Locate();
+            res = locator.LocatedProperty();
+
+            Assert.IsTrue(res.GetText() == "Value2");
+
+            // remove the variable
+            exprEval.Evaluate(context, "Var=");
+            locator = new ZeroCode2.Models.PropertyLocator("Var", ModelCollector, LoopStack);
+            locator.Locate();
+            res = locator.LocatedProperty();
+
+            Assert.IsNull(res);
+        }
+
         [TestMethod]
 
         public void TestIterationWithLoopImplicit()

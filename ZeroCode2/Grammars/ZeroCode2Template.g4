@@ -32,6 +32,7 @@ command
 	| ENDLOOP NEWLINE?		#EndLoopCommand
 	| log					#LogCommand
 	| EXPR					#ExprCommand
+	| VAR					#VarCommand
 ;
 
 filec

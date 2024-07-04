@@ -36,7 +36,10 @@ ENDIF: '%EndIf' (' ' | ('\r'? '\n'))
 
 EXPR: '=<' (('#'|'@')? ((ID | REFSTART PATHPART REFEND) DOT)* ((ID | REFSTART PATHPART REFEND) | '$')) '>'
     ;
-        
+
+VAR: '=<' (ID '=' (ID|NUM)) '>'
+    ;
+
 INFO	: '%Info:' ~('\r'|'\n')+ -> pushMode(LINE);
 DEBUG	: '%Debug:' ~('\r'|'\n')+ -> pushMode(LINE);
 ERROR	: '%Error:' ~('\r'|'\n')+ -> pushMode(LINE);

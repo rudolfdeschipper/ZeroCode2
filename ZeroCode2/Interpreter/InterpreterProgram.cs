@@ -1,4 +1,5 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
 using System.Linq;
 
 namespace ZeroCode2.Interpreter
@@ -243,5 +244,15 @@ namespace ZeroCode2.Interpreter
             return errors;
         }
 
+        public void AddVar(int line, int pos, string value)
+        {
+            var evaluator = new Interpreter.Evaluator.EvaluateVariable();
+
+            var instruction = new Interpreter.InterpreterInstructionNoOp(line, pos, value, evaluator);
+
+            AddInstruction(instruction);
+
+            DebugInstruction("Expression", instruction);
+        }
     }
 }
