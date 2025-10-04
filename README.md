@@ -48,7 +48,7 @@ In case properties are inherited, the inherited ones come first, then the added 
 		
 NOTE: there is currently no way to change the ordering through a loop statement (order by not supported).
 
-## Loop filtering (not supported)
+## Loop filtering
 When looping over a property, it is sometimes needed to only consider a subset of the properies' elements. This is easily achieved by adding an %If inside the loop. 
 
 	%Loop:SomeProperty
