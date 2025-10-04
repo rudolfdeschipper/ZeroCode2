@@ -29,24 +29,53 @@ The template specification can contain any form of text. Commands all start with
 
 Keyword	- Explanation	- Command parameter
 # FileCreate	
-  Creates a file with the name as specified after this keyword. If the file already exists, it is not recreated and no text is added to the file. This command sits on a line of its own.	Path and filename to send the output to. Supports expressions.
+Creates a file with the name as specified after this keyword. If the file already exists, it is not recreated and no text is added to the file. This command sits on a line of its own.	Path and filename to send the output to. Supports expressions.
   
 # FileOverwrite	
-  Creates a file as FileCreate, but regardless if it already exists or not. It is always recreated. This comments sits on a line of its own.	Same as FileCreate
+Creates a file as FileCreate, but regardless if it already exists or not. It is always recreated. This comments sits on a line of its own.	Same as FileCreate
 	
 # Loop	
-  Repeatedly loops over the elements of the model. The element to loop over is specified after the Loop keyword and it must conform to the "path" in the model (see later).	Path in the model to loop over. Supports relative path to the nearest enclosing loop. In case the path refers to another loop, it shall name that loop path explicitly.
-		A Loop statement can take up a single line of be part of a piece of text. In the latter case, the Loop statement must be followed by a space. This space is considered part of the Loop statement it is not emitted to the result.
-		
+Repeatedly loops over the elements of the model. The element to loop over is specified after the Loop keyword and it must conform to the "path" in the model (see later).	Path in the model to loop over. Supports relative path to the nearest enclosing loop. In case the path refers to another loop, it shall name that loop path explicitly.
+
+A Loop statement can take up a single line of be part of a piece of text. In the latter case, the Loop statement must be followed by a space. This space is considered part of the Loop statement it is not emitted to the result.
+
+## Existance of properties to loop over
+A loop path can optionally end with a question mark ("?"), making the loop optional. If the element to loop over (the path) does not exist in the model, the loop will thus be skipped entirely. Omitting the ? qualifier in the path will generate a runtime error if the path does not exist. In the template, this construct can also be achieved by enclosing the loop with an If statement that tests for the path(e.g. %If:path? %Loop:path ... %/Loop:path %EndIf). However using the optional qualifier in the loop path itself is more succinct and elegant.
+
+## Property order
 Ordering of the elements in the loop follows the way they are present in the model (natural order).
 In case properties are inherited, the inherited ones come first, then the added properties. Properties that are overridden, do not change their ordering.
 		
 NOTE: there is currently no way to change the ordering through a loop statement (order by not supported).
-NOTE: the ordering of properties in a model with inherited properties can be changed by the "/" modifier (see below).
-    
+
+## Loop filtering (not supported)
+When looping over a property, it is sometimes needed to only consider a subset of the properies' elements. This is easily achieved by adding an %If inside the loop. 
+
+	%Loop:SomeProperty
+	%If:SomeProperty.SomeInternalPropery=someValue
+		... emit conditionally
+	%EndIf
+	%/Loop:SomeProperty
+
+Often however such constructs are overly verbose, in particular when the condition to test for is only to restrict the elements in the loop to a subset.
+
+A proposed solution is to enhance the Loop syntax by adding an optional filtering clause:
+
+	%Loop:Property|Filter
+	%/Loop:Property
+
+The "|" was chosen for notational brevity. It reminds of the pipe symbol in shell languages, and has a similar function: the loop elements "pass through" the filter and only if the filter clause is true, the element is passed into the loop's body. 
+
+Using a loop filter is semantically fully equivalent to the Loop/If combination mentioned above. The Filter element's syntax is the same as the condition in an If clause. 
+As a consequence, a filter condition can refer to any valid condition in the frame of the model. It is not restricted to the loop path.  
+Note that alternatives are not supported (there is no notion of Else in the filter, and it would be useless to have this in a loop).
+
 # If	
-  Tests for a condition, which is a property from the model, which is tested against a fixed value. Negative testing is done by prefixing the test by a "!".  Existence of a property be tested by suffixing it by "?".	Path to model expression, followed by "=" or "!=" and a literal value (no spaces allowed.
-		An If statement can take up a single line of be part of a piece of text. In the latter case, the If statement must be followed by a space. This space is considered part of the If statement it is not emitted to the result.	May be preceded by "!" to negate the complete test.
+Tests for a condition, which is a property from the model, which is tested against a fixed value. Negative testing is done by prefixing the test by a "!".  Existence of a property be tested by suffixing it by "?".
+
+It is followed by a colon and a path to a model expression, followed by "=" or "!=" and a literal value (no spaces allowed).
+
+An If statement can take up a single line of be part of a piece of text. In the latter case, the If statement must be followed by a space. This space is considered part of the If statement it is not emitted to the result.	May be preceded by "!" to negate the complete test.
 			
 A path to a model element can be tested for existence by appending it by "?".  This can be used alone to test if the property is present in the model, or in a comparison. In the latter case, the test fails if the property does not exist, and if it exists, the comparison against the compare value is performed. Preceding it with "!" negates the complete comparison.
 			
@@ -87,11 +116,13 @@ If a path element is a boolean by itself, the "="+value can be omitted.
 		The same rule for spacing applies as for "Loop"
 	
 # Logging	
-A number of logging statements exist, which send log messages to the logging system of the tool. They all behave the same: any text after the log statement until the end of the line, is sent to the logging system. Consequently, this statement sits on a line of its own. The logging statements follow a severity model; the following commands are supported:	All text after the colon until the end of the line if logged.
+A number of logging statements exist, which send log messages to the logging system of the tool. They all behave the same: any text after the log statement until the end of the line, is sent to the logging system. Consequently, this statement sits on a line of its own. The logging statements follow a severity model; the following commands are supported:
 		        - Trace
 		        - Info
 		        - Debug
 		        - Error
+All text after the colon until the end of the line if logged.
+
 Apart this, the "Log" command exists as well, but this will always send output to the console, without actually logging it.
 	
 	
@@ -113,6 +144,9 @@ Thus, a property of the model can itself contain a value that contains a sub-exp
 	
 Evaluation the expression =<Person.CodeField>" will give "<Input Type='string' >" as result.
 (note that this means that the use of "[" and "]" in the model's values is restricted).
+
+# Defining new properties
+One specific form of expression allows defining new properties during execution. They take the form of =<property=somevalue>. From that point onwards, this propery can be referred to and will have a (string) value as specified (e.g. "somevalue" in the example). The thus defined property can be set to subsequent new values if required. Using =<property=> (no value) will remove the propery from the model (i.e. it will no longer exist from that point onwards). Referring to a non-existing property will generate a runtime error.
 	
 # Model paths
   
@@ -182,26 +216,22 @@ When referring to a path in a loop, the expression shall use the exact path as m
 	%/Loop
 	
 # Ordering of properties in an inherited object definition
-# Rationale
-Ordering of properties becomes hard due to inheritance. The default behaviour is that inherited properties are presented first, followed by added properties. Property overriding does not change the property's position in the list. So, explicit ordering of properties in an object that uses inheritance is not possible, or hard to do (one option is to not inherit at object level, but to add each property and inheriting it from the base object).
-The feature described here addresses this issue.
+Ordering of properties is defined by the inheritance path. The default behaviour is that inherited properties are presented first, followed by any added properties. Property overriding does not change the property's order. So, explicit ordering of properties in an object that uses inheritance requires an extra semantic.
 	
 Objects that have no inheritance do not need this feature, because the ordering needed can be specified by the natural ordering of its properties. Hence, specifying an ordering clause on non-inherited objects will issue a warning and the ordering clause is ignored.
 	
-# Solution
 By adding the a specific order clause at the end of an object definition, the ordering of properties can be altered. This includes the inherited properties, which are normally not accessible without explicitly overriding them.
 	
-The properties mentioned in the ordering clause are presented in a loop expression in that order, followed by the properties that are not mentioned in the ordering clause. These are presented in the order they were in, meaning that properties from an inherited element that was ordered, are presented in that order, but without properties that were already presented before.
-The ordering clause thus does not filter properties.
+The properties mentioned in the ordering clause are presented in a loop expression in that order, followed by the properties that were not mentioned in the ordering clause. These remaining properies are presented in the default order, meaning that properties from an inherited element that was ordered, are presented in that order. The ordering clause thus does not filter properties from the model, it merely moves the specified properties to the beginning of the loop order.
 	
-# Syntax
-The proposed expression is:
+## Syntax
+The expression is:
 	/ element [COMMA element ]*
 	
-It is expected (optionally) at the end of an object definition, after any properties. No comma between the properties and the ordering expression is needed or allowed.
+It appears (optionally) at the end of an object definition, after any properties. No comma between the properties and the ordering expression is needed or allowed.
 	
 The "/" is chosen due to its mathematical connotation of division, which is worded as "by"; in this context it means: "order by". The specific token is used to disambiguate from a normal identifier in the object definition, where we want to avoid restricting the use of any word. So things like "OrderBy" as identifier were not introduced in the object language as keyword. Instead we selected the simple "/" as keyword to indicate the ordering list.
-	
+
 The ordering list is comma separated and may appear only at the end of the property definition. It is not preceded by a comma and only terminated by the "}" that terminates the object definition.
 	
 A complete (abstract) object definition thus looks as:
@@ -213,9 +243,9 @@ A complete (abstract) object definition thus looks as:
 		(/ ID (, ID)*)?
 	}
 	
-The line (/ ID (, ID)*)? is added as part of this solution
+The line (/ ID (, ID)*)? defines how the ordering of the properties in this object will appear.
 	
-# Semantics
+## Semantics
 Every element  in the list must be present as a property of the object. If an element is not present in the object but present in the list of ordered properties, this will generate a warning, and that property is ignored in the ordering of properties.
 Properties that are part of the object but not in the ordering list are appended at the end of the ordered list in the order they would be presented when the ordering would not be present.
 	
