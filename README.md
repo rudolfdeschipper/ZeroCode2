@@ -128,7 +128,7 @@ Apart this, the "Log" command exists as well, but this will always send output t
 	
 # Expressions
 	
-An expressions refers to an element in the model. It has the form of "=<expression>" in the template. The expression refers to either an explicit path into the model, or to a path relative to one of the loops enclosing the expression.
+An expressions refers to an element in the model. It has the form of "=\<expression\>" in the template. The expression refers to either an explicit path into the model, or to a path relative to one of the loops enclosing the expression.
 Expression syntax can also be present in File commands, to make the filename to be used dependent on the model. Logging commands also support expression syntax.
 	
 An expression can itself contain sub-expressions. These are indicated by a "[expression]" inside the expression. Such a sub-expression is evaluated before the expression resulting from it itself is evaluated. These sub-expressions can be recursive ( sub-expression can itself contain another subexpression). 
@@ -142,7 +142,7 @@ Thus, a property of the model can itself contain a value that contains a sub-exp
 		CodeField : "<Input Type='[@Models.Person.Name.Type]' >"
 	}
 	
-Evaluation the expression =<Person.CodeField>" will give "<Input Type='string' >" as result.
+Evaluation the expression =<Person.CodeField>" will give "\<Input Type='string' \>" as result.
 (note that this means that the use of "[" and "]" in the model's values is restricted).
 
 # Defining new properties
@@ -160,7 +160,7 @@ When looping through an object, the name of the current element is designated by
 	
 Paths can be relative to the path indicated in a loop. By default, a relative path refers to the closest (innermost) loop. Reference to loops further out can be identified by using the path from the loop (being a fully qualified path, i.e. from the start of a section in the model or a relative path itself).
 	
-Alternatively, the construct "Loop" followed by a number (Loop0, Loop1) can be used, where the number designates the level of the loop, counting from outermost (0) to innermost.
+Alternatively, the construct "Loop" followed by a number (Loop0, Loop1) can be used, where the number designates the level of the loop, counting from innermost (0) to outermost.
 	
 When referring to a path in a loop, the expression shall use the exact path as mentioned in the loop. In a sense, the path in the loop statement becomes the loop identifier. In case loop paths are repeated in nested loops (this is not impossible), the nearest loop with the matching path is selected. If an outer loop needs to be referred to, use the Loop<number> construct.
 	
@@ -199,12 +199,12 @@ When referring to a path in a loop, the expression shall use the exact path as m
 		=<$> // gives S1, then S2
 		%Loop:SP3
 			=<Section.SP1> // gives 1 then 2
-			=<Loop0.SP1> // same result
+			=<Loop1.SP1> // same result
 			=<p1> // gives 1 then 1
 		%/Loop
 		%Loop:@Section.S1 // this is a fully qualified path, not a reference
 			=<$> // gives 1, S1P2, { 1 }
-			=<Loop1.$> // same result
+			=<Loop0.$> // same result
 		%/Loop
 		%Loop:Section.SP3 // this refers to the outermost loop (Section)
 			=<$> // gives 1 (p1), then 1 (p1)
