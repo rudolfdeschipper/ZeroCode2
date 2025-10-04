@@ -218,7 +218,33 @@ namespace ZeroCode2UnitTests
             Assert.IsTrue(res.Value == "This is an escaped quote: \\\"");
             Assert.IsTrue(res.Result == ZeroCode2.Interpreter.Evaluator.EvaluationResultValues.True);
         }
+        [TestMethod]
+        public void TestOptionalLoop()
+        {
+            var context = new ZeroCode2.Interpreter.InterpreterContext
+            {
+                Model = ModelCollector
+            };
 
+            context.EnterLoop("@Screen.Person.Limbs?");
+            var result = context.EvaluateLoop("@Screen.Person.Limbs");
+            var res = result.Iterate();
+
+            Assert.IsFalse(res);
+        }
+
+        [TestMethod]
+        public void TestNonExistingLoopGivesError()
+        {
+            var context = new ZeroCode2.Interpreter.InterpreterContext
+            {
+                Model = ModelCollector
+            };
+
+            Assert.ThrowsException<System.ApplicationException>(() => {
+                context.EnterLoop("@Screen.Person.Limbs");
+            });
+        }
 
     }
 }

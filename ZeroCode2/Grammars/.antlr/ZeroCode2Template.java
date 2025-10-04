@@ -17,8 +17,8 @@ public class ZeroCode2Template extends Parser {
 		new PredictionContextCache();
 	public static final int
 		FILEOVERWRITE=1, FILECREATE=2, INCLUDE=3, ENDFILE=4, LOOP=5, ENDLOOP=6, 
-		IF=7, ELSE=8, ENDIF=9, EXPR=10, INFO=11, DEBUG=12, ERROR=13, LOG=14, TRACE=15, 
-		EQU=16, PERC=17, TEXT=18, NEWLINE=19;
+		IF=7, ELSE=8, ENDIF=9, EXPR=10, VAR=11, INFO=12, DEBUG=13, ERROR=14, LOG=15, 
+		TRACE=16, EQU=17, PERC=18, TEXT=19, NEWLINE=20;
 	public static final int
 		RULE_template = 0, RULE_templateelement = 1, RULE_command = 2, RULE_filec = 3, 
 		RULE_fileo = 4, RULE_include = 5, RULE_log = 6;
@@ -33,15 +33,15 @@ public class ZeroCode2Template extends Parser {
 	private static String[] makeLiteralNames() {
 		return new String[] {
 			null, null, null, null, "'%/File'", null, null, null, null, null, null, 
-			null, null, null, null, null, "'='", "'%'"
+			null, null, null, null, null, null, "'='", "'%'"
 		};
 	}
 	private static final String[] _LITERAL_NAMES = makeLiteralNames();
 	private static String[] makeSymbolicNames() {
 		return new String[] {
 			null, "FILEOVERWRITE", "FILECREATE", "INCLUDE", "ENDFILE", "LOOP", "ENDLOOP", 
-			"IF", "ELSE", "ENDIF", "EXPR", "INFO", "DEBUG", "ERROR", "LOG", "TRACE", 
-			"EQU", "PERC", "TEXT", "NEWLINE"
+			"IF", "ELSE", "ENDIF", "EXPR", "VAR", "INFO", "DEBUG", "ERROR", "LOG", 
+			"TRACE", "EQU", "PERC", "TEXT", "NEWLINE"
 		};
 	}
 	private static final String[] _SYMBOLIC_NAMES = makeSymbolicNames();
@@ -136,6 +136,7 @@ public class ZeroCode2Template extends Parser {
 			case ELSE:
 			case ENDIF:
 			case EXPR:
+			case VAR:
 			case INFO:
 			case DEBUG:
 			case ERROR:
@@ -159,7 +160,7 @@ public class ZeroCode2Template extends Parser {
 					setState(17); 
 					_errHandler.sync(this);
 					_la = _input.LA(1);
-				} while ( (((_la) & ~0x3f) == 0 && ((1L << _la) & 524286L) != 0) );
+				} while ( (((_la) & ~0x3f) == 0 && ((1L << _la) & 1048574L) != 0) );
 				setState(19);
 				match(EOF);
 				}
@@ -247,6 +248,7 @@ public class ZeroCode2Template extends Parser {
 			case ELSE:
 			case ENDIF:
 			case EXPR:
+			case VAR:
 			case INFO:
 			case DEBUG:
 			case ERROR:
@@ -267,7 +269,7 @@ public class ZeroCode2Template extends Parser {
 				{
 				setState(25);
 				_la = _input.LA(1);
-				if ( !((((_la) & ~0x3f) == 0 && ((1L << _la) & 458752L) != 0)) ) {
+				if ( !((((_la) & ~0x3f) == 0 && ((1L << _la) & 917504L) != 0)) ) {
 				_errHandler.recoverInline(this);
 				}
 				else {
@@ -430,6 +432,19 @@ public class ZeroCode2Template extends Parser {
 		}
 	}
 	@SuppressWarnings("CheckReturnValue")
+	public static class VarCommandContext extends CommandContext {
+		public TerminalNode VAR() { return getToken(ZeroCode2Template.VAR, 0); }
+		public VarCommandContext(CommandContext ctx) { copyFrom(ctx); }
+		@Override
+		public void enterRule(ParseTreeListener listener) {
+			if ( listener instanceof ZeroCode2TemplateListener ) ((ZeroCode2TemplateListener)listener).enterVarCommand(this);
+		}
+		@Override
+		public void exitRule(ParseTreeListener listener) {
+			if ( listener instanceof ZeroCode2TemplateListener ) ((ZeroCode2TemplateListener)listener).exitVarCommand(this);
+		}
+	}
+	@SuppressWarnings("CheckReturnValue")
 	public static class LoopCommandContext extends CommandContext {
 		public TerminalNode LOOP() { return getToken(ZeroCode2Template.LOOP, 0); }
 		public TerminalNode NEWLINE() { return getToken(ZeroCode2Template.NEWLINE, 0); }
@@ -464,7 +479,7 @@ public class ZeroCode2Template extends Parser {
 		enterRule(_localctx, 4, RULE_command);
 		int _la;
 		try {
-			setState(48);
+			setState(49);
 			_errHandler.sync(this);
 			switch (_input.LA(1)) {
 			case FILECREATE:
@@ -589,6 +604,14 @@ public class ZeroCode2Template extends Parser {
 				match(EXPR);
 				}
 				break;
+			case VAR:
+				_localctx = new VarCommandContext(_localctx);
+				enterOuterAlt(_localctx, 12);
+				{
+				setState(48);
+				match(VAR);
+				}
+				break;
 			default:
 				throw new NoViableAltException(this);
 			}
@@ -638,9 +661,9 @@ public class ZeroCode2Template extends Parser {
 			_localctx = new FileCreateCommandContext(_localctx);
 			enterOuterAlt(_localctx, 1);
 			{
-			setState(50);
-			match(FILECREATE);
 			setState(51);
+			match(FILECREATE);
+			setState(52);
 			match(NEWLINE);
 			}
 		}
@@ -689,9 +712,9 @@ public class ZeroCode2Template extends Parser {
 			_localctx = new FileOverwriteCommandContext(_localctx);
 			enterOuterAlt(_localctx, 1);
 			{
-			setState(53);
-			match(FILEOVERWRITE);
 			setState(54);
+			match(FILEOVERWRITE);
+			setState(55);
 			match(NEWLINE);
 			}
 		}
@@ -740,9 +763,9 @@ public class ZeroCode2Template extends Parser {
 			_localctx = new IncludeCommandContext(_localctx);
 			enterOuterAlt(_localctx, 1);
 			{
-			setState(56);
-			match(INCLUDE);
 			setState(57);
+			match(INCLUDE);
+			setState(58);
 			match(NEWLINE);
 			}
 		}
@@ -783,51 +806,51 @@ public class ZeroCode2Template extends Parser {
 		LogContext _localctx = new LogContext(_ctx, getState());
 		enterRule(_localctx, 12, RULE_log);
 		try {
-			setState(69);
+			setState(70);
 			_errHandler.sync(this);
 			switch (_input.LA(1)) {
 			case INFO:
 				enterOuterAlt(_localctx, 1);
 				{
-				setState(59);
-				match(INFO);
 				setState(60);
+				match(INFO);
+				setState(61);
 				match(NEWLINE);
 				}
 				break;
 			case DEBUG:
 				enterOuterAlt(_localctx, 2);
 				{
-				setState(61);
-				match(DEBUG);
 				setState(62);
+				match(DEBUG);
+				setState(63);
 				match(NEWLINE);
 				}
 				break;
 			case LOG:
 				enterOuterAlt(_localctx, 3);
 				{
-				setState(63);
-				match(LOG);
 				setState(64);
+				match(LOG);
+				setState(65);
 				match(NEWLINE);
 				}
 				break;
 			case ERROR:
 				enterOuterAlt(_localctx, 4);
 				{
-				setState(65);
-				match(ERROR);
 				setState(66);
+				match(ERROR);
+				setState(67);
 				match(NEWLINE);
 				}
 				break;
 			case TRACE:
 				enterOuterAlt(_localctx, 5);
 				{
-				setState(67);
-				match(TRACE);
 				setState(68);
+				match(TRACE);
+				setState(69);
 				match(NEWLINE);
 				}
 				break;
@@ -847,7 +870,7 @@ public class ZeroCode2Template extends Parser {
 	}
 
 	public static final String _serializedATN =
-		"\u0004\u0001\u0013H\u0002\u0000\u0007\u0000\u0002\u0001\u0007\u0001\u0002"+
+		"\u0004\u0001\u0014I\u0002\u0000\u0007\u0000\u0002\u0001\u0007\u0001\u0002"+
 		"\u0002\u0007\u0002\u0002\u0003\u0007\u0003\u0002\u0004\u0007\u0004\u0002"+
 		"\u0005\u0007\u0005\u0002\u0006\u0007\u0006\u0001\u0000\u0004\u0000\u0010"+
 		"\b\u0000\u000b\u0000\f\u0000\u0011\u0001\u0000\u0001\u0000\u0001\u0000"+
@@ -855,46 +878,47 @@ public class ZeroCode2Template extends Parser {
 		"\u0001\u0001\u0002\u0001\u0002\u0001\u0002\u0001\u0002\u0001\u0002\u0001"+
 		"\u0002\u0003\u0002#\b\u0002\u0001\u0002\u0001\u0002\u0003\u0002\'\b\u0002"+
 		"\u0001\u0002\u0001\u0002\u0001\u0002\u0001\u0002\u0003\u0002-\b\u0002"+
-		"\u0001\u0002\u0001\u0002\u0003\u00021\b\u0002\u0001\u0003\u0001\u0003"+
-		"\u0001\u0003\u0001\u0004\u0001\u0004\u0001\u0004\u0001\u0005\u0001\u0005"+
-		"\u0001\u0005\u0001\u0006\u0001\u0006\u0001\u0006\u0001\u0006\u0001\u0006"+
-		"\u0001\u0006\u0001\u0006\u0001\u0006\u0001\u0006\u0001\u0006\u0003\u0006"+
-		"F\b\u0006\u0001\u0006\u0000\u0000\u0007\u0000\u0002\u0004\u0006\b\n\f"+
-		"\u0000\u0001\u0001\u0000\u0010\u0012T\u0000\u0016\u0001\u0000\u0000\u0000"+
-		"\u0002\u001a\u0001\u0000\u0000\u0000\u00040\u0001\u0000\u0000\u0000\u0006"+
-		"2\u0001\u0000\u0000\u0000\b5\u0001\u0000\u0000\u0000\n8\u0001\u0000\u0000"+
-		"\u0000\fE\u0001\u0000\u0000\u0000\u000e\u0010\u0003\u0002\u0001\u0000"+
-		"\u000f\u000e\u0001\u0000\u0000\u0000\u0010\u0011\u0001\u0000\u0000\u0000"+
-		"\u0011\u000f\u0001\u0000\u0000\u0000\u0011\u0012\u0001\u0000\u0000\u0000"+
-		"\u0012\u0013\u0001\u0000\u0000\u0000\u0013\u0014\u0005\u0000\u0000\u0001"+
-		"\u0014\u0017\u0001\u0000\u0000\u0000\u0015\u0017\u0005\u0000\u0000\u0001"+
-		"\u0016\u000f\u0001\u0000\u0000\u0000\u0016\u0015\u0001\u0000\u0000\u0000"+
-		"\u0017\u0001\u0001\u0000\u0000\u0000\u0018\u001b\u0003\u0004\u0002\u0000"+
-		"\u0019\u001b\u0007\u0000\u0000\u0000\u001a\u0018\u0001\u0000\u0000\u0000"+
-		"\u001a\u0019\u0001\u0000\u0000\u0000\u001b\u0003\u0001\u0000\u0000\u0000"+
-		"\u001c1\u0003\u0006\u0003\u0000\u001d1\u0003\b\u0004\u0000\u001e1\u0003"+
-		"\n\u0005\u0000\u001f1\u0005\u0007\u0000\u0000 \"\u0005\u0005\u0000\u0000"+
-		"!#\u0005\u0013\u0000\u0000\"!\u0001\u0000\u0000\u0000\"#\u0001\u0000\u0000"+
-		"\u0000#1\u0001\u0000\u0000\u0000$&\u0005\u0004\u0000\u0000%\'\u0005\u0013"+
-		"\u0000\u0000&%\u0001\u0000\u0000\u0000&\'\u0001\u0000\u0000\u0000\'1\u0001"+
-		"\u0000\u0000\u0000(1\u0005\t\u0000\u0000)1\u0005\b\u0000\u0000*,\u0005"+
-		"\u0006\u0000\u0000+-\u0005\u0013\u0000\u0000,+\u0001\u0000\u0000\u0000"+
-		",-\u0001\u0000\u0000\u0000-1\u0001\u0000\u0000\u0000.1\u0003\f\u0006\u0000"+
-		"/1\u0005\n\u0000\u00000\u001c\u0001\u0000\u0000\u00000\u001d\u0001\u0000"+
-		"\u0000\u00000\u001e\u0001\u0000\u0000\u00000\u001f\u0001\u0000\u0000\u0000"+
-		"0 \u0001\u0000\u0000\u00000$\u0001\u0000\u0000\u00000(\u0001\u0000\u0000"+
-		"\u00000)\u0001\u0000\u0000\u00000*\u0001\u0000\u0000\u00000.\u0001\u0000"+
-		"\u0000\u00000/\u0001\u0000\u0000\u00001\u0005\u0001\u0000\u0000\u0000"+
-		"23\u0005\u0002\u0000\u000034\u0005\u0013\u0000\u00004\u0007\u0001\u0000"+
-		"\u0000\u000056\u0005\u0001\u0000\u000067\u0005\u0013\u0000\u00007\t\u0001"+
-		"\u0000\u0000\u000089\u0005\u0003\u0000\u00009:\u0005\u0013\u0000\u0000"+
-		":\u000b\u0001\u0000\u0000\u0000;<\u0005\u000b\u0000\u0000<F\u0005\u0013"+
-		"\u0000\u0000=>\u0005\f\u0000\u0000>F\u0005\u0013\u0000\u0000?@\u0005\u000e"+
-		"\u0000\u0000@F\u0005\u0013\u0000\u0000AB\u0005\r\u0000\u0000BF\u0005\u0013"+
-		"\u0000\u0000CD\u0005\u000f\u0000\u0000DF\u0005\u0013\u0000\u0000E;\u0001"+
-		"\u0000\u0000\u0000E=\u0001\u0000\u0000\u0000E?\u0001\u0000\u0000\u0000"+
-		"EA\u0001\u0000\u0000\u0000EC\u0001\u0000\u0000\u0000F\r\u0001\u0000\u0000"+
-		"\u0000\b\u0011\u0016\u001a\"&,0E";
+		"\u0001\u0002\u0001\u0002\u0001\u0002\u0003\u00022\b\u0002\u0001\u0003"+
+		"\u0001\u0003\u0001\u0003\u0001\u0004\u0001\u0004\u0001\u0004\u0001\u0005"+
+		"\u0001\u0005\u0001\u0005\u0001\u0006\u0001\u0006\u0001\u0006\u0001\u0006"+
+		"\u0001\u0006\u0001\u0006\u0001\u0006\u0001\u0006\u0001\u0006\u0001\u0006"+
+		"\u0003\u0006G\b\u0006\u0001\u0006\u0000\u0000\u0007\u0000\u0002\u0004"+
+		"\u0006\b\n\f\u0000\u0001\u0001\u0000\u0011\u0013V\u0000\u0016\u0001\u0000"+
+		"\u0000\u0000\u0002\u001a\u0001\u0000\u0000\u0000\u00041\u0001\u0000\u0000"+
+		"\u0000\u00063\u0001\u0000\u0000\u0000\b6\u0001\u0000\u0000\u0000\n9\u0001"+
+		"\u0000\u0000\u0000\fF\u0001\u0000\u0000\u0000\u000e\u0010\u0003\u0002"+
+		"\u0001\u0000\u000f\u000e\u0001\u0000\u0000\u0000\u0010\u0011\u0001\u0000"+
+		"\u0000\u0000\u0011\u000f\u0001\u0000\u0000\u0000\u0011\u0012\u0001\u0000"+
+		"\u0000\u0000\u0012\u0013\u0001\u0000\u0000\u0000\u0013\u0014\u0005\u0000"+
+		"\u0000\u0001\u0014\u0017\u0001\u0000\u0000\u0000\u0015\u0017\u0005\u0000"+
+		"\u0000\u0001\u0016\u000f\u0001\u0000\u0000\u0000\u0016\u0015\u0001\u0000"+
+		"\u0000\u0000\u0017\u0001\u0001\u0000\u0000\u0000\u0018\u001b\u0003\u0004"+
+		"\u0002\u0000\u0019\u001b\u0007\u0000\u0000\u0000\u001a\u0018\u0001\u0000"+
+		"\u0000\u0000\u001a\u0019\u0001\u0000\u0000\u0000\u001b\u0003\u0001\u0000"+
+		"\u0000\u0000\u001c2\u0003\u0006\u0003\u0000\u001d2\u0003\b\u0004\u0000"+
+		"\u001e2\u0003\n\u0005\u0000\u001f2\u0005\u0007\u0000\u0000 \"\u0005\u0005"+
+		"\u0000\u0000!#\u0005\u0014\u0000\u0000\"!\u0001\u0000\u0000\u0000\"#\u0001"+
+		"\u0000\u0000\u0000#2\u0001\u0000\u0000\u0000$&\u0005\u0004\u0000\u0000"+
+		"%\'\u0005\u0014\u0000\u0000&%\u0001\u0000\u0000\u0000&\'\u0001\u0000\u0000"+
+		"\u0000\'2\u0001\u0000\u0000\u0000(2\u0005\t\u0000\u0000)2\u0005\b\u0000"+
+		"\u0000*,\u0005\u0006\u0000\u0000+-\u0005\u0014\u0000\u0000,+\u0001\u0000"+
+		"\u0000\u0000,-\u0001\u0000\u0000\u0000-2\u0001\u0000\u0000\u0000.2\u0003"+
+		"\f\u0006\u0000/2\u0005\n\u0000\u000002\u0005\u000b\u0000\u00001\u001c"+
+		"\u0001\u0000\u0000\u00001\u001d\u0001\u0000\u0000\u00001\u001e\u0001\u0000"+
+		"\u0000\u00001\u001f\u0001\u0000\u0000\u00001 \u0001\u0000\u0000\u0000"+
+		"1$\u0001\u0000\u0000\u00001(\u0001\u0000\u0000\u00001)\u0001\u0000\u0000"+
+		"\u00001*\u0001\u0000\u0000\u00001.\u0001\u0000\u0000\u00001/\u0001\u0000"+
+		"\u0000\u000010\u0001\u0000\u0000\u00002\u0005\u0001\u0000\u0000\u0000"+
+		"34\u0005\u0002\u0000\u000045\u0005\u0014\u0000\u00005\u0007\u0001\u0000"+
+		"\u0000\u000067\u0005\u0001\u0000\u000078\u0005\u0014\u0000\u00008\t\u0001"+
+		"\u0000\u0000\u00009:\u0005\u0003\u0000\u0000:;\u0005\u0014\u0000\u0000"+
+		";\u000b\u0001\u0000\u0000\u0000<=\u0005\f\u0000\u0000=G\u0005\u0014\u0000"+
+		"\u0000>?\u0005\r\u0000\u0000?G\u0005\u0014\u0000\u0000@A\u0005\u000f\u0000"+
+		"\u0000AG\u0005\u0014\u0000\u0000BC\u0005\u000e\u0000\u0000CG\u0005\u0014"+
+		"\u0000\u0000DE\u0005\u0010\u0000\u0000EG\u0005\u0014\u0000\u0000F<\u0001"+
+		"\u0000\u0000\u0000F>\u0001\u0000\u0000\u0000F@\u0001\u0000\u0000\u0000"+
+		"FB\u0001\u0000\u0000\u0000FD\u0001\u0000\u0000\u0000G\r\u0001\u0000\u0000"+
+		"\u0000\b\u0011\u0016\u001a\"&,1F";
 	public static final ATN _ATN =
 		new ATNDeserializer().deserialize(_serializedATN.toCharArray());
 	static {

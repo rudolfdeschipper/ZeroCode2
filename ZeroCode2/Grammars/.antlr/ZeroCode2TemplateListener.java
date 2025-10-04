@@ -173,6 +173,18 @@ public interface ZeroCode2TemplateListener extends ParseTreeListener {
 	 */
 	void exitExprCommand(ZeroCode2Template.ExprCommandContext ctx);
 	/**
+	 * Enter a parse tree produced by the {@code VarCommand}
+	 * labeled alternative in {@link ZeroCode2Template#command}.
+	 * @param ctx the parse tree
+	 */
+	void enterVarCommand(ZeroCode2Template.VarCommandContext ctx);
+	/**
+	 * Exit a parse tree produced by the {@code VarCommand}
+	 * labeled alternative in {@link ZeroCode2Template#command}.
+	 * @param ctx the parse tree
+	 */
+	void exitVarCommand(ZeroCode2Template.VarCommandContext ctx);
+	/**
 	 * Enter a parse tree produced by the {@code FileCreateCommand}
 	 * labeled alternative in {@link ZeroCode2Template#filec}.
 	 * @param ctx the parse tree

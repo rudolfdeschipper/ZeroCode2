@@ -71,6 +71,18 @@ public class =<$>
 		// =<[$]>
 	%/Loop:Values
 	%EndIf
+	%Loop:Values?
+		%Log:Optional loop Value = =<$> =<[$]>
+		// =<[$]>
+	%/Loop:Values
+	%/Loop:Properties
+	%Loop:Properties|Nullable?=true
+		%Log:Filtered on nullable Property = =<$>
+		// =<$>
+	%/Loop:Properties
+	%Loop:Properties|!Nullable?=true
+		%Log:Filtered on non-nullable Property = =<$>
+		// =<$>
 	%/Loop:Properties
 }
 %/File

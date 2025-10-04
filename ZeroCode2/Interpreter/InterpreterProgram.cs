@@ -9,7 +9,7 @@ namespace ZeroCode2.Interpreter
         // Logging
         private static readonly NLog.Logger logger = NLog.LogManager.GetCurrentClassLogger();
 
-        private readonly Stack<InterpreterInstructionBranch> loopStack = new Stack<InterpreterInstructionBranch>();
+        private readonly Stack<(InterpreterInstructionBranch, bool)> loopStack = new Stack<(InterpreterInstructionBranch, bool)>();
         private readonly Stack<InterpreterInstructionBase> ifElseStack = new Stack<InterpreterInstructionBase>();
         private InterpreterInstructionBranch LastFileCreateInstruction = null;
 
@@ -78,13 +78,27 @@ namespace ZeroCode2.Interpreter
 
         public void AddLoop(int line, int pos, string value)
         {
+            var filter = string.Empty;
+            if (value.Contains('|'))
+            {
+                // there is a filter - remove it from the value and store it separately
+                filter = value.Split('|')[1].Trim();
+                value = value.Split('|')[0].Trim();
+            }
             var instruction1 = new Interpreter.InterpreterInstructionNoOp(line, pos, value, new Interpreter.Evaluator.EnterLoopEvaluator());
             var instruction2 = new Interpreter.InterpreterInstructionBranch(line, pos, value, new Interpreter.Evaluator.LoopEvaluator());
 
             AddInstruction(instruction1);
             AddInstruction(instruction2);
 
-            loopStack.Push(instruction2);
+            loopStack.Push((instruction2, !string.IsNullOrEmpty(filter)));
+
+            if (!string.IsNullOrEmpty(filter))
+            {
+                // add an if
+                AddIf(line, pos, filter);
+                // TODO: handle the endif - need to remember to add it in the EndLoop
+            }
 
             DebugInstruction("Loop", instruction2);
         }
@@ -108,16 +122,21 @@ namespace ZeroCode2.Interpreter
             var instruction1 = new Interpreter.InterpreterInstructionNoOp(line, pos, value, new Interpreter.Evaluator.NoOpEvaluator());
             var instruction2 = new Interpreter.InterpreterInstructionNoOp(line, pos, value, new Interpreter.Evaluator.ExitLoopEvaluator());
 
-            var closestLoop = loopStack.Count > 0 ? loopStack.Pop() : null;
+            var closestLoop = loopStack.Count > 0 ? loopStack.Pop() : (null, false);
 
-            if (closestLoop != null)
+            if (closestLoop.Item1 != null)
             {
+                if (closestLoop.Item2 == true)
+                {
+                    // need to add an endif for the if that was added for the filter
+                    AddEndif(line, pos, "%EndIf");
+                }
                 AddInstruction(instruction1);
                 AddInstruction(instruction2);
 
-                instruction1.Next = closestLoop;
-                closestLoop.Alternative = instruction2;
-                closestLoop.EndBranch = instruction2;
+                instruction1.Next = closestLoop.Item1;
+                closestLoop.Item1.Alternative = instruction2;
+                closestLoop.Item1.EndBranch = instruction2;
 
                 DebugInstruction("EndLoop", instruction1);
             }
@@ -234,7 +253,7 @@ namespace ZeroCode2.Interpreter
 
             foreach (var item in loopStack)
             {
-                errors.Add(string.Format("Loop {0} starting at line {1} is not terminated by a %/Loop statement.", item.Instruction, item.Line));
+                errors.Add(string.Format("Loop {0} starting at line {1} is not terminated by a %/Loop statement.", item.Item1.Instruction, item.Item1.Line));
             }
             foreach (var item in ifElseStack)
             {

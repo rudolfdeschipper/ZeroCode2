@@ -218,7 +218,7 @@ DefaultObject : {
 	Description <- DataDictionary.DescriptionField : {},
 	Startdate <- DataDictionary.DateField :  { Name : "Startdate", Title : "Startdate" }, 
 	Enddate <- DataDictionary.DateField : { Name : "Enddate", Title : "Enddate" }
-	/ ID, Code, Startdate, Enddate, Description, xx
+	// ID, Code, Startdate, Enddate, Description, xx
 }
 
 @ViewModel

@@ -2,7 +2,7 @@
 {
     public class IteratorManager
     {
-        private Models.Iterator Iterator { get; set; }
+        private Models.IIterator Iterator { get; set; }
 
         private string _path;
         private string _loopid;
@@ -29,7 +29,7 @@
         public Models.IModelObject Root { get; set; }
         public Models.IModelObject CurrentModel { get; private set; }
 
-        public IteratorManager(Models.Iterator _iterator)
+        public IteratorManager(Models.IIterator _iterator)
         {
             Iterator = _iterator;
         }

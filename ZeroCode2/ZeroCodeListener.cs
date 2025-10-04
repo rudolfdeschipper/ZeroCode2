@@ -275,13 +275,26 @@ namespace ZeroCode2
             ValueProps.Put(context, newObj);
         }
 
+        private string RemoveLineEnd(string inString)
+        {
+            string outString;
+
+            outString = inString.Replace(" ", "");
+            outString = outString.Replace("\n", "");
+            outString = outString.Replace("\r", "");
+            return outString;
+        }
         public override void ExitIncludeStatement([NotNull] IncludeStatementContext context)
         {
             base.ExitIncludeStatement(context);
 
             var mp = new ModelParser();
 
-            mp.ParseInputFile(context.GetText().Substring(1));
+            string fName = RemoveLineEnd(context.GetText().Replace('&',' '));
+
+            logger.Debug("Include '{fn}'", fName);
+            
+            mp.ParseInputFile(fName, true);
 
             foreach (var item in mp.ModelCollector.ParameterModels)
             {

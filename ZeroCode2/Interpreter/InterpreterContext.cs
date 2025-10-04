@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
+using ZeroCode2.Models;
 
 namespace ZeroCode2.Interpreter
 {
@@ -63,6 +64,11 @@ namespace ZeroCode2.Interpreter
 
         public IteratorManager EvaluateLoop(string expression)
         {
+            if(expression.EndsWith("?"))
+            {
+                expression = expression.Substring(0, expression.Length - 1);
+            }
+
             var iterator = LoopStack.FirstOrDefault(l => l.Path == expression);
 
             if (iterator == null)
@@ -91,21 +97,47 @@ namespace ZeroCode2.Interpreter
 
         public void EnterLoop(string expression)
         {
-            var iterator = new IteratorManager(new Models.Iterator());
+            IIterator iter;
+            bool checkExists = false;
+            if (expression.EndsWith("?"))
+            {
+                expression = expression.Substring(0, expression.Length - 1);
+                if (!PropertyExists(expression))
+                {
+                    NonIterableIterator niiterator = new NonIterableIterator
+                    {
+                        HasMore = false // special case, do not iterate
+                    };
+                    iter = niiterator;
+                    checkExists = true;
+                }
+                else
+                {
+                    iter = new Models.Iterator();
+                    checkExists = false; // we know it exists, so we can iterate
+                }
+            }
+            else
+            {
+                iter = new Models.Iterator();
+            }
+            var iterator = new IteratorManager(iter);
 
             logger.Trace("Enter loop: " + expression);
 
             iterator.Path = expression;
-
-            var locator = new Models.PropertyLocator(expression, Model, LoopStack);
-
-            if (locator.Locate() == false)
+            if (!checkExists)
             {
-                throw new ApplicationException(string.Format("Could not understand this loop expression {0}", expression));
+                var locator = new Models.PropertyLocator(expression, Model, LoopStack);
+
+                if (locator.Locate() == false)
+                {
+                    throw new ApplicationException(string.Format("Could not understand this loop expression {0}", expression));
+                }
+
+                iterator.Root = locator.LocatedProperty();
+
             }
-
-            iterator.Root = locator.LocatedProperty();
-
             LoopStack.Push(iterator);
         }
 

@@ -184,6 +184,18 @@ public class ZeroCode2TemplateBaseListener implements ZeroCode2TemplateListener 
 	 *
 	 * <p>The default implementation does nothing.</p>
 	 */
+	@Override public void enterVarCommand(ZeroCode2Template.VarCommandContext ctx) { }
+	/**
+	 * {@inheritDoc}
+	 *
+	 * <p>The default implementation does nothing.</p>
+	 */
+	@Override public void exitVarCommand(ZeroCode2Template.VarCommandContext ctx) { }
+	/**
+	 * {@inheritDoc}
+	 *
+	 * <p>The default implementation does nothing.</p>
+	 */
 	@Override public void enterFileCreateCommand(ZeroCode2Template.FileCreateCommandContext ctx) { }
 	/**
 	 * {@inheritDoc}

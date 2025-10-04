@@ -118,6 +118,7 @@
     <Compile Include="Models\Graph\InheritanceGraphBuilder.cs" />
     <Compile Include="Models\Graph\ObjectPathStack.cs" />
     <Compile Include="Models\Graph\GraphPropertyResolver.cs" />
+    <Compile Include="Models\IIterator.cs" />
     <Compile Include="Models\IModelObject.cs" />
     <Compile Include="Models\Iterator.cs" />
     <Compile Include="Models\ModelBoolObject.cs" />

@@ -17,7 +17,7 @@ INCLUDE: '%Include:' ~(' '|'\r'|'\n')+ -> pushMode(LINE)
 ENDFILE: '%/File' -> pushMode(LINE)
          ;
 
-LOOP: '%Loop:' (('#'|'@')? ((ID | REFSTART PATHPART REFEND) DOT)* ((ID | REFSTART PATHPART REFEND) | '$')) (' ' | ('\r'? '\n'))
+LOOP: '%Loop:' (('#'|'@')? ((ID | REFSTART PATHPART REFEND) DOT)* ((ID | REFSTART PATHPART REFEND) | '$')) QUEST? ('|' (EXCL? ('#'|'@')? (ID DOT)* (ID | '$') ((QUEST? EXCL? EQU (ID | NUM)) | QUEST)?))? (' ' | ('\r'? '\n'))
     ;
 
 ENDLOOP: 

@@ -4,13 +4,13 @@
     /// This class allows to iterate through the various collections. HasMore indicates if more items are present.
     /// If not, the Iterate method returns null. It also returns null if the iterations fails for another reason.
     /// </summary>
-    public class Iterator
+    public class Iterator : IIterator
     {
         private int currentItem = -1;
 
-        public bool HasMore { get; private set; }
+        public bool HasMore { get; internal set; }
 
-        public IModelObject Iterate(IModelObject mp)
+        public virtual IModelObject Iterate(IModelObject mp)
         {
             var obj = mp.AsComposite();
 
@@ -39,5 +39,17 @@
 
         public int Index => currentItem;
 
+    }
+
+    public class NonIterableIterator : Iterator
+    {
+        public NonIterableIterator()
+        {
+            HasMore = false;
+        }
+        public override IModelObject Iterate(IModelObject mp)
+        {
+            return null;
+        }
     }
 }

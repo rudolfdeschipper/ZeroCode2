@@ -13,18 +13,18 @@ namespace ZeroCode2
         public List<string> Errors { get; set; } = new List<string>();
         public bool HasErrors { get; set; }
 
-        public void ParseInputFile(string inFile)
+        public void ParseInputFile(string inFile, bool isInclude = false)
         {
             var fIn = System.IO.File.OpenText(inFile);
 
-            ParseInputFile(fIn);
+            ParseInputFile(fIn, isInclude);
 
             fIn.Close();
         }
 
 
 
-        public void ParseInputFile(System.IO.StreamReader fIn)
+        public void ParseInputFile(System.IO.StreamReader fIn, bool isInclude = false)
         {
             var input = new Antlr4.Runtime.AntlrInputStream(fIn);
             var lexer = new Grammars.ZeroCode2Lexer(input);
@@ -42,19 +42,22 @@ namespace ZeroCode2
 
             GraphElements = Listener.GraphElements;
 
-            if (ResolveInheritance() == false)
+            if (!isInclude)
             {
-                logger.Error("Not all Inheritances were resolved");
-                HasErrors = true;
-            }
+                if (ResolveInheritance() == false)
+                {
+                    logger.Error("Not all Inheritances were resolved");
+                    HasErrors = true;
+                }
 
-            if (parser.NumberOfSyntaxErrors > 0)
-            {
-                HasErrors = true;
-                logger.Error("Errors exist in the input file");
+                if (parser.NumberOfSyntaxErrors > 0)
+                {
+                    HasErrors = true;
+                    logger.Error("Errors exist in the input file");
+                }
+                // dump all errors:
+                Errors.ForEach(e => logger.Error(e));
             }
-            // dump all errors:
-            Errors.ForEach(e => logger.Error(e));
         }
 
         private bool ResolveInheritance()
