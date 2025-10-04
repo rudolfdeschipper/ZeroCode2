@@ -12,14 +12,14 @@ namespace ZeroCode2
 
         public void ExecuteProgram(ModelParser modelParser, TemplateParser templateParser, Interpreter.Emitter.IEmitter emitter)
         {
-            var instructions = templateParser.Program.Instructions;
-            var context = new Interpreter.InterpreterContext
+            List<Interpreter.InterpreterInstructionBase> instructions = templateParser.Program.Instructions;
+            Interpreter.InterpreterContext context = new Interpreter.InterpreterContext
             {
                 Model = modelParser.ModelCollector,
                 Emitter = emitter
             };
 
-            var PC = instructions[0];
+            Interpreter.InterpreterInstructionBase PC = instructions[0];
             Interpreter.InterpreterInstructionBase next = null;
 
             while (PC != null)

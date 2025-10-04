@@ -18,7 +18,7 @@ namespace ZeroCode2UnitTests
         public static void Setup(TestContext context)
         {
             NLog.LogManager.GlobalThreshold = LogLevel.Warn;
-            var parser = new ModelParser();
+            ModelParser parser = new ModelParser();
 
             parser.ParseInputFile("ZeroCodeTestInput.txt");
 
@@ -32,7 +32,7 @@ namespace ZeroCode2UnitTests
         [TestMethod]
         public void TestGraphwalker()
         {
-            var resolver = new ZeroCode2.Models.Graph.InheritanceGraphBuilder
+            InheritanceGraphBuilder resolver = new ZeroCode2.Models.Graph.InheritanceGraphBuilder
             {
                 Elements = GraphElements
             };

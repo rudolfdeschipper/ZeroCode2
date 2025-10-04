@@ -4,11 +4,11 @@
     {
         public EvaluatorResult Evaluate(IInterpreterContext context, string expression)
         {
-            var variable = expression.Split('=');
+            string[] variable = expression.Split('=');
             if (variable.Length == 2)
             {
-                var name = variable[0];
-                var value = variable[1];
+                string name = variable[0];
+                string value = variable[1];
 
                 if (context.Model.Variables.ContainsKey(name))
                 {

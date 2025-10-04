@@ -84,9 +84,9 @@ namespace ZeroCode2UnitTests
             ZeroCode2.Interpreter.Evaluator.FilepathResolver filepathResolver = new ZeroCode2.Interpreter.Evaluator.FilepathResolver();
 
             const string Expression = "c:\\documents\\test\\file.cs";
-            var res = filepathResolver.ResolvePath(new UTInterpreterContext(), Expression);
-            var list = filepathResolver.list;
-            Assert.IsTrue(list.Count == 1);
+            string res = filepathResolver.ResolvePath(new UTInterpreterContext(), Expression);
+            System.Collections.Generic.List<string> list = filepathResolver.list;
+            Assert.AreEqual(1, list.Count);
             Assert.AreEqual(list[0], Expression);
             Assert.AreEqual(res, "c:\\documents\\test\\file.cs");
         }
@@ -97,9 +97,9 @@ namespace ZeroCode2UnitTests
             ZeroCode2.Interpreter.Evaluator.FilepathResolver filepathResolver = new ZeroCode2.Interpreter.Evaluator.FilepathResolver();
 
             const string Expression = "c:\\documents\\=<test>\\file.cs";
-            var res = filepathResolver.ResolvePath(new UTInterpreterContext(), Expression);
-            var list = filepathResolver.list;
-            Assert.IsTrue(list.Count == 3);
+            string res = filepathResolver.ResolvePath(new UTInterpreterContext(), Expression);
+            System.Collections.Generic.List<string> list = filepathResolver.list;
+            Assert.AreEqual(3, list.Count);
             Assert.AreNotEqual(list[0], Expression);
             Assert.AreEqual(list[1], "test");
             Assert.AreEqual(res, "c:\\documents\\test\\file.cs");
@@ -111,9 +111,9 @@ namespace ZeroCode2UnitTests
             ZeroCode2.Interpreter.Evaluator.FilepathResolver filepathResolver = new ZeroCode2.Interpreter.Evaluator.FilepathResolver();
 
             const string Expression = "c:\\documents\\=<test>\\=<file>.cs";
-            var res = filepathResolver.ResolvePath(new UTInterpreterContext(), Expression);
-            var list = filepathResolver.list;
-            Assert.IsTrue(list.Count == 5);
+            string res = filepathResolver.ResolvePath(new UTInterpreterContext(), Expression);
+            System.Collections.Generic.List<string> list = filepathResolver.list;
+            Assert.AreEqual(5, list.Count);
             Assert.AreNotEqual(list[0], Expression);
             Assert.AreEqual(list[1], "test");
             Assert.AreEqual(list[3], "file");
@@ -127,9 +127,9 @@ namespace ZeroCode2UnitTests
             ZeroCode2.Interpreter.Evaluator.FilepathResolver filepathResolver = new ZeroCode2.Interpreter.Evaluator.FilepathResolver();
 
             const string Expression = "=<test>";
-            var res = filepathResolver.ResolvePath(new UTInterpreterContext(), Expression);
-            var list = filepathResolver.list;
-            Assert.IsTrue(list.Count == 1);
+            string res = filepathResolver.ResolvePath(new UTInterpreterContext(), Expression);
+            System.Collections.Generic.List<string> list = filepathResolver.list;
+            Assert.AreEqual(1, list.Count);
             Assert.AreNotEqual(list[0], Expression);
             Assert.AreEqual(list[0], "test");
             Assert.AreEqual(res, "test");
@@ -140,9 +140,9 @@ namespace ZeroCode2UnitTests
             ZeroCode2.Interpreter.Evaluator.FilepathResolver filepathResolver = new ZeroCode2.Interpreter.Evaluator.FilepathResolver();
 
             const string Expression = "";
-            var res = filepathResolver.ResolvePath(new UTInterpreterContext(), Expression);
-            var list = filepathResolver.list;
-            Assert.IsTrue(list.Count == 0);
+            string res = filepathResolver.ResolvePath(new UTInterpreterContext(), Expression);
+            System.Collections.Generic.List<string> list = filepathResolver.list;
+            Assert.IsEmpty(list);
             Assert.AreEqual(res, "");
         }
 
@@ -163,7 +163,7 @@ namespace ZeroCode2UnitTests
 
             fe.EnsurePathExists("");
 
-            Assert.AreEqual(4, fp.CreatedDirectories.Count);
+            Assert.HasCount(4, fp.CreatedDirectories);
             Assert.AreEqual(fe.OutputPath, fp.CreatedDirectories.Peek());
         }
 
@@ -184,8 +184,8 @@ namespace ZeroCode2UnitTests
 
             fe.EnsurePathExists("");
 
-            Assert.AreEqual(4, fp.CreatedDirectories.Count);
-            Assert.IsTrue(fp.CreatedDirectories.Peek().EndsWith(@"b\"));
+            Assert.HasCount(4, fp.CreatedDirectories);
+            Assert.EndsWith(@"b\", fp.CreatedDirectories.Peek());
         }
 
         [TestMethod]
@@ -207,8 +207,8 @@ namespace ZeroCode2UnitTests
             fe.Emit("output");
             fe.Close();
 
-            Assert.AreEqual(4, fp.CreatedDirectories.Count);
-            Assert.IsTrue(fp.CreatedDirectories.Peek().EndsWith(@"b\"));
+            Assert.HasCount(4, fp.CreatedDirectories);
+            Assert.EndsWith(@"b\", fp.CreatedDirectories.Peek());
             Assert.AreEqual(@"C:\temp\a\b\output.txt", fp.Uri);
             Assert.AreEqual(@"output", fp.Contents);
         }
@@ -232,8 +232,8 @@ namespace ZeroCode2UnitTests
             fe.Emit("output");
             fe.Close();
 
-            Assert.AreEqual(6, fp.CreatedDirectories.Count);
-            Assert.IsTrue(fp.CreatedDirectories.Peek().EndsWith(@"component\"));
+            Assert.HasCount(6, fp.CreatedDirectories);
+            Assert.EndsWith(@"component\", fp.CreatedDirectories.Peek());
             Assert.AreEqual(@"C:\temp\a\b\generated\component\output.txt", fp.Uri);
             Assert.AreEqual(@"output", fp.Contents);
         }

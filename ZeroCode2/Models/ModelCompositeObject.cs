@@ -8,7 +8,7 @@ namespace ZeroCode2.Models
         public List<string> OrderBy { get; set; } = new List<string>();
         public override IModelObject Duplicate()
         {
-            var obj = new ModelCompositeObject()
+            ModelCompositeObject obj = new ModelCompositeObject()
             {
                 Inherits = Inherits,
                 InheritsFrom = InheritsFrom,
@@ -27,7 +27,7 @@ namespace ZeroCode2.Models
 
         public override string GetText()
         {
-            var r = Value.Select(m => m.Name + " = " + m.GetText());
+            IEnumerable<string> r = Value.Select(m => m.Name + " = " + m.GetText());
             string s = "{ ";
 
             string obs = "/ ";

@@ -36,7 +36,7 @@ namespace ZeroCode2.Interpreter.Emitter
 
             string currentPath = "";
 
-            foreach (var item in pathParts.Where(s => s.Length > 0))
+            foreach (string item in pathParts.Where(s => s.Length > 0))
             {
                 currentPath += item + Path.DirectorySeparatorChar.ToString();
                 if (!FilePath.DirectoryExists(currentPath))

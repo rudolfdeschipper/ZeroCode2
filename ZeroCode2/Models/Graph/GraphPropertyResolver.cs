@@ -22,7 +22,7 @@ namespace ZeroCode2.Models.Graph
 
         public void PopulateProperties(GraphElement element)
         {
-            var pair = element.Object;
+            IModelObject pair = element.Object;
             if (element.State != GraphElementSate.Processed)
             {
                 logger.Trace("Populate Properties for {0} - element not processed yet", pair.Name);
@@ -44,10 +44,10 @@ namespace ZeroCode2.Models.Graph
 
             // resolve properties first:
             logger.Trace("Populate Properties for properties of {0}", pair.Name);
-            foreach (var item in pair.AsComposite().Value)
+            foreach (IModelObject item in pair.AsComposite().Value)
             {
                 logger.Trace("Populate Properties for {0}", item.Name);
-                var childElement = Elements[item.Path];
+                GraphElement childElement = Elements[item.Path];
                 PopulateProperties(childElement);
             }
 
@@ -84,7 +84,7 @@ namespace ZeroCode2.Models.Graph
 
                 logger.Trace("Populate Properties for {0} - adding {1} inherited properties", pair.Name, pair.ParentObject.AsComposite().Value.Count(mp => mp.Modifier != "-"));
 
-                var inheritedProperties = pair.ParentObject.AsComposite().Value.Where(mp => mp.Modifier != "-").Select(p => p.Duplicate()).ToList();
+                List<IModelObject> inheritedProperties = pair.ParentObject.AsComposite().Value.Where(mp => mp.Modifier != "-").Select(p => p.Duplicate()).ToList();
 
                 // and we add any changed properties back in too:
                 MergePairWithInheritedPropsIntoNewProps(pair, inheritedProperties, newProps);
@@ -108,10 +108,10 @@ namespace ZeroCode2.Models.Graph
 
             resultingList = resultingList.Distinct().ToList();
 
-            foreach (var item in resultingList)
+            foreach (string item in resultingList)
             {
-                var itemFromInheritedList = inheritedProps.Find(p => p.Name == item);
-                var itemFromPair = pair.AsComposite().Value.Find(p => p.Name == item);
+                IModelObject itemFromInheritedList = inheritedProps.Find(p => p.Name == item);
+                IModelObject itemFromPair = pair.AsComposite().Value.Find(p => p.Name == item);
 
                 logger.Trace("Merge Properties for {0} - merging {1}", pair.Name, item);
 
@@ -235,24 +235,24 @@ namespace ZeroCode2.Models.Graph
         private void PopulatePropertiesOfParentChildren(string Name, IModelObject ParentObject)
         {
             logger.Trace("Populate Properties for Parent of {0} - {1}", Name, ParentObject.Name);
-            var parentElement = Elements[ParentObject.Path];
+            GraphElement parentElement = Elements[ParentObject.Path];
             PopulateProperties(parentElement);
         }
 
         private void ResolveAddedProps(List<IModelObject> addedProps)
         {
             // we need to resolve these too, so we do that here:
-            foreach (var item in addedProps)
+            foreach (IModelObject item in addedProps)
             {
                 logger.Trace("Populate Properties for added property {0}", item.Name);
-                var childElement = Elements[item.Path];
+                GraphElement childElement = Elements[item.Path];
                 PopulateProperties(childElement);
             }
         }
 
         private void AddInheritedPropertiesToElements(string basePath, IEnumerable<IModelObject> inheritedProperties)
         {
-            foreach (var item in inheritedProperties)
+            foreach (IModelObject item in inheritedProperties)
             {
                 // fixup the new Path
                 item.Path = basePath + "." + item.Name;
@@ -287,11 +287,11 @@ namespace ZeroCode2.Models.Graph
             }
             // we have some ordering:
             logger.Trace("Ordering statement on object {0}: {1}", pair.Name, pair.OrderBy.Count());
-            var orderedProps = new List<IModelObject>();
-            foreach (var item in pair.OrderBy)
+            List<IModelObject> orderedProps = new List<IModelObject>();
+            foreach (string item in pair.OrderBy)
             {
                 logger.Trace("Ordering by {0}", item);
-                var toOrder = Props.FirstOrDefault(o => o.Name == item);
+                IModelObject toOrder = Props.FirstOrDefault(o => o.Name == item);
                 if (toOrder != null)
                 {
                     logger.Trace("Ordering {0} found, enter in property list", item);

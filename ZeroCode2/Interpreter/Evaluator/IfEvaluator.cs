@@ -56,7 +56,7 @@ namespace ZeroCode2.Interpreter.Evaluator
             {
                 if (checkForExistence)
                 {
-                    var res = context.PropertyExists(leftSide);
+                    bool res = context.PropertyExists(leftSide);
 
                     // just check existence, nothing else, or it does not exist
                     if (res == false || NoRightSide)
@@ -75,7 +75,7 @@ namespace ZeroCode2.Interpreter.Evaluator
                 }
                 else
                 {
-                    var evalRes = evaluator.Evaluate(context, leftSide);
+                    EvaluatorResult evalRes = evaluator.Evaluate(context, leftSide);
                     if (evalRes.Result == EvaluationResultValues.True)
                     {
                         LeftValue = evalRes.Value;

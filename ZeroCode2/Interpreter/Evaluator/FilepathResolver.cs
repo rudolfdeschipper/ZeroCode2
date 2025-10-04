@@ -28,7 +28,7 @@ namespace ZeroCode2.Interpreter.Evaluator
                     // expression itself
                     xprIndex += 2;
                     // evaluate expression
-                    var result = context.EvaluateProperty(walk.Substring(xprIndex, xprEnd - xprIndex));
+                    string result = context.EvaluateProperty(walk.Substring(xprIndex, xprEnd - xprIndex));
 
                     list.Add(result);
                     start += xprEnd + 1;

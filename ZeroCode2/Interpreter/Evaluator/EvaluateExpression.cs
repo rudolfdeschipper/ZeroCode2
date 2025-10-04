@@ -14,13 +14,13 @@
         /// <returns></returns>
         private string EvaluateReferences(IInterpreterContext context, string subExpr)
         {
-            var start = subExpr.IndexOf('[');
-            var end = subExpr.IndexOf(']');
+            int start = subExpr.IndexOf('[');
+            int end = subExpr.IndexOf(']');
 
             if (subExpr.Substring(start + 1, end - start - 1).Contains("["))
             {
                 // we have nested references, resolve this first
-                var refres = EvaluateReferences(context, subExpr.Substring(start + 1));
+                string refres = EvaluateReferences(context, subExpr.Substring(start + 1));
 
                 // add the evaluate sub-expression to the current prefix
                 subExpr = subExpr.Substring(0, start + 1) + refres;
@@ -28,7 +28,7 @@
                 end = subExpr.IndexOf(']');
             }
             // evaluate the sub-expression
-            var result = Evaluate(context, subExpr.Substring(start + 1, end - start - 1));
+            EvaluatorResult result = Evaluate(context, subExpr.Substring(start + 1, end - start - 1));
             // insert the result in the current sub-expression
             subExpr = subExpr.Substring(0, start) + result.Value + subExpr.Substring(end + 1);
 

@@ -15,7 +15,7 @@ namespace ZeroCode2
 
         public void ParseInputFile(string inFile, bool isInclude = false)
         {
-            var fIn = System.IO.File.OpenText(inFile);
+            System.IO.StreamReader fIn = System.IO.File.OpenText(inFile);
 
             ParseInputFile(fIn, isInclude);
 
@@ -26,15 +26,15 @@ namespace ZeroCode2
 
         public void ParseInputFile(System.IO.StreamReader fIn, bool isInclude = false)
         {
-            var input = new Antlr4.Runtime.AntlrInputStream(fIn);
-            var lexer = new Grammars.ZeroCode2Lexer(input);
-            var tokenStream = new Antlr4.Runtime.CommonTokenStream(lexer);
-            var parser = new Grammars.ZeroCode2(tokenStream);
+            Antlr4.Runtime.AntlrInputStream input = new Antlr4.Runtime.AntlrInputStream(fIn);
+            Grammars.ZeroCode2Lexer lexer = new Grammars.ZeroCode2Lexer(input);
+            Antlr4.Runtime.CommonTokenStream tokenStream = new Antlr4.Runtime.CommonTokenStream(lexer);
+            Grammars.ZeroCode2 parser = new Grammars.ZeroCode2(tokenStream);
 
 
-            var walker = new Antlr4.Runtime.Tree.ParseTreeWalker();
+            Antlr4.Runtime.Tree.ParseTreeWalker walker = new Antlr4.Runtime.Tree.ParseTreeWalker();
 
-            var Listener = new ZeroCodeListener();
+            ZeroCodeListener Listener = new ZeroCodeListener();
 
             walker.Walk(Listener, parser.zcDefinition());
 
@@ -64,14 +64,14 @@ namespace ZeroCode2
         {
             bool ok;
             // from the graph elements, build the inheritance graph
-            var graphBuilder = new InheritanceGraphBuilder
+            InheritanceGraphBuilder graphBuilder = new InheritanceGraphBuilder
             {
                 Elements = GraphElements
             };
             ok = graphBuilder.BuildGraph();
             if (!ok)
             {
-                foreach (var item in GraphElements)
+                foreach (KeyValuePair<string, GraphElement> item in GraphElements)
                 {
                     if (item.Value.State != GraphElementSate.Processed)
                     {
@@ -86,7 +86,7 @@ namespace ZeroCode2
         {
             if (HasErrors)
             {
-                foreach (var item in Errors)
+                foreach (string item in Errors)
                 {
                     logger.Error(item);
                 }

@@ -16,7 +16,7 @@ namespace ZeroCode2
 
         public void ParseTemplateFile(string inFile)
         {
-            var fIn = System.IO.File.OpenText(inFile);
+            System.IO.StreamReader fIn = System.IO.File.OpenText(inFile);
 
             ParseTemplateFile(fIn);
 
@@ -25,14 +25,14 @@ namespace ZeroCode2
 
         public void ParseTemplateFile(System.IO.StreamReader fIn)
         {
-            var input = new Antlr4.Runtime.AntlrInputStream(fIn);
-            var lexer = new Grammars.ZeroCode2TemplateLexer(input);
-            var tokenStream = new Antlr4.Runtime.CommonTokenStream(lexer);
-            var parser = new Grammars.ZeroCode2Template(tokenStream);
+            Antlr4.Runtime.AntlrInputStream input = new Antlr4.Runtime.AntlrInputStream(fIn);
+            Grammars.ZeroCode2TemplateLexer lexer = new Grammars.ZeroCode2TemplateLexer(input);
+            Antlr4.Runtime.CommonTokenStream tokenStream = new Antlr4.Runtime.CommonTokenStream(lexer);
+            Grammars.ZeroCode2Template parser = new Grammars.ZeroCode2Template(tokenStream);
 
-            var walker = new Antlr4.Runtime.Tree.ParseTreeWalker();
+            Antlr4.Runtime.Tree.ParseTreeWalker walker = new Antlr4.Runtime.Tree.ParseTreeWalker();
 
-            var Listener = new ZeroCode2TemplateListener
+            ZeroCode2TemplateListener Listener = new ZeroCode2TemplateListener
             {
                 Program = Program
             };

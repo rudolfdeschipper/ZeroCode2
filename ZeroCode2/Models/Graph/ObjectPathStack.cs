@@ -8,8 +8,8 @@ namespace ZeroCode2.Models.Graph
     {
         public string GetPath()
         {
-            var fullpath = "";
-            var stackReverse = this.Reverse();
+            string fullpath = "";
+            IEnumerable<string> stackReverse = this.Reverse();
             stackReverse.Aggregate(fullpath, (f, run) => fullpath += run + ".");
             return fullpath.Substring(0, fullpath.Length - 1);
         }

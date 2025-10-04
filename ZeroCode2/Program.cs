@@ -13,7 +13,7 @@ namespace ZeroCode2
         {
             CommandlineOptions cmdOptions = null;
 
-            var pRes = CommandLine.Parser.Default.ParseArguments<CommandlineOptions>(args)
+            ParserResult<CommandlineOptions> pRes = CommandLine.Parser.Default.ParseArguments<CommandlineOptions>(args)
                 .WithParsed<CommandlineOptions>(o => cmdOptions = o);
 
             if (cmdOptions != null)
@@ -29,7 +29,7 @@ namespace ZeroCode2
                         NLog.LogManager.GlobalThreshold = NLog.LogLevel.FromOrdinal(cmdOptions.LogLevel);
 
                         logger.Info("START");
-                        var r = new Program();
+                        Program r = new Program();
                         ModelParser modelParser;
                         TemplateParser templateParser;
                         Interpreter.Emitter.IEmitter emitter;
@@ -40,7 +40,7 @@ namespace ZeroCode2
                         if (modelParser.HasErrors)
                         {
                             logger.Error("Model errors");
-                            foreach (var item in modelParser.Errors)
+                            foreach (string item in modelParser.Errors)
                             {
                                 logger.Error(item);
                             }
@@ -51,7 +51,7 @@ namespace ZeroCode2
                         if (templateParser.HasErrors)
                         {
                             logger.Error("Template errors");
-                            foreach (var item in templateParser.Errors)
+                            foreach (string item in templateParser.Errors)
                             {
                                 logger.Error(item);
                             }
@@ -76,7 +76,7 @@ namespace ZeroCode2
                         if (executor.HasErrors)
                         {
                             logger.Error("Runtime errors");
-                            foreach (var item in executor.Errors)
+                            foreach (string item in executor.Errors)
                             {
                                 logger.Error(item);
                             }
@@ -98,9 +98,9 @@ namespace ZeroCode2
 
         private ModelParser RunModelParser(CommandlineOptions options)
         {
-            var fIn = System.IO.File.OpenText(options.InputFile);
+            System.IO.StreamReader fIn = System.IO.File.OpenText(options.InputFile);
 
-            var runner = new ModelParser();
+            ModelParser runner = new ModelParser();
 
             runner.ParseInputFile(fIn);
 
@@ -112,7 +112,7 @@ namespace ZeroCode2
 
         private TemplateParser RunTemplateParser(CommandlineOptions options)
         {
-            var parser = new TemplateParser(new Interpreter.InterpreterProgram(new List<Interpreter.InterpreterInstructionBase>()));
+            TemplateParser parser = new TemplateParser(new Interpreter.InterpreterProgram(new List<Interpreter.InterpreterInstructionBase>()));
 
             parser.ParseTemplateFile(options.Template);
 

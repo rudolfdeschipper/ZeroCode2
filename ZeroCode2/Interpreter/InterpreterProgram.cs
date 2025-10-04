@@ -1,5 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
+﻿using System.Collections.Generic;
 using System.Linq;
 
 namespace ZeroCode2.Interpreter
@@ -29,7 +28,7 @@ namespace ZeroCode2.Interpreter
         {
             if (Instructions.Count() > 0)
             {
-                var lastNonLinked = Instructions.LastOrDefault(i => i.Next == null);
+                InterpreterInstructionBase lastNonLinked = Instructions.LastOrDefault(i => i.Next == null);
                 if (lastNonLinked != null)
                 {
                     lastNonLinked.Next = instruction;
@@ -40,7 +39,7 @@ namespace ZeroCode2.Interpreter
 
         public void AddLiteral(int line, int pos, string value)
         {
-            var instruction = new Interpreter.InterpreterInstructionValue(line, pos, value, new Interpreter.Evaluator.LiteralEvaluator());
+            InterpreterInstructionValue instruction = new Interpreter.InterpreterInstructionValue(line, pos, value, new Interpreter.Evaluator.LiteralEvaluator());
 
             AddInstruction(instruction);
 
@@ -49,7 +48,7 @@ namespace ZeroCode2.Interpreter
 
         public void AddFileCreate(int line, int pos, string value)
         {
-            var instruction = new Interpreter.InterpreterInstructionBranch(line, pos, value, new Interpreter.Evaluator.EvaluateFileCreate());
+            InterpreterInstructionBranch instruction = new Interpreter.InterpreterInstructionBranch(line, pos, value, new Interpreter.Evaluator.EvaluateFileCreate());
 
             if (LastFileCreateInstruction != null)
             {
@@ -65,7 +64,7 @@ namespace ZeroCode2.Interpreter
 
         public void AddFileOverwrite(int line, int pos, string value)
         {
-            var instruction = new Interpreter.InterpreterInstructionBranch(line, pos, value, new Interpreter.Evaluator.EvaluateFileOverwrite());
+            InterpreterInstructionBranch instruction = new Interpreter.InterpreterInstructionBranch(line, pos, value, new Interpreter.Evaluator.EvaluateFileOverwrite());
 
             if (LastFileCreateInstruction != null)
             {
@@ -78,15 +77,15 @@ namespace ZeroCode2.Interpreter
 
         public void AddLoop(int line, int pos, string value)
         {
-            var filter = string.Empty;
+            string filter = string.Empty;
             if (value.Contains('|'))
             {
                 // there is a filter - remove it from the value and store it separately
                 filter = value.Split('|')[1].Trim();
                 value = value.Split('|')[0].Trim();
             }
-            var instruction1 = new Interpreter.InterpreterInstructionNoOp(line, pos, value, new Interpreter.Evaluator.EnterLoopEvaluator());
-            var instruction2 = new Interpreter.InterpreterInstructionBranch(line, pos, value, new Interpreter.Evaluator.LoopEvaluator());
+            InterpreterInstructionNoOp instruction1 = new Interpreter.InterpreterInstructionNoOp(line, pos, value, new Interpreter.Evaluator.EnterLoopEvaluator());
+            InterpreterInstructionBranch instruction2 = new Interpreter.InterpreterInstructionBranch(line, pos, value, new Interpreter.Evaluator.LoopEvaluator());
 
             AddInstruction(instruction1);
             AddInstruction(instruction2);
@@ -105,7 +104,7 @@ namespace ZeroCode2.Interpreter
 
         public void AddEndFile(int line, int pos, string value)
         {
-            var instruction = new Interpreter.InterpreterInstructionNoOp(line, pos, value, new Interpreter.Evaluator.EvaluateEndFile());
+            InterpreterInstructionNoOp instruction = new Interpreter.InterpreterInstructionNoOp(line, pos, value, new Interpreter.Evaluator.EvaluateEndFile());
 
             if (LastFileCreateInstruction != null)
             {
@@ -119,10 +118,10 @@ namespace ZeroCode2.Interpreter
 
         public void AddEndLoop(int line, int pos, string value)
         {
-            var instruction1 = new Interpreter.InterpreterInstructionNoOp(line, pos, value, new Interpreter.Evaluator.NoOpEvaluator());
-            var instruction2 = new Interpreter.InterpreterInstructionNoOp(line, pos, value, new Interpreter.Evaluator.ExitLoopEvaluator());
+            InterpreterInstructionNoOp instruction1 = new Interpreter.InterpreterInstructionNoOp(line, pos, value, new Interpreter.Evaluator.NoOpEvaluator());
+            InterpreterInstructionNoOp instruction2 = new Interpreter.InterpreterInstructionNoOp(line, pos, value, new Interpreter.Evaluator.ExitLoopEvaluator());
 
-            var closestLoop = loopStack.Count > 0 ? loopStack.Pop() : (null, false);
+            (InterpreterInstructionBranch, bool) closestLoop = loopStack.Count > 0 ? loopStack.Pop() : (null, false);
 
             if (closestLoop.Item1 != null)
             {
@@ -150,7 +149,7 @@ namespace ZeroCode2.Interpreter
         {
             Evaluator.IEvaluator evalObject = ExpressionBuilder.BuildExpressionEvaluator(value);
 
-            var instruction = new Interpreter.InterpreterInstructionValue(line, pos, value, evalObject);
+            InterpreterInstructionValue instruction = new Interpreter.InterpreterInstructionValue(line, pos, value, evalObject);
 
             AddInstruction(instruction);
 
@@ -159,9 +158,9 @@ namespace ZeroCode2.Interpreter
 
         public void AddIf(int line, int pos, string value)
         {
-            var evaluator = new Interpreter.Evaluator.IfEvaluator(value);
+            Evaluator.IfEvaluator evaluator = new Interpreter.Evaluator.IfEvaluator(value);
 
-            var instruction = new Interpreter.InterpreterInstructionBranch(line, pos, value, evaluator);
+            InterpreterInstructionBranch instruction = new Interpreter.InterpreterInstructionBranch(line, pos, value, evaluator);
 
             ifElseStack.Push(instruction);
 
@@ -172,10 +171,10 @@ namespace ZeroCode2.Interpreter
 
         public void AddElse(int line, int pos, string value)
         {
-            var instruction = new Interpreter.InterpreterInstructionNoOp(line, pos, value, new Interpreter.Evaluator.NoOpEvaluator());
-            var instruction2 = new Interpreter.InterpreterInstructionNoOp(line, pos, value, new Interpreter.Evaluator.NoOpEvaluator());
+            InterpreterInstructionNoOp instruction = new Interpreter.InterpreterInstructionNoOp(line, pos, value, new Interpreter.Evaluator.NoOpEvaluator());
+            InterpreterInstructionNoOp instruction2 = new Interpreter.InterpreterInstructionNoOp(line, pos, value, new Interpreter.Evaluator.NoOpEvaluator());
 
-            var prevIf = ifElseStack.Count > 0 ? ifElseStack.Pop() as InterpreterInstructionBranch : null;
+            InterpreterInstructionBranch prevIf = ifElseStack.Count > 0 ? ifElseStack.Pop() as InterpreterInstructionBranch : null;
             if (prevIf != null)
             {
                 AddInstruction(instruction);
@@ -199,13 +198,13 @@ namespace ZeroCode2.Interpreter
 
         public void AddEndif(int line, int pos, string value)
         {
-            var instruction = new Interpreter.InterpreterInstructionNoOp(line, pos, value, new Interpreter.Evaluator.NoOpEvaluator());
+            InterpreterInstructionNoOp instruction = new Interpreter.InterpreterInstructionNoOp(line, pos, value, new Interpreter.Evaluator.NoOpEvaluator());
 
             // determine if there was a previous else - if so set its first instruction's next to here
             // if there was no else, set the alternative of the closest if to this instruction
             // so need to find the closest if that has an open alternative or the closest else that has no next yet
 
-            var closestIfOrElse = ifElseStack.Count > 0 ? ifElseStack.Pop() : null;
+            InterpreterInstructionBase closestIfOrElse = ifElseStack.Count > 0 ? ifElseStack.Pop() : null;
 
             if (closestIfOrElse != null)
             {
@@ -233,9 +232,9 @@ namespace ZeroCode2.Interpreter
 
         public void AddLogInstruction(int line, int pos, string logType, string value)
         {
-            var evaluator = new Interpreter.Evaluator.EvaluateLogging(logType);
+            Evaluator.EvaluateLogging evaluator = new Interpreter.Evaluator.EvaluateLogging(logType);
 
-            var instruction = new Interpreter.InterpreterInstructionNoOp(line, pos, value, evaluator);
+            InterpreterInstructionNoOp instruction = new Interpreter.InterpreterInstructionNoOp(line, pos, value, evaluator);
 
             AddInstruction(instruction);
 
@@ -249,13 +248,13 @@ namespace ZeroCode2.Interpreter
 
         public List<string> Errors()
         {
-            var errors = new List<string>();
+            List<string> errors = new List<string>();
 
-            foreach (var item in loopStack)
+            foreach ((InterpreterInstructionBranch, bool) item in loopStack)
             {
                 errors.Add(string.Format("Loop {0} starting at line {1} is not terminated by a %/Loop statement.", item.Item1.Instruction, item.Item1.Line));
             }
-            foreach (var item in ifElseStack)
+            foreach (InterpreterInstructionBase item in ifElseStack)
             {
                 errors.Add(string.Format("If/Endif {0} starting at line {1} is not terminated by a %EndIf statement.", item.Instruction, item.Line));
             }
@@ -265,9 +264,9 @@ namespace ZeroCode2.Interpreter
 
         public void AddVar(int line, int pos, string value)
         {
-            var evaluator = new Interpreter.Evaluator.EvaluateVariable();
+            Evaluator.EvaluateVariable evaluator = new Interpreter.Evaluator.EvaluateVariable();
 
-            var instruction = new Interpreter.InterpreterInstructionNoOp(line, pos, value, evaluator);
+            InterpreterInstructionNoOp instruction = new Interpreter.InterpreterInstructionNoOp(line, pos, value, evaluator);
 
             AddInstruction(instruction);
 

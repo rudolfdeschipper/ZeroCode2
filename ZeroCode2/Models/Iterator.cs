@@ -12,7 +12,7 @@
 
         public virtual IModelObject Iterate(IModelObject mp)
         {
-            var obj = mp.AsComposite();
+            ModelObject<System.Collections.Generic.List<IModelObject>> obj = mp.AsComposite();
 
             if (obj == null)
             {

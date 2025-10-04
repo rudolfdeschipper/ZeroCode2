@@ -6,7 +6,7 @@ namespace ZeroCode2.Interpreter
     {
         public static Evaluator.IEvaluator BuildExpressionEvaluator(string expression)
         {
-            var props = expression.Split('.');
+            string[] props = expression.Split('.');
             Evaluator.IEvaluator evalObject = (props.Last()) switch
             {
                 "HasMore" => new Interpreter.Evaluator.HasMoreExpressionEvaluator(),

@@ -29,9 +29,11 @@ namespace ZeroCode2.Models
         {
             if (Collector.Variables.ContainsKey(Path))
             {
-                ModelStringObject var = new ModelStringObject();
-                var.Value = Collector.Variables[Path];
-                var.Path = Path;
+                ModelStringObject var = new ModelStringObject
+                {
+                    Value = Collector.Variables[Path],
+                    Path = Path
+                };
 
                 return var;
             }
@@ -68,7 +70,7 @@ namespace ZeroCode2.Models
             string remainingPath = Path.Substring(currentPosition);
             PathElements = remainingPath.Split('.');
             currentPosition = 0;
-            foreach (var item in PathElements)
+            foreach (string item in PathElements)
             {
                 if (item == "$" && currentPosition == 0)
                 {
@@ -134,7 +136,7 @@ namespace ZeroCode2.Models
                 return GetFromLoopX();
             }
             // refer to any other loop on the stack - go look for it
-            var loopElement = LoopStack.FirstOrDefault(l => Path.StartsWith(l.LoopID));
+            Interpreter.IteratorManager loopElement = LoopStack.FirstOrDefault(l => Path.StartsWith(l.LoopID));
             if (loopElement != null)
             {
                 CurrentRoot = SetModelFromIterator(loopElement);
@@ -147,10 +149,10 @@ namespace ZeroCode2.Models
 
         private int GetFromLoopX()
         {
-            var loopIndex = int.Parse(PathElements[0].Substring(4));
+            int loopIndex = int.Parse(PathElements[0].Substring(4));
             if (LoopStack.Count > loopIndex)
             {
-                var mp = LoopStack.ElementAt(loopIndex);
+                Interpreter.IteratorManager mp = LoopStack.ElementAt(loopIndex);
                 CurrentRoot = SetModelFromIterator(mp);
             }
             logger.Trace("{0} was evaluated as LoopX - CurrentRoot was {1}", Path, CurrentRoot == null ? "not found" : "found");
@@ -166,7 +168,7 @@ namespace ZeroCode2.Models
 
         private int FindFromParameterModel()
         {
-            var models = Collector.ParameterModels.SingleOrDefault(s => s.Name == PathElements[0]);
+            ParameterModel models = Collector.ParameterModels.SingleOrDefault(s => s.Name == PathElements[0]);
             if (models != null)
             {
                 CurrentRoot = models;
@@ -177,7 +179,7 @@ namespace ZeroCode2.Models
 
         private int FindFromSingleModel()
         {
-            var models = Collector.SingleModels.SingleOrDefault(s => s.Name == PathElements[0]);
+            SingleModel models = Collector.SingleModels.SingleOrDefault(s => s.Name == PathElements[0]);
             if (models != null)
             {
                 CurrentRoot = models;

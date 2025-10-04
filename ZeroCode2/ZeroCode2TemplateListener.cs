@@ -51,7 +51,7 @@ namespace ZeroCode2
 
         public override void ExitEndFileCommand([NotNull] ZeroCode2Template.EndFileCommandContext context)
         {
-            var instrVal = RemoveLineEnd(context.GetText());
+            string instrVal = RemoveLineEnd(context.GetText());
 
             Program.AddEndFile(context.start.Line, context.start.StartIndex, instrVal);
 
@@ -60,7 +60,7 @@ namespace ZeroCode2
 
         public override void ExitEndLoopCommand([NotNull] ZeroCode2Template.EndLoopCommandContext context)
         {
-            var instrVal = RemoveLineEnd(context.GetText());
+            string instrVal = RemoveLineEnd(context.GetText());
 
             Program.AddEndLoop(context.start.Line, context.start.StartIndex, instrVal);
 
@@ -69,13 +69,13 @@ namespace ZeroCode2
 
         public override void ExitIncludeCommand([NotNull] ZeroCode2Template.IncludeCommandContext context)
         {
-            var instrVal = RemoveLineEnd(context.GetText());
+            string instrVal = RemoveLineEnd(context.GetText());
 
             instrVal = instrVal.Substring("%Include:".Length); ;
 
             logger.Info("Including {0}", instrVal);
 
-            var newParser = new TemplateParser(Program);
+            TemplateParser newParser = new TemplateParser(Program);
 
             newParser.ParseTemplateFile(instrVal);
 
@@ -108,7 +108,7 @@ namespace ZeroCode2
 
         public override void ExitElseCommand([NotNull] ZeroCode2Template.ElseCommandContext context)
         {
-            var instrVal = RemoveLineEnd(context.GetText()).Trim();
+            string instrVal = RemoveLineEnd(context.GetText()).Trim();
 
             Program.AddElse(context.start.Line, context.start.StartIndex, instrVal);
 
@@ -117,7 +117,7 @@ namespace ZeroCode2
 
         public override void ExitEndIfCommand([NotNull] ZeroCode2Template.EndIfCommandContext context)
         {
-            var instrVal = RemoveLineEnd(context.GetText()).Trim();
+            string instrVal = RemoveLineEnd(context.GetText()).Trim();
 
             Program.AddEndif(context.start.Line, context.start.StartIndex, instrVal);
 
@@ -126,10 +126,10 @@ namespace ZeroCode2
 
         public override void ExitLogCommand([NotNull] ZeroCode2Template.LogCommandContext context)
         {
-            var instrVal = RemoveLineEnd(context.GetText()).Trim();
+            string instrVal = RemoveLineEnd(context.GetText()).Trim();
 
-            var logType = instrVal.Substring(0, instrVal.IndexOf(':') + 1);
-            var val = instrVal.Substring(instrVal.IndexOf(':') + 1);
+            string logType = instrVal.Substring(0, instrVal.IndexOf(':') + 1);
+            string val = instrVal.Substring(instrVal.IndexOf(':') + 1);
 
             Program.AddLogInstruction(context.start.Line, context.start.StartIndex, logType, val);
 

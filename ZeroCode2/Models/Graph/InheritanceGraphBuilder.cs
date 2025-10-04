@@ -18,7 +18,7 @@ namespace ZeroCode2.Models.Graph
             do
             {
                 Changed = false;
-                foreach (var item in Elements)
+                foreach (KeyValuePair<string, GraphElement> item in Elements)
                 {
                     if (item.Value.State == GraphElementSate.Unvisited)
                     {
@@ -34,10 +34,10 @@ namespace ZeroCode2.Models.Graph
             } while (Changed);
             logger.Trace("Done Building graph");
 
-            var cyclesOk = CheckForCycles();
+            bool cyclesOk = CheckForCycles();
             logger.Trace("Check for cycles: {0}", cyclesOk);
 
-            var elementsOk = !Elements.Values.Any(i => i.State != GraphElementSate.Processed);
+            bool elementsOk = !Elements.Values.Any(i => i.State != GraphElementSate.Processed);
             logger.Trace("Check if all elements processed: {0}", elementsOk);
 
             return cyclesOk && elementsOk;
@@ -45,12 +45,12 @@ namespace ZeroCode2.Models.Graph
 
         private void PopulateProperties()
         {
-            var propertyResolver = new GraphPropertyResolver
+            GraphPropertyResolver propertyResolver = new GraphPropertyResolver
             {
                 Elements = Elements
             };
-            var toPopulate = Elements.Where(i => i.Value.State == GraphElementSate.Processed && !i.Value.Object.IsResolved).ToList();
-            foreach (var item in toPopulate)
+            List<KeyValuePair<string, GraphElement>> toPopulate = Elements.Where(i => i.Value.State == GraphElementSate.Processed && !i.Value.Object.IsResolved).ToList();
+            foreach (KeyValuePair<string, GraphElement> item in toPopulate)
             {
                 logger.Trace("Populate properties for item {0}", item.Key);
                 propertyResolver.PopulateProperties(item.Value);
@@ -63,7 +63,7 @@ namespace ZeroCode2.Models.Graph
             if (item.Object.Inherits)
             {
                 logger.Trace("Finding parent {1} for {0}", item.Key, item.Object.InheritsFrom);
-                var inheritedObject = FindElement("@" + item.Object.InheritsFrom);
+                GraphElement inheritedObject = FindElement("@" + item.Object.InheritsFrom);
                 if (inheritedObject != null)
                 {
                     logger.Trace("Setting parent object for {0} to {1}, item State is Processed", item.Key, inheritedObject.Key);
@@ -99,8 +99,8 @@ namespace ZeroCode2.Models.Graph
 
         private bool CheckForCycles()
         {
-            var ok = true;
-            foreach (var item in Elements)
+            bool ok = true;
+            foreach (KeyValuePair<string, GraphElement> item in Elements)
             {
                 if (item.Value.Object.Inherits && item.Value.State == GraphElementSate.Processed)
                 {
@@ -112,11 +112,11 @@ namespace ZeroCode2.Models.Graph
 
         private bool CheckForCycle(IModelObject model)
         {
-            var parent = model.ParentObject;
+            IModelObject parent = model.ParentObject;
             Stack<IModelObject> stack = new Stack<IModelObject>();
             while (parent != null)
             {
-                var cycle = stack.FirstOrDefault(s => s == parent);
+                IModelObject cycle = stack.FirstOrDefault(s => s == parent);
                 if (cycle != null)
                 {
                     logger.Error(string.Format("{0} inheritance defines a cyclic relation.", cycle.Path));

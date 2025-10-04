@@ -29,24 +29,24 @@ namespace ZeroCode2.Interpreter
 
         public bool PropertyExists(string expression)
         {
-            var locator = new Models.PropertyLocator(expression, Model, LoopStack);
+            PropertyLocator locator = new Models.PropertyLocator(expression, Model, LoopStack);
 
             return locator.Locate();
         }
 
         public string EvaluateProperty(string expression)
         {
-            var locator = new Models.PropertyLocator(expression, Model, LoopStack);
+            PropertyLocator locator = new Models.PropertyLocator(expression, Model, LoopStack);
 
             if (locator.Locate() == true)
             {
-                var mp = locator.LocatedProperty();
+                IModelObject mp = locator.LocatedProperty();
 
                 if (expression.EndsWith("$"))
                 {
                     return mp.Name;
                 }
-                var result = mp.GetText();
+                string result = mp.GetText();
 
                 // replace backslash-quote by quote
                 result = result.Replace("\\\"", "\"");
@@ -64,16 +64,16 @@ namespace ZeroCode2.Interpreter
 
         public IteratorManager EvaluateLoop(string expression)
         {
-            if(expression.EndsWith("?"))
+            if (expression.EndsWith("?"))
             {
                 expression = expression.Substring(0, expression.Length - 1);
             }
 
-            var iterator = LoopStack.FirstOrDefault(l => l.Path == expression);
+            IteratorManager iterator = LoopStack.FirstOrDefault(l => l.Path == expression);
 
             if (iterator == null)
             {
-                var parentPath = expression.Split('.')[0];
+                string parentPath = expression.Split('.')[0];
 
                 if (expression.Length > parentPath.Length)
                 {
@@ -121,14 +121,14 @@ namespace ZeroCode2.Interpreter
             {
                 iter = new Models.Iterator();
             }
-            var iterator = new IteratorManager(iter);
+            IteratorManager iterator = new IteratorManager(iter);
 
             logger.Trace("Enter loop: " + expression);
 
             iterator.Path = expression;
             if (!checkExists)
             {
-                var locator = new Models.PropertyLocator(expression, Model, LoopStack);
+                PropertyLocator locator = new Models.PropertyLocator(expression, Model, LoopStack);
 
                 if (locator.Locate() == false)
                 {

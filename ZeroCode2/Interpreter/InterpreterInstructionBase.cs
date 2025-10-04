@@ -30,13 +30,13 @@ namespace ZeroCode2.Interpreter
 
             try
             {
-                var result = Evaluator.Evaluate(context, Instruction);
+                Evaluator.EvaluatorResult result = Evaluator.Evaluate(context, Instruction);
 
                 return SetResult(result);
             }
             catch (Exception ex)
             {
-                var res = new Evaluator.EvaluatorResult(ex);
+                Evaluator.EvaluatorResult res = new Evaluator.EvaluatorResult(ex);
                 return SetResult(res);
             }
         }
