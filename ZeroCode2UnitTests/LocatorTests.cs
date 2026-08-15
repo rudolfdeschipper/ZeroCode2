@@ -243,7 +243,7 @@ namespace ZeroCode2UnitTests
         public void TestLocateLoopOrdering()
         {
 
-            string[] fields = { "Name", "Title", "InheritedField", "CodeField", "DoubleInheritance", "Test" };
+            string[] fields = { "Name", "Title", "InheritedField", "CodeField", "DoubleInheritance", "TestIn", "Test" };
             ZeroCode2.Interpreter.IteratorManager im = new ZeroCode2.Interpreter.IteratorManager(new ZeroCode2.Models.Iterator())
             {
                 Path = "@ViewModels.Person"

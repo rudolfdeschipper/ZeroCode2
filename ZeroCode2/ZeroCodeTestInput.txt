@@ -57,10 +57,10 @@ Person : {
 		MetaProperties: {
 			-Type
 		}
-	}
-	,
-	CodeField : "<Input Type='[@Models.Person.Name.Type]' >",
-	DoubleInheritance <- Models.Stakeholder.Inherited.MetaProperties
+	},
+	CodeField : "<Input Type='[@Models.Person.TestIn]' [@Models.Person.TestIn] >",
+	DoubleInheritance <- Models.Stakeholder.Inherited.MetaProperties,
+	TestIn: "[@Models.Person.Name.Type]"
 }
 
 Stakeholder : {

@@ -90,7 +90,15 @@ namespace ZeroCode2
             {
                 Collector.SingleModels.Add(TopLevelModel);
             }
-            GraphElements.Add(TopLevelModel.Path, new GraphElement(TopLevelModel.Path, TopLevelModel));
+            try
+            {
+				GraphElements.Add(TopLevelModel.Path, new GraphElement(TopLevelModel.Path, TopLevelModel));
+			}
+			catch (System.Exception)
+            {
+                logger.Error("Duplicate generic model path {0} = {1}", TopLevelModel.Path, TopLevelModel.GetText());
+				throw;
+            }
             path.Pop();
 
             base.ExitGenericModel(context);
@@ -137,7 +145,15 @@ namespace ZeroCode2
                 pair.Modified = true;
                 pair.Modifier = context.modifier.Text;
             }
-            GraphElements.Add(pair.Path, new GraphElement(pair.Path, pair));
+            try
+            {
+				GraphElements.Add(pair.Path, new GraphElement(pair.Path, pair));
+			}
+			catch (System.Exception)
+            {
+                logger.Error("Duplicate pair path {0} = {1}", pair.Path, pair.GetText());
+				throw;
+            }
 
             logger.Trace("Pair: {0}{1} = {2}{3}", pair.Modifier, pair.Name, pair.GetText() ?? "unknown", context.pairvalue()?.inherits() != null ? " : " + pair.InheritsFrom : "");
 
@@ -176,7 +192,15 @@ namespace ZeroCode2
                 context.inherits() != null ? " : " + model.InheritsFrom : "",
                 orderby.Any() ? " / " + orderby.Aggregate(obs, (f, run) => obs += run + ", ") : "");
 
-            GraphElements.Add(model.Path, new GraphElement(model.Path, model));
+            try
+            {
+				GraphElements.Add(model.Path, new GraphElement(model.Path, model));
+			}
+			catch (System.Exception)
+            {
+                logger.Error("Duplicate singlemodel path {0} = {1}", model.Path, model.GetText());
+				throw;
+            }
             SingleModels.Put(context, model);
             base.ExitSinglemodel(context);
         }

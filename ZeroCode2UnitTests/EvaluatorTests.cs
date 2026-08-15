@@ -11,8 +11,8 @@ namespace ZeroCode2UnitTests
         public static ModelCollector ModelCollector { get; set; }
         public static Stack<ZeroCode2.Interpreter.IteratorManager> LoopStack { get; set; }
 
-        [ClassInitialize]
-        public static void Setup(TestContext context)
+        [TestInitialize]
+        public void Setup()
         {
             NLog.LogManager.GlobalThreshold = LogLevel.Warn;
             ModelParser parser = new ModelParser();
@@ -156,7 +156,7 @@ namespace ZeroCode2UnitTests
 
             ZeroCode2.Interpreter.Evaluator.EvaluatorResult res = exprEval.Evaluate(context, "@Models.Person.CodeField");
 
-            Assert.AreEqual("<Input Type='string' >", res.Value);
+            Assert.AreEqual("<Input Type='string' string >", res.Value);
             Assert.AreEqual(ZeroCode2.Interpreter.Evaluator.EvaluationResultValues.True, res.Result);
         }
 
